@@ -31,7 +31,7 @@ import commonmark
 
 # -- Project information -----------------------------------------------------
 
-project = 'experiment-docs'
+project = 'xmen'
 copyright = '2019, Rob Weston'
 author = 'Rob Weston'
 

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Setup &#8212; experiment-docs 0.1 documentation</title>
+    <title>xmen &#8212; xmen 0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -15,7 +15,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Examples" href="example.html" />
-    <link rel="prev" title="Welcome to xmen’s documentation!" href="index.html" />
+    <link rel="prev" title="xmen: Fast and reproducible experimentation!" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -32,10 +32,19 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="setup">
+  <div class="section" id="xmen">
+<h1>xmen<a class="headerlink" href="#xmen" title="Permalink to this headline">¶</a></h1>
+<p>The E<code class="docutils literal notranslate"><span class="pre">x</span></code>peri<code class="docutils literal notranslate"><span class="pre">men</span></code>t repo is designed to facitilitate fast, reproducible and platform agnostic experimentation from both within python and the shell. It currently supports oxs and unix based systems both remote and local.</p>
+<div class="section" id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<p>For additional features/ bugs please file an <code class="docutils literal notranslate"><span class="pre">https://github.com/robw4/xmen</span></code> and feel free to make changes yourself before sending a pull request.</p>
+</div>
+</div>
+<div class="section" id="setup">
 <h1>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>The following are required:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">python&gt;=3.5</span></code> (tested extensively with python 3.6. Should also be compatible with &gt;3.5 but not tested. Python2 is not supported)</p></li>
 <li><p>Packages:</p>
@@ -43,14 +52,22 @@
 <li><p>ruamel</p></li>
 <li><p>git-python</p></li>
 <li><p>pandas</p></li>
+<li><p>sphinx</p></li>
+<li><p>recommonmark</p></li>
+<li><p>nbsphinx</p></li>
 </ul>
 </li>
 </ul>
+<p>For osx a conda environement is provided which can be installed from <code class="docutils literal notranslate"><span class="pre">xmen-env-osx64.txt</span></code> as:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create --name xmen --file xmen-env.txt
+conda activate xmen
+</pre></div>
+</div>
 </div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>The repository is installed from source using:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/robw4/xmen.git
+<p>The repository is cloned from:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/robw4/xmen.git ~/xmen
 </pre></div>
 </div>
 <p>It is recommended you add the following to you <code class="docutils literal notranslate"><span class="pre">~/.bashrc</span></code> or equivalent:</p>
@@ -64,6 +81,20 @@ The current work directory is not a valid experiment folder. It is either missin
 </pre></div>
 </div>
 </div>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>The documentation for <code class="docutils literal notranslate"><span class="pre">xmen</span></code> is built using sphinx. In order to build the documentation from source once you have installed the correct dependencies you can generate the documentation by running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> ~/xmen/docs
+make html
+open ~/xmen/docs/_build/html/index.html
+</pre></div>
+</div>
+<p>Extensive examples covering a wide range of the functionality included in <code class="docutils literal notranslate"><span class="pre">xmen</span></code> are found in <code class="docutils literal notranslate"><span class="pre">/xmen/examples/example.ipynb</span></code> which can be run ineractively. Before running make sure that <code class="docutils literal notranslate"><span class="pre">xmen</span></code> is on the PYTHONPATH (see above)</p>
+<p>When initially installed the repository also contains a prebuilt doucmentation folder which can be used to launch the docs as:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>open ~/xmen/docs/_build/html/index.html
+</pre></div>
+</div>
+</div>
 </div>
 
 
@@ -73,7 +104,7 @@ The current work directory is not a valid experiment folder. It is either missin
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">experiment-docs</a></h1>
+<h1 class="logo"><a href="index.html">xmen</a></h1>
 
 
 
@@ -85,9 +116,14 @@ The current work directory is not a valid experiment folder. It is either missin
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Setup</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">xmen</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#contributing">Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#setup">Setup</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
@@ -98,7 +134,7 @@ The current work directory is not a valid experiment folder. It is either missin
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="index.html" title="previous chapter">Welcome to xmen’s documentation!</a></li>
+      <li>Previous: <a href="index.html" title="previous chapter">xmen: Fast and reproducible experimentation!</a></li>
       <li>Next: <a href="example.html" title="next chapter">Examples</a></li>
   </ul></li>
 </ul>
