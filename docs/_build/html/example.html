@@ -1,0 +1,1438 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Examples &#8212; experiment-docs 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API" href="api.html" />
+    <link rel="prev" title="Setup" href="README.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 5ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="Examples">
+<h1>Examples<a class="headerlink" href="#Examples" title="Permalink to this headline">¶</a></h1>
+<p><strong>Note</strong>: The examples are found in the following jupyter notebook <code class="docutils literal notranslate"><span class="pre">xmen/examples/examples.ipynb</span></code> where they can be run interactively. Before running the notebook make sure that <code class="docutils literal notranslate"><span class="pre">xmen</span></code> is on your <code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code> following the steps given in Setup.</p>
+<div class="section" id="Defining-an-experiment">
+<h2>Defining an experiment<a class="headerlink" href="#Defining-an-experiment" title="Permalink to this headline">¶</a></h2>
+<p>New experiments are defined by specifying <strong>parameters</strong> (as public class attributes) and <strong>execution</strong> (by overloading the <code class="docutils literal notranslate"><span class="pre">run</span></code> method). For example</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">xmen.experiment</span> <span class="k">import</span> <span class="n">Experiment</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="k">class</span> <span class="nc">AnExperiment</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The doc string of AnExperiment class&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The doc string of __init__ experiment class.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AnExperiment</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;h&#39;</span>     <span class="c1"># A parameter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">17</span>      <span class="c1"># Another parameter</span>
+
+        <span class="c1"># Private attributes will not be treated as parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_c</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">The experiment state inside run is&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;logs.txt&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;This was written from a running experiment&#39;</span><span class="p">)</span>
+
+<span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>As the experiment class has a metaclass <code class="docutils literal notranslate"><span class="pre">TypedMeta</span></code> all derived classes will also inheret the meta class <code class="docutils literal notranslate"><span class="pre">TypedMeta</span></code>. Each parameter should be defined alongside there type, default value and documentation as: <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">self.a:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'h'</span>&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">A</span> <span class="pre">parameter</span></code></p>
+<p>This allows parameters to be defined quickly, with their type, default value and documentation inferred by consulting the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> definition. Each attribute comment is automatically added to the Doc string of both the code and the class. Parameters are changed from their default values after instantiatian using the <code class="docutils literal notranslate"><span class="pre">update</span></code> method.</p>
+<p>Experiments may assume that they have access to a repository <code class="docutils literal notranslate"><span class="pre">{root}/{name}</span></code>. They are able to log, backup or save anything they want here during the execution of the experiment.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">exp</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="s1">&#39;g&#39;</span><span class="p">})</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+status: default
+created: 07:14PM September 18, 2019
+messages:
+parameters:
+  a: g   # A parameter (default=&#39;h&#39;)
+  b: 17   # Another parameter (default=17)
+</pre></div></div>
+</div>
+<p>Here you can see that the parameter <code class="docutils literal notranslate"><span class="pre">a</span></code> has been updated to <code class="docutils literal notranslate"><span class="pre">g</span></code>. Its default value is still preserved in the docstring. You can also see the <code class="docutils literal notranslate"><span class="pre">status</span></code> of the experiment is currently <code class="docutils literal notranslate"><span class="pre">default</span></code>.</p>
+<p>An experiments status is used to define what an experiment is able to do. With default status an experiment status an experiment can be initialised and its parameters updated <strong>but not</strong> run:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">try</span><span class="p">:</span>
+    <span class="n">exp</span><span class="p">()</span>
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ValueError:&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ValueError: An experiment in default status must be registered before it can be executed
+</pre></div></div>
+</div>
+<p>Default experiments are however allowed to be written out to a <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file. This can be used to initialise a new experiment from a set of parameters different to those defined in the init method:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">exp</span><span class="o">.</span><span class="n">to_defaults</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+<span class="nb">echo</span> <span class="s2">&quot;</span><span class="k">$(</span>cat /tmp/defaults.yml<span class="k">)</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+created: 07:14PM September 18, 2019  #  The date the last time the parameters of the model were updated.
+version: #  A dictonary containing the experiment version information. See `get_version` for more info
+  module: /Users/robweston/xmen/examples/&lt;ipython-input-1-4ff1dba6a4a0&gt;
+  class: AnExperiment
+  git:
+    local: /Users/robweston/xmen
+    remote: https://github.com/robw4/xmen.git
+    commit: 51730802ffb494b4839d000d4238dec6b0235c07
+    branch: master
+a: g #  A parameter (default=&#39;h&#39;)
+b: 17 #  Another parameter (default=17)
+</pre></div></div>
+</div>
+<p>Additionally, the date the <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> was created is stored in the <code class="docutils literal notranslate"><span class="pre">created</span></code> field. The documentation for each parameter is automatically loaded from the doc string of the class. We are now able to load a new experiment from this paticular parameter setting through the <code class="docutils literal notranslate"><span class="pre">from_yml</span></code> method call:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Now lets create a new experiment and load its state from the</span>
+<span class="n">exp2</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>
+<span class="n">exp2</span><span class="o">.</span><span class="n">from_yml</span><span class="p">(</span><span class="s1">&#39;/tmp/defaults.yml&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">exp2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+status: default
+created: 07:14PM September 18, 2019
+messages:
+version:
+  module: /Users/robweston/xmen/examples/&lt;ipython-input-1-4ff1dba6a4a0&gt;
+  class: AnExperiment
+  git:
+    local: /Users/robweston/xmen
+    remote: https://github.com/robw4/xmen.git
+    commit: 51730802ffb494b4839d000d4238dec6b0235c07
+    branch: master
+parameters:
+  a: g   # A parameter (default=&#39;h&#39;)
+  b: 17   # Another parameter (default=17)
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Running-an-experiment">
+<h2>Running an experiment<a class="headerlink" href="#Running-an-experiment" title="Permalink to this headline">¶</a></h2>
+<p>In order to be run an experiment object must first be registered to an experiment folder. This is achieved through the <code class="docutils literal notranslate"><span class="pre">register</span></code> method call. At this point the parameters of the experiment can no longer be changed. They are backed up to a <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> inside the experiment folder. For example:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+rm -f <span class="s1">&#39;/tmp/a/params.yml&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">exp</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="s1">&#39;An example&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Looking inside the project repository we now have:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+<span class="nb">echo</span> <span class="s1">&#39;Folder now contains:&#39;</span>
+ls /tmp/a
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Folder now contains:
+logs.txt
+params.yml
+</pre></div></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file contains the following:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">!</span><span class="nb">echo</span> <span class="s2">&quot;</span><span class="k">$(</span>cat /tmp/a/params.yml<span class="k">)</span>$<span class="s2">&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+root: /tmp  #  The root directory to which the experiment belongs (should not be set)
+name: a #  The name of the experiment (should not be set)
+status: registered #  The status of the experiment (one of [&#39;default&#39; | &#39;created&#39; | &#39;running&#39; | &#39;error&#39; | &#39;finished&#39;])
+created: 07:14PM September 18, 2019 #  The date the last time the parameters of the model were updated.
+purpose: An example #  The purpose for the experiment (should not be set)
+messages: {} #  A dictionary of messages which are able to vary throughout the experiment (should not be set)
+version: #  A dictonary containing the experiment version information. See `get_version` for more info
+  module: /Users/robweston/xmen/examples/&lt;ipython-input-1-4ff1dba6a4a0&gt;
+  class: AnExperiment
+  git:
+    local: /Users/robweston/xmen
+    remote: https://github.com/robw4/xmen.git
+    commit: 51730802ffb494b4839d000d4238dec6b0235c07
+    branch: master
+a: g #  A parameter (default=&#39;h&#39;)
+b: 17 #  Another parameter (default=17)$
+</pre></div></div>
+</div>
+<p>An experiment <strong>cannot</strong> be registered to a repository already containing a <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">exp2</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">exp2</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ValueError: &#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ValueError:  Experiment folder /tmp/a already contains a params.yml file. An Exeperiment cannot be created in an already existing experiment folder
+</pre></div></div>
+</div>
+<p>However, instead an experiment object can be loaded from already existing <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> using the method call <code class="docutils literal notranslate"><span class="pre">from_yaml</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="n">exp2</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">exp2</span><span class="o">.</span><span class="n">from_yml</span><span class="p">(</span><span class="s1">&#39;/tmp/a/params.yml&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">exp2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+status: default
+created: 07:14PM September 18, 2019
+messages:
+parameters:
+  a: h   # A parameter (default=&#39;h&#39;)
+  b: 17   # Another parameter (default=17)
+
+root: /tmp
+name: a
+status: registered
+created: 07:14PM September 18, 2019
+purpose: An example
+messages:
+version:
+  module: /Users/robweston/xmen/examples/&lt;ipython-input-1-4ff1dba6a4a0&gt;
+  class: AnExperiment
+  git:
+    local: /Users/robweston/xmen
+    remote: https://github.com/robw4/xmen.git
+    commit: 51730802ffb494b4839d000d4238dec6b0235c07
+    branch: master
+parameters:
+  a: g   # A parameter (default=&#39;h&#39;)
+  b: 17   # Another parameter (default=17)
+</pre></div></div>
+</div>
+<p>Now the parameter <code class="docutils literal notranslate"><span class="pre">a</span></code> has been updated to <code class="docutils literal notranslate"><span class="pre">g</span></code> (from its default <code class="docutils literal notranslate"><span class="pre">h</span></code>). When loading from an already created <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file the status of the experiment is updated to <code class="docutils literal notranslate"><span class="pre">registered</span></code>. The <code class="docutils literal notranslate"><span class="pre">created</span></code> attribute stores the time that the experiment was registered and root and name have also been filled.</p>
+<blockquote>
+<div><p>At the moment (as above) two experiments can share the same <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file. This may however be undesirable. In the future it may also be worth adding a locked attribute to the params.yml file, which is True when a params.yml file is linked to an Experiment object and False when it has been generated by the <code class="docutils literal notranslate"><span class="pre">ExperimentManager</span></code></p>
+</div></blockquote>
+<p>After being registered an experiment may now be run by calling an experiment <code class="docutils literal notranslate"><span class="pre">__call__</span></code> method. Upon entering the <code class="docutils literal notranslate"><span class="pre">__call__</span></code> method an experiments status (and <code class="docutils literal notranslate"><span class="pre">params.yml</span></code>) file is updated to <code class="docutils literal notranslate"><span class="pre">running</span></code> before calling the experiments <code class="docutils literal notranslate"><span class="pre">run()</span></code> method. On leaving <code class="docutils literal notranslate"><span class="pre">run()</span></code> the experiment status is updated to either <code class="docutils literal notranslate"><span class="pre">finished</span></code> or <code class="docutils literal notranslate"><span class="pre">error</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Before running:&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>
+
+<span class="c1"># Run the experiment using the __call__ method</span>
+<span class="n">exp</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">After running:&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Before running:
+registered
+
+The experiment state inside run is
+running
+
+After running:
+finished
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+<span class="nb">echo</span> <span class="s1">&#39;The logs.txt file has been written during the call&#39;</span>
+ls <span class="s1">&#39;/tmp/a&#39;</span>
+<span class="nb">echo</span> <span class="s1">&#39;&#39;</span>
+<span class="nb">echo</span> <span class="s2">&quot;</span><span class="k">$(</span>cat /tmp/a/logs.txt<span class="k">)</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The logs.txt file has been written during the call
+logs.txt
+params.yml
+
+This was written from a running experiment
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Git-Compatibility">
+<h2>Git Compatibility<a class="headerlink" href="#Git-Compatibility" title="Permalink to this headline">¶</a></h2>
+<p>As experiments are run it becomes things need to change. Parameters defaults are altered, new parameters are added, and old parameters appreciated. Config files soon become outdated and trying to work out which config file belong to which version of an experiment becomes tedious at best and impossible at worst. To help with this the experiment class has Git support built into its definition. When creating <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> files from an experiment object, if the experiment was defined in a git
+repository, then the local git repo and commit corresponding to the experiment is logged is updated in the <code class="docutils literal notranslate"><span class="pre">git</span></code> attibute and saved in the <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file (alongiside the remote repository if available). Additionally the path to the module in which the experiment was defined and the experiment name are stored in the <code class="docutils literal notranslate"><span class="pre">definition</span></code> attribute.</p>
+<p>A similar process occurs when an experiment is registered and saved in the <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file. Incompatibility between <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> files used to initialise experiments and the current version of the experiment can therefore easily be checked. Likewise, it is possible to perfectly recreate an experiment run by checking out the commit defined in a <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file. When git is available this functionality is baked into the experiment class allowing the user to continue about there
+buisness without worrying about experiment compatibility.</p>
+<p>If we once again look in the <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file and <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> we created earlier we can see that as <code class="docutils literal notranslate"><span class="pre">AnExperiment</span></code> was defined in this notebook which iniself lives inside a git repo that the correct fields have been populated:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+<span class="nb">echo</span> <span class="s2">&quot;The params.yml file:&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;----------------------&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;</span><span class="k">$(</span>cat /tmp/a/params.yml<span class="k">)</span><span class="s2">&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;The defaults.yml file:&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;----------------------&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;</span><span class="k">$(</span>cat /tmp/defaults.yml<span class="k">)</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The params.yml file:
+----------------------
+root: /tmp  #  The root directory to which the experiment belongs (should not be set)
+name: a #  The name of the experiment (should not be set)
+status: finished #  The status of the experiment (one of [&#39;default&#39; | &#39;created&#39; | &#39;running&#39; | &#39;error&#39; | &#39;finished&#39;])
+created: 07:14PM September 18, 2019 #  The date the last time the parameters of the model were updated.
+purpose: An example #  The purpose for the experiment (should not be set)
+messages: {} #  A dictionary of messages which are able to vary throughout the experiment (should not be set)
+version: #  A dictonary containing the experiment version information. See `get_version` for more info
+  module: /Users/robweston/xmen/examples/&lt;ipython-input-1-4ff1dba6a4a0&gt;
+  class: AnExperiment
+  git:
+    local: /Users/robweston/xmen
+    remote: https://github.com/robw4/xmen.git
+    commit: 51730802ffb494b4839d000d4238dec6b0235c07
+    branch: master
+a: g #  A parameter (default=&#39;h&#39;)
+b: 17 #  Another parameter (default=17)
+
+The defaults.yml file:
+----------------------
+created: 07:14PM September 18, 2019  #  The date the last time the parameters of the model were updated.
+version: #  A dictonary containing the experiment version information. See `get_version` for more info
+  module: /Users/robweston/xmen/examples/&lt;ipython-input-1-4ff1dba6a4a0&gt;
+  class: AnExperiment
+  git:
+    local: /Users/robweston/xmen
+    remote: https://github.com/robw4/xmen.git
+    commit: 51730802ffb494b4839d000d4238dec6b0235c07
+    branch: master
+a: g #  A parameter (default=&#39;h&#39;)
+b: 17 #  Another parameter (default=17)
+</pre></div></div>
+</div>
+<p>Alternatively these attributes can be acessed in python as:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">ruamel.yaml.comments</span> <span class="k">import</span> <span class="n">CommentedMap</span>
+
+<span class="n">exp3</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>
+<span class="n">exp3</span><span class="o">.</span><span class="n">from_yml</span><span class="p">(</span><span class="s1">&#39;/tmp/defaults.yml&#39;</span><span class="p">)</span>
+<span class="n">version_dict</span> <span class="o">=</span> <span class="n">exp3</span><span class="o">.</span><span class="n">version</span>
+
+<span class="k">def</span> <span class="nf">recursive_lines</span><span class="p">(</span><span class="n">dic</span><span class="p">):</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">dic</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="n">CommentedMap</span><span class="p">:</span>
+            <span class="n">lines</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;  &#39;</span> <span class="o">+</span> <span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">recursive_lines</span><span class="p">(</span><span class="n">v</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines</span> <span class="o">+=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{k}</span><span class="s1">: </span><span class="si">{v}</span><span class="s1">&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">lines</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">recursive_lines</span><span class="p">(</span><span class="n">version_dict</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+module: /Users/robweston/xmen/examples/&lt;ipython-input-1-4ff1dba6a4a0&gt;
+class: AnExperiment
+  local: /Users/robweston/xmen
+  remote: https://github.com/robw4/xmen.git
+  commit: 51730802ffb494b4839d000d4238dec6b0235c07
+  branch: master
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Command-Line-Interface">
+<h2>Command Line Interface<a class="headerlink" href="#Command-Line-Interface" title="Permalink to this headline">¶</a></h2>
+<p>As well as designed to be run within python, each experiment is also able to expose a command line interface with minimal overhead. In order to expose the command line interface some minor additions need to be made to the definition of <code class="docutils literal notranslate"><span class="pre">AnExperiment</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import the experiment_parser</span>
+<span class="kn">from</span> <span class="nn">xmen.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">experiment_parser</span>
+
+<span class="k">class</span> <span class="nc">AnExperiment</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
+    <span class="c1"># ... Define an experiment</span>
+
+<span class="c1"># Add the following lines to the bottom of the module</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">experiment_parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">AnExperiment</span></code> defined earlier is defined in <code class="docutils literal notranslate"><span class="pre">experiment.py</span></code> module with the above modifications. This allows an <code class="docutils literal notranslate"><span class="pre">AnExperiment</span></code> to be used to generate <code class="docutils literal notranslate"><span class="pre">default.yml</span></code>, to be registered and to be executed all from the command line:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+python experiment.py -h
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+usage: experiment.py [-h] [--update YAML_STRING] [--execute PARAMS]
+                     [--to_root DIR] [--to_defaults DIR]
+                     [--register ROOT NAME]
+
+Run the Experiment command line interface
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --update YAML_STRING  Update the parameters given by a yaml string. Note
+                        this will be called beforeother flags and can be used
+                        in combination with --to_root, --to_defaults,and
+                        --register.
+  --execute PARAMS      Execute the experiment from the given params.yml file.
+                        Cannot be called with update.
+  --to_root DIR         Generate a run script and defaults.yml file for
+                        interfacing with the experiment manager. If the
+                        directory does not exist then it is first created.
+  --to_defaults DIR     Generate a defaults.yml file from the experiment
+                        defaults in the given directory
+  --register ROOT NAME  Register an experiment at root (1st positional) name
+                        (2ndpositional)
+</pre></div></div>
+</div>
+<p>For example:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+
+<span class="c1"># Generate a defaults.yml</span>
+python experiment.py --update <span class="s1">&#39;{a: updated}&#39;</span> --to_defaults /tmp/command_line/updated_defaults
+
+<span class="c1"># Visualise results</span>
+<span class="nb">echo</span> <span class="s2">&quot;&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;Generate a defaults.yml file first updating some parameters with a yaml string...&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;/tmp/command_line/defaults.yml (a has been updated)&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;----------------------------------------------------&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;</span><span class="k">$(</span>cat /tmp/command_line/defaults.yml<span class="k">)</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Updating parameters {&#39;a&#39;: &#39;updated&#39;}
+
+Generate a defaults.yml file first updating some parameters with a yaml string...
+/tmp/command_line/defaults.yml (a has been updated)
+----------------------------------------------------
+created: 03:42PM September 18, 2019  #  The date the last time the parameters of the model were updated.
+version: #  A dictonary containing the experiment version information. See `get_version` for more info
+  module: /Users/robweston/projects/rad2sim2rad/docs/experiment.py
+  class: AnExperiment
+  git:
+    local: /Users/robweston/projects/rad2sim2rad
+    remote: ssh://git@mrgbuild.robots.ox.ac.uk:7999/~robw/rad2sim2rad.git
+    commit: 70775458a7599e70540e7f21a408435950320fac
+    branch: master
+a: updated #  A parameter (default=&#39;h&#39;)
+b: 17 #  Another parameter (default=17)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+<span class="c1"># Registering an experiment</span>
+rm -f /tmp/command_line/an_experiment/params.yml
+
+python experiment.py --register /tmp/command_line an_experiment
+<span class="nb">echo</span> <span class="s2">&quot;&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;/tmp/command_line/an_experiment/params.yml&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;----------------------------------------------------&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;</span><span class="k">$(</span>cat /tmp/command_line/an_experiment/params.yml<span class="k">)</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+/tmp/command_line/an_experiment/params.yml
+----------------------------------------------------
+root: /tmp/command_line  #  The root directory to which the experiment belongs (should not be set)
+name: an_experiment #  The name of the experiment (should not be set)
+status: registered #  The status of the experiment (one of [&#39;default&#39; | &#39;created&#39; | &#39;running&#39; | &#39;error&#39; | &#39;finished&#39;])
+created: 07:14PM September 18, 2019 #  The date the last time the parameters of the model were updated.
+purpose: &#39;&#39; #  The purpose for the experiment (should not be set)
+messages: {} #  A dictionary of messages which are able to vary throughout the experiment (should not be set)
+version: #  A dictonary containing the experiment version information. See `get_version` for more info
+  module: /Users/robweston/xmen/examples/experiment.py
+  class: AnExperiment
+  git:
+    local: /Users/robweston/xmen
+    remote: https://github.com/robw4/xmen.git
+    commit: 51730802ffb494b4839d000d4238dec6b0235c07
+    branch: master
+a: h #  A parameter (default=&#39;h&#39;)
+b: 17 #  Another parameter (default=17)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+<span class="c1"># Execute an experiment</span>
+python experiment.py --execute /tmp/command_line/an_experiment/params.yml
+
+<span class="nb">echo</span> <span class="s2">&quot;&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;After executing the experiment...&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;/tmp/command_line/an_experiment/params.yml&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;----------------------------------------------------&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;</span><span class="k">$(</span>cat /tmp/command_line/an_experiment/params.yml<span class="k">)</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The experiment state inside run is running for experiment an_experiment, a = h, b = 17
+
+After executing the experiment...
+/tmp/command_line/an_experiment/params.yml
+----------------------------------------------------
+root: /tmp/command_line  #  The root directory to which the experiment belongs (should not be set)
+name: an_experiment #  The name of the experiment (should not be set)
+status: finished #  The status of the experiment (one of [&#39;default&#39; | &#39;created&#39; | &#39;running&#39; | &#39;error&#39; | &#39;finished&#39;])
+created: 07:14PM September 18, 2019 #  The date the last time the parameters of the model were updated.
+purpose: &#39;&#39; #  The purpose for the experiment (should not be set)
+messages: #  A dictionary of messages which are able to vary throughout the experiment (should not be set)
+  Hi: I am running!
+version: #  A dictonary containing the experiment version information. See `get_version` for more info
+  module: /Users/robweston/xmen/examples/experiment.py
+  class: AnExperiment
+  git:
+    local: /Users/robweston/xmen
+    remote: https://github.com/robw4/xmen.git
+    commit: 51730802ffb494b4839d000d4238dec6b0235c07
+    branch: master
+a: h #  A parameter (default=&#39;h&#39;)
+b: 17 #  Another parameter (default=17)
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="The-Experiment-Manager">
+<h2>The Experiment Manager<a class="headerlink" href="#The-Experiment-Manager" title="Permalink to this headline">¶</a></h2>
+<p>The experiment manager is a python command line tool for managing a set of experiments which all share execution code (a <code class="docutils literal notranslate"><span class="pre">script.sh</span></code>) which takes as input parameters (<code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code>). By changing the parameters, each experiment is uniquely defined. Firstly, lets create a root experiment repository:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">!</span>python experiment.py --to_root /tmp/experiment_manager/root
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+#!/bin/bash
+# File generated on the 07:14PM September 18, 2019
+# GIT:
+# - repo /Users/robweston/xmen
+# - branch master
+# - remote https://github.com/robw4/xmen.git
+# - commit 51730802ffb494b4839d000d4238dec6b0235c07
+
+export PYTHONPATH=&#34;${PYTHONPATH}:/Users/robweston/xmen/examples&#34;
+python /Users/robweston/xmen/examples/experiment.py --execute ${1}
+</pre></div></div>
+</div>
+<p>The above gives a bash script automatically generated in order to run an experiment. This is saved as <code class="docutils literal notranslate"><span class="pre">script.sh</span></code> in the root experiment repository along with a <code class="docutils literal notranslate"><span class="pre">default.yml</span></code> file.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">!</span>ls -l /tmp/experiment_manager/root
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+total 24
+-rw-r--r--  1 robweston  wheel  517 18 Sep 19:14 defaults.yml
+-rw-r--r--  1 robweston  wheel  366 18 Sep 19:12 experiment.yml
+-rw-r--r--  1 robweston  wheel  348 18 Sep 19:14 script.sh
+</pre></div></div>
+</div>
+<p>For ease of use we first create an alias to the experiment manager. You are encouraged to do this in your <code class="docutils literal notranslate"><span class="pre">~/.bashrc</span></code> or equivalent. Unfortunately ipython does not register previously defined aliases so we need to redefine it here. We also move to the root repository:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">alias</span> <span class="n">xmen</span> <span class="o">~/</span><span class="n">xmen</span><span class="o">/</span><span class="n">python</span><span class="o">/</span><span class="n">xmen</span><span class="o">/</span><span class="n">experiment_manager</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</div>
+<p>First we navigate to the root directory:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">cd</span> /tmp/experiment_manager/root
+<span class="o">!</span>rm -f experiment.yml
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/private/tmp/experiment_manager/root
+</pre></div></div>
+</div>
+<p>Next we initialise the experiment manager</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">xmen</span> init
+</pre></div>
+</div>
+</div>
+<p>Initilialising the experiment parameter in the root directory produces a <code class="docutils literal notranslate"><span class="pre">experiment.yml</span></code> file. The <code class="docutils literal notranslate"><span class="pre">exp</span> <span class="pre">list</span></code> command provides a helpfull output fo visualisnd the state of the current experiements:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">xmen</span> list
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+No experiments currently registered!
+
+Defaults:
+- created 07:14PM September 18, 2019
+- module /Users/robweston/xmen/examples/experiment.py
+- class AnExperiment
+- git:
+   local: /Users/robweston/xmen
+   commit: 51730802ffb494b4839d000d4238dec6b0235c07
+   remote: https://github.com/robw4/xmen.git
+</pre></div></div>
+</div>
+<p>Multiple experiments are registered with the experiment manager in a single call through the <code class="docutils literal notranslate"><span class="pre">register</span></code> command:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">xmen</span> <span class="n">register</span> <span class="s1">&#39;{a: first | second, b: 4 | 5}&#39;</span> <span class="s1">&#39;intial_test&#39;</span>
+</pre></div>
+</div>
+</div>
+<p>The special charcter <code class="docutils literal notranslate"><span class="pre">|</span></code> is interpreted as an or operator. Experiments are registered for every possible combination of parameters appearing with <code class="docutils literal notranslate"><span class="pre">|</span></code>. For example in the above 4 experiments have been registered:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">xmen</span> list
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+       overrides      purpose                     created      status messages                                    commit
+0   a:first__b:4  intial_test  07:15PM September 18, 2019  registered       {}  51730802ffb494b4839d000d4238dec6b0235c07
+1   a:first__b:5  intial_test  07:15PM September 18, 2019  registered       {}  51730802ffb494b4839d000d4238dec6b0235c07
+2  a:second__b:4  intial_test  07:15PM September 18, 2019  registered       {}  51730802ffb494b4839d000d4238dec6b0235c07
+3  a:second__b:5  intial_test  07:15PM September 18, 2019  registered       {}  51730802ffb494b4839d000d4238dec6b0235c07
+
+Defaults:
+- created 07:14PM September 18, 2019
+- module /Users/robweston/xmen/examples/experiment.py
+- class AnExperiment
+- git:
+   local: /Users/robweston/xmen
+   commit: 51730802ffb494b4839d000d4238dec6b0235c07
+   remote: https://github.com/robw4/xmen.git
+</pre></div></div>
+</div>
+<p>You are also allowed to register multiple experiments with the same overrides. In this case there name is appended by an index <code class="docutils literal notranslate"><span class="pre">_1</span></code> <code class="docutils literal notranslate"><span class="pre">_2</span></code> etc:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">xmen</span> register &#39;{a: first, b: 4}&#39; &#39;intial_test&#39;
+<span class="o">%</span><span class="k">xmen</span> register &#39;{a: first, b: 4}&#39; &#39;intial_test&#39;
+<span class="o">%</span><span class="k">xmen</span> list
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+        overrides      purpose                     created      status messages                                    commit
+0    a:first__b:4  intial_test  07:15PM September 18, 2019  registered       {}  51730802ffb494b4839d000d4238dec6b0235c07
+1    a:first__b:5  intial_test  07:15PM September 18, 2019  registered       {}  51730802ffb494b4839d000d4238dec6b0235c07
+2   a:second__b:4  intial_test  07:15PM September 18, 2019  registered       {}  51730802ffb494b4839d000d4238dec6b0235c07
+3   a:second__b:5  intial_test  07:15PM September 18, 2019  registered       {}  51730802ffb494b4839d000d4238dec6b0235c07
+4  a:first__b:4_1  intial_test  07:15PM September 18, 2019  registered       {}  51730802ffb494b4839d000d4238dec6b0235c07
+5  a:first__b:4_2  intial_test  07:15PM September 18, 2019  registered       {}  51730802ffb494b4839d000d4238dec6b0235c07
+
+Defaults:
+- created 07:14PM September 18, 2019
+- module /Users/robweston/xmen/examples/experiment.py
+- class AnExperiment
+- git:
+   local: /Users/robweston/xmen
+   commit: 51730802ffb494b4839d000d4238dec6b0235c07
+   remote: https://github.com/robw4/xmen.git
+</pre></div></div>
+</div>
+<p>Experiments can be run either individually or all together with several prefixes:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">xmen</span> run &#39;a:second__b:4&#39; sh
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:second__b:4/params.yml
+The experiment state inside run is running for experiment a:second__b:4, a = second, b = 4
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">xmen</span> list
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+        overrides      purpose                     created      status                 messages                                    commit
+0    a:first__b:4  intial_test  07:15PM September 18, 2019  registered                       {}  51730802ffb494b4839d000d4238dec6b0235c07
+1    a:first__b:5  intial_test  07:15PM September 18, 2019  registered                       {}  51730802ffb494b4839d000d4238dec6b0235c07
+2   a:second__b:4  intial_test  07:15PM September 18, 2019    finished  {&#39;Hi&#39;: &#39;I am running!&#39;}  51730802ffb494b4839d000d4238dec6b0235c07
+3   a:second__b:5  intial_test  07:15PM September 18, 2019  registered                       {}  51730802ffb494b4839d000d4238dec6b0235c07
+4  a:first__b:4_1  intial_test  07:15PM September 18, 2019  registered                       {}  51730802ffb494b4839d000d4238dec6b0235c07
+5  a:first__b:4_2  intial_test  07:15PM September 18, 2019  registered                       {}  51730802ffb494b4839d000d4238dec6b0235c07
+
+Defaults:
+- created 07:14PM September 18, 2019
+- module /Users/robweston/xmen/examples/experiment.py
+- class AnExperiment
+- git:
+   local: /Users/robweston/xmen
+   commit: 51730802ffb494b4839d000d4238dec6b0235c07
+   remote: https://github.com/robw4/xmen.git
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">xmen</span> run &#39;*&#39; sh
+<span class="o">%</span><span class="k">xmen</span> list
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4/params.yml
+The experiment state inside run is running for experiment a:first__b:4, a = first, b = 4
+
+Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4_1/params.yml
+The experiment state inside run is running for experiment a:first__b:4_1, a = first, b = 4
+
+Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4_2/params.yml
+The experiment state inside run is running for experiment a:first__b:4_2, a = first, b = 4
+
+Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:5/params.yml
+The experiment state inside run is running for experiment a:first__b:5, a = first, b = 5
+
+Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:second__b:5/params.yml
+The experiment state inside run is running for experiment a:second__b:5, a = second, b = 5
+        overrides      purpose                     created    status                 messages                                    commit
+0    a:first__b:4  intial_test  07:15PM September 18, 2019  finished  {&#39;Hi&#39;: &#39;I am running!&#39;}  51730802ffb494b4839d000d4238dec6b0235c07
+1    a:first__b:5  intial_test  07:15PM September 18, 2019  finished  {&#39;Hi&#39;: &#39;I am running!&#39;}  51730802ffb494b4839d000d4238dec6b0235c07
+2   a:second__b:4  intial_test  07:15PM September 18, 2019  finished  {&#39;Hi&#39;: &#39;I am running!&#39;}  51730802ffb494b4839d000d4238dec6b0235c07
+3   a:second__b:5  intial_test  07:15PM September 18, 2019  finished  {&#39;Hi&#39;: &#39;I am running!&#39;}  51730802ffb494b4839d000d4238dec6b0235c07
+4  a:first__b:4_1  intial_test  07:15PM September 18, 2019  finished  {&#39;Hi&#39;: &#39;I am running!&#39;}  51730802ffb494b4839d000d4238dec6b0235c07
+5  a:first__b:4_2  intial_test  07:15PM September 18, 2019  finished  {&#39;Hi&#39;: &#39;I am running!&#39;}  51730802ffb494b4839d000d4238dec6b0235c07
+
+Defaults:
+- created 07:14PM September 18, 2019
+- module /Users/robweston/xmen/examples/experiment.py
+- class AnExperiment
+- git:
+   local: /Users/robweston/xmen
+   commit: 51730802ffb494b4839d000d4238dec6b0235c07
+   remote: https://github.com/robw4/xmen.git
+</pre></div></div>
+</div>
+<p>Lets now clean up the experiment repository:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># First we unlink all the experiments</span>
+<span class="o">%</span><span class="k">xmen</span> unlink &#39;*&#39;
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Removing Experiments...
+/private/tmp/experiment_manager/root/a:first__b:4
+/private/tmp/experiment_manager/root/a:first__b:4_1
+/private/tmp/experiment_manager/root/a:first__b:4_2
+/private/tmp/experiment_manager/root/a:first__b:5
+/private/tmp/experiment_manager/root/a:second__b:4
+/private/tmp/experiment_manager/root/a:second__b:5
+Note models are removed from the experiment list only. To remove the model directories runexperiment rm
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1">#Now we remove the experiment folders</span>
+<span class="c1">#WARNING: THIS WILL ALL EXPERIMENTS THAT ARE NO LONGER LINKED TO THE EXPERIMENT MANAGER</span>
+<span class="o">%</span><span class="k">xmen</span> rm &#39;*&#39;
+<span class="o">!</span><span class="nb">echo</span> <span class="s2">&quot;&quot;</span>
+<span class="o">%</span><span class="k">xmen</span> list
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/private/tmp/experiment_manager/root/a:first__b:4
+/private/tmp/experiment_manager/root/a:first__b:4_1
+/private/tmp/experiment_manager/root/a:first__b:4_2
+/private/tmp/experiment_manager/root/a:first__b:5
+/private/tmp/experiment_manager/root/a:second__b:4
+/private/tmp/experiment_manager/root/a:second__b:5
+
+No experiments currently registered!
+
+Defaults:
+- created 07:14PM September 18, 2019
+- module /Users/robweston/xmen/examples/experiment.py
+- class AnExperiment
+- git:
+   local: /Users/robweston/xmen
+   commit: 51730802ffb494b4839d000d4238dec6b0235c07
+   remote: https://github.com/robw4/xmen.git
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="The-TypedMeta-metaclass">
+<h2>The TypedMeta metaclass<a class="headerlink" href="#The-TypedMeta-metaclass" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">TypedMeta</span></code> meta class stremalines the definition of objects whith many attirbutes that most of the time will simply just take there default value. For example consider the following class definition:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">class</span> <span class="nc">A</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">g</span><span class="o">=</span><span class="mi">7</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;An object with some attributes:</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            a (int): The first attribute</span>
+<span class="sd">            b (int): The second attribute</span>
+<span class="sd">            c (int): The third attribute</span>
+<span class="sd">            d (int): The fourth attribute</span>
+<span class="sd">            e (int): The fith attribute</span>
+<span class="sd">            g (int): The sixth attribute</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">b</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="n">c</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="n">d</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="n">e</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="n">g</span>
+</pre></div>
+</div>
+</div>
+<p>For a large number of parameters defining parameters in the args, docstrings and attributes quickly becomes tiresome. We could instead think about inferring attributes directly from the arguments of a function. Maybe by updating <code class="docutils literal notranslate"><span class="pre">self.__dict__</span></code> directly after using <code class="docutils literal notranslate"><span class="pre">argparse</span></code> to get the parameters from the function definition or simply only passing <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> to <code class="docutils literal notranslate"><span class="pre">__init__</span></code>. This seems quite convoluted and will break code completion for many interpreters.</p>
+<p>This is where the <code class="docutils literal notranslate"><span class="pre">TypedMeta</span></code> metaclass comes in. Instead we define objects like:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">TypedMeta</span>
+<span class="k">class</span> <span class="nc">AWithMeta</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">TypedMeta</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;An object with some attributes&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>   <span class="c1"># The first attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>   <span class="c1"># The second attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>   <span class="c1"># The third attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>   <span class="c1"># The fourth attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>   <span class="c1"># The fith attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span>   <span class="c1"># The sixth attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">7</span>   <span class="c1"># The seventh attribute</span>
+</pre></div>
+</div>
+</div>
+<p>Here we have made use of typed attributes (introduced in python &gt;= 3). In order to allow the defualt values to be overidden we could also considered passing an option keywords arg <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> and updating the attribute dictionary directly (updating only on keys correpsonding to valid attributes). The <code class="docutils literal notranslate"><span class="pre">TypedMeta</span></code> metaclass automatically adds attributes to the docstring of <code class="docutils literal notranslate"><span class="pre">AWithMeta</span></code> and <code class="docutils literal notranslate"><span class="pre">AWithMeta.__init__</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># The doc string of an experiment object is updated</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">AWithMeta</span><span class="o">.</span><span class="fm">__init__</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+An object with some attributes
+
+Parameters:
+    a (int): The first attribute (default=1)
+    b (int): The second attribute (default=2)
+    c (int): The third attribute (default=3)
+    d (int): The fourth attribute (default=4)
+    e (int): The fith attribute (default=5)
+    f (int): The sixth attribute (default=6)
+    g (int): The seventh attribute (default=7)
+</pre></div></div>
+</div>
+<p>The typed Meta class works with both typed and non-typed attribute definitions with or without comments. It will do the best it can with what it has. For example:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">class</span> <span class="nc">BWithMeta</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">TypedMeta</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;An object with some attributes&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span>   <span class="c1"># The first attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="mi">3</span>   <span class="c1"># The third attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="mi">4</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">BWithMeta</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<blockquote>
+<div><div class="highlight"><pre>
+
+
+Parameters:
+    a (float): The first attribute (default=1)
+    b (int): (default= 2)
+    c : The third attribute (default=3)
+    d : (default= 4)
+</pre></div></div></blockquote>
+<p>The TypedMeta class is currently only compatible with comments defined on a single line. You are recommended to specify longer comments in the doc-string directly</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">experiment-docs</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">Setup</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Defining-an-experiment">Defining an experiment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Running-an-experiment">Running an experiment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Git-Compatibility">Git Compatibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Command-Line-Interface">Command Line Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#The-Experiment-Manager">The Experiment Manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#The-TypedMeta-metaclass">The TypedMeta metaclass</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="README.html" title="previous chapter">Setup</a></li>
+      <li>Next: <a href="api.html" title="next chapter">API</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Rob Weston.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/example.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
