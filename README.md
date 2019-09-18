@@ -1,15 +1,9 @@
 # xmen
-The E`x`peri`men`t repo is designed to facitilitate fast, reproducible and platform agnostic experimentation from both within python and the shell. It currently supports oxs and unix based systems both remote and local.
+## About
+The E`x`peri`men`t repo is designed to facitilitate fast, reproducible and platform agnostic experimentation from both within python and the shell. It currently supports oxs and unix based systems both remote and local. 
 
 
-
-
-## Contributing
-For additional features/ bugs please file an `https://github.com/robw4/xmen` and feel free to make changes yourself before sending a pull request. 
-
-
-# Setup
-## Requirements
+## Setup
 The following are required:
 * `python>=3.5` (tested extensively with python 3.6. Should also be compatible with >3.5 but not tested. Python2 is not supported)
 * Packages:
@@ -27,7 +21,6 @@ conda create --name xmen --file xmen-env.txt
 conda activate xmen
 ```
 
-## Installation
 The repository is cloned from:
 ```bash
 git clone https://github.com/robw4/xmen.git ~/xmen
@@ -63,3 +56,7 @@ When initially installed the repository also contains a prebuilt doucmentation f
 ```bash
 open ~/xmen/docs/_build/html/index.html
 ```
+
+
+## Contributing
+For additional features/ bugs please file an `https://github.com/robw4/xmen` and feel free to make changes yourself before sending a pull request.
