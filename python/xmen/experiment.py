@@ -150,7 +150,8 @@ class Experiment(object, metaclass=TypedMeta):
                         self.send_message({'step': f'self._i'})
 
        if __name__ == '__main__':
-            app.run(AnExperiment().main())
+            exp = AnExperiment()
+            exp.main(sys.argv)
 
     By including the last two lines we expose the command line interface. As such the module can be run from the
     command line as::
