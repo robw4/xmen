@@ -160,7 +160,8 @@ create a module at path <code class="docutils literal notranslate"><span class="
                  <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">({</span><span class="s1">&#39;step&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s1">&#39;self._i&#39;</span><span class="p">})</span>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-     <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">AnExperiment</span><span class="p">()</span><span class="o">.</span><span class="n">main</span><span class="p">())</span>
+     <span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>
+     <span class="n">exp</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>By including the last two lines we expose the command line interface. As such the module can be run from the
@@ -759,7 +760,6 @@ if available.</p>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="README.html">xmen</a></li>
-<li class="toctree-l1"><a class="reference internal" href="README.html#setup">Setup</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#the-experiment-class">The Experiment Class</a></li>
