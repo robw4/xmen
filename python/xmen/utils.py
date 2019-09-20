@@ -21,6 +21,7 @@ and the Experiment classes."""
 import os
 import inspect
 import git
+from ruamel.yaml.comments import CommentedSeq, CommentedMap
 
 
 def get_attribute_helps(cls):
@@ -243,3 +244,12 @@ def get_version(*, path=None, cls=None):
     if git != {}:
         version.update({'git': git})
     return version
+
+
+def commented_to_py(x):
+    if type(x) is CommentedMap:
+        return {k: commented_to_py(v) for k, v in x.items()}
+    if type(x) is CommentedSeq:
+        return [commented_to_py(v) for v in x]
+    else:
+        return x

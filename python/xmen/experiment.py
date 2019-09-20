@@ -339,7 +339,7 @@ class Experiment(object, metaclass=TypedMeta):
         with open(path, 'r') as file:
             params = yaml.load(file)
         params = {k: v for k, v in params.items() if k in self.__dict__}
-        self.__dict__.update(params)
+        self.__dict__.update(commented_to_py(params))
         # Update created date
         self._created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
 
