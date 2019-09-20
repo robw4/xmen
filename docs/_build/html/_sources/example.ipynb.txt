@@ -54,7 +54,7 @@
     "* Any attributes begining with `_` are considered pivate and will not be treated as a parameters. These should be used to store dynamic state during experiment execution.\n",
     "* All experiments inheret several important attributes which can be accessed but not overloaded or overwritten:\n",
     "    * `root` and `name` together define an experiment folder that is assigned to the experiment. You may assume that these fields will be populated at the time of execution and are encouraged to use this folder to write out anything that needs to be logged during execution (logs, checkpoints etc.)\n",
-    "    * `status` is one of `'default'`, `'registered`', `'running'`, `'finished'` or `'error'`\n",
+    "    * `status` is one of `'default'`, `'registered`', `'running'`, `'finished'` or `'error'` (more on this to come...)\n",
     "    * `created` gives the date any parameter was last updated\n",
     "    * `version` is a dict used to reproduce an experiment exactly\n",
     "    * `messages` is a dict used to store messages logged during execution \n",
@@ -73,6 +73,7 @@
    "metadata": {},
    "source": [
     "When initialised an experiment is given a `'default'` status. Experiment with default status:\n",
+    "\n",
     "* **Can** be specialised either by directly accessing the experiments parameters or using the `update()` method \n",
     "* **Can** be loaded and saved to a `defaults.yml` file using the `from_yml()` and `to_default()` method calls. This allows experiment config files to be generated quickly and safely from within python\n",
     "* **Cannot** be run! In order to run they must first be linked with an experiment folder and their state saved and fixed.\n"
@@ -214,10 +215,12 @@
    "source": [
     "## Executing an experiment\n",
     "In order to be run an experiment object must first be registered. During registration:\n",
+    "\n",
     "* An experiment is assigened an experiment folder `{root}/{name}`. Not to experiments may share the same experiment folder\n",
     "* The paramters of an experiment become fixed and are preserved in a `params.yml` within the experiement folder.\n",
     "\n",
     "An experiment can be registered in one of two ways:\n",
+    "\n",
     "1. The `register()` method call\n",
     "2. Loading a predefined `params.yml` file using the `from_yml()` method call\n",
     "\n",
@@ -616,7 +619,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 48,
+   "execution_count": 1,
    "metadata": {},
    "outputs": [
     {
@@ -661,7 +664,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 50,
+   "execution_count": 2,
    "metadata": {},
    "outputs": [
     {
@@ -703,7 +706,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 51,
+   "execution_count": 3,
    "metadata": {},
    "outputs": [
     {
@@ -716,7 +719,7 @@
       "root: /tmp/command_line  #  The root directory to which the experiment belongs (should not be set)\n",
       "name: an_experiment #  The name of the experiment (should not be set)\n",
       "status: registered #  The status of the experiment (one of ['default' | 'created' | 'running' | 'error' | 'finished'])\n",
-      "created: 10:47AM September 19, 2019 #  The date the last time the parameters of the model were updated.\n",
+      "created: 09:21AM September 20, 2019 #  The date the last time the parameters of the model were updated.\n",
       "purpose: '' #  The purpose for the experiment (should not be set)\n",
       "messages: {} #  A dictionary of messages which are able to vary throughout the experiment (should not be set)\n",
       "version: #  A dictonary containing the experiment version information. See `get_version` for more info\n",
@@ -725,7 +728,7 @@
       "  git:\n",
       "    local: /Users/robweston/xmen\n",
       "    remote: https://github.com/robw4/xmen.git\n",
-      "    commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
+      "    commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
       "    branch: master\n",
       "a: h #  A parameter (default='h')\n",
       "b: 17 #  Another parameter (default=17)\n"
@@ -746,7 +749,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 52,
+   "execution_count": 4,
    "metadata": {},
    "outputs": [
     {
@@ -761,7 +764,7 @@
       "root: /tmp/command_line  #  The root directory to which the experiment belongs (should not be set)\n",
       "name: an_experiment #  The name of the experiment (should not be set)\n",
       "status: finished #  The status of the experiment (one of ['default' | 'created' | 'running' | 'error' | 'finished'])\n",
-      "created: 10:47AM September 19, 2019 #  The date the last time the parameters of the model were updated.\n",
+      "created: 09:21AM September 20, 2019 #  The date the last time the parameters of the model were updated.\n",
       "purpose: '' #  The purpose for the experiment (should not be set)\n",
       "messages: #  A dictionary of messages which are able to vary throughout the experiment (should not be set)\n",
       "  Hi: I am running!\n",
@@ -771,7 +774,7 @@
       "  git:\n",
       "    local: /Users/robweston/xmen\n",
       "    remote: https://github.com/robw4/xmen.git\n",
-      "    commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
+      "    commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
       "    branch: master\n",
       "a: h #  A parameter (default='h')\n",
       "b: 17 #  Another parameter (default=17)\n"
@@ -800,7 +803,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 54,
+   "execution_count": 5,
    "metadata": {},
    "outputs": [
     {
@@ -808,12 +811,12 @@
      "output_type": "stream",
      "text": [
       "#!/bin/bash\n",
-      "# File generated on the 10:49AM September 19, 2019\n",
+      "# File generated on the 09:21AM September 20, 2019\n",
       "# GIT:\n",
       "# - repo /Users/robweston/xmen\n",
       "# - branch master\n",
       "# - remote https://github.com/robw4/xmen.git\n",
-      "# - commit e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
+      "# - commit a692bc7ea31af51890c828ddc836456b1f7776e3\n",
       "\n",
       "export PYTHONPATH=\"${PYTHONPATH}:/Users/robweston/xmen/examples\"\n",
       "python /Users/robweston/xmen/examples/experiment.py --execute ${1}\n"
@@ -833,7 +836,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 55,
+   "execution_count": 6,
    "metadata": {},
    "outputs": [
     {
@@ -841,9 +844,15 @@
      "output_type": "stream",
      "text": [
       "total 24\n",
-      "-rw-r--r--  1 robweston  wheel  517 19 Sep 10:49 defaults.yml\n",
-      "-rw-r--r--  1 robweston  wheel  330 18 Sep 19:48 experiment.yml\n",
-      "-rw-r--r--  1 robweston  wheel  348 19 Sep 10:49 script.sh\n"
+      "drwxr-xr-x  4 robweston  wheel  136 19 Sep 10:51 \u001b[1m\u001b[36ma:first__b:4\u001b[m\u001b[m\n",
+      "drwxr-xr-x  4 robweston  wheel  136 19 Sep 10:51 \u001b[1m\u001b[36ma:first__b:4_1\u001b[m\u001b[m\n",
+      "drwxr-xr-x  4 robweston  wheel  136 19 Sep 10:51 \u001b[1m\u001b[36ma:first__b:4_2\u001b[m\u001b[m\n",
+      "drwxr-xr-x  4 robweston  wheel  136 19 Sep 10:51 \u001b[1m\u001b[36ma:first__b:5\u001b[m\u001b[m\n",
+      "drwxr-xr-x  4 robweston  wheel  136 19 Sep 10:51 \u001b[1m\u001b[36ma:second__b:4\u001b[m\u001b[m\n",
+      "drwxr-xr-x  4 robweston  wheel  136 19 Sep 10:51 \u001b[1m\u001b[36ma:second__b:5\u001b[m\u001b[m\n",
+      "-rw-r--r--  1 robweston  wheel  517 20 Sep 09:21 defaults.yml\n",
+      "-rw-r--r--  1 robweston  wheel  645 19 Sep 10:50 experiment.yml\n",
+      "-rw-r--r--  1 robweston  wheel  348 20 Sep 09:21 script.sh\n"
      ]
     }
    ],
@@ -860,7 +869,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 56,
+   "execution_count": 7,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -876,7 +885,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 57,
+   "execution_count": 8,
    "metadata": {},
    "outputs": [
     {
@@ -901,7 +910,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 58,
+   "execution_count": 9,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -917,7 +926,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 59,
+   "execution_count": 10,
    "metadata": {},
    "outputs": [
     {
@@ -927,12 +936,12 @@
       "No experiments currently registered!\n",
       "\n",
       "Defaults: \n",
-      "- created 10:49AM September 19, 2019\n",
+      "- created 09:21AM September 20, 2019\n",
       "- module /Users/robweston/xmen/examples/experiment.py\n",
       "- class AnExperiment\n",
       "- git:\n",
       "   local: /Users/robweston/xmen\n",
-      "   commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
+      "   commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
       "   remote: https://github.com/robw4/xmen.git\n"
      ]
     }
@@ -950,7 +959,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 60,
+   "execution_count": 11,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -966,26 +975,26 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 61,
+   "execution_count": 12,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "       overrides      purpose                     created      status messages                                    commit\n",
-      "0   a:first__b:4  intial_test  10:50AM September 19, 2019  registered       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "1   a:first__b:5  intial_test  10:50AM September 19, 2019  registered       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "2  a:second__b:4  intial_test  10:50AM September 19, 2019  registered       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "3  a:second__b:5  intial_test  10:50AM September 19, 2019  registered       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
+      "         overrides      purpose                     created      status messages                                    commit\n",
+      "0   a:first__b:4_3  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "1   a:first__b:5_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "2  a:second__b:4_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "3  a:second__b:5_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
       "\n",
       "Defaults: \n",
-      "- created 10:49AM September 19, 2019\n",
+      "- created 09:21AM September 20, 2019\n",
       "- module /Users/robweston/xmen/examples/experiment.py\n",
       "- class AnExperiment\n",
       "- git:\n",
       "   local: /Users/robweston/xmen\n",
-      "   commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
+      "   commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
       "   remote: https://github.com/robw4/xmen.git\n"
      ]
     }
@@ -1003,28 +1012,28 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 62,
+   "execution_count": 13,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "        overrides      purpose                     created      status messages                                    commit\n",
-      "0    a:first__b:4  intial_test  10:50AM September 19, 2019  registered       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "1    a:first__b:5  intial_test  10:50AM September 19, 2019  registered       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "2   a:second__b:4  intial_test  10:50AM September 19, 2019  registered       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "3   a:second__b:5  intial_test  10:50AM September 19, 2019  registered       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "4  a:first__b:4_1  intial_test  10:50AM September 19, 2019  registered       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "5  a:first__b:4_2  intial_test  10:50AM September 19, 2019  registered       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
+      "         overrides      purpose                     created      status messages                                    commit\n",
+      "0   a:first__b:4_3  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "1   a:first__b:5_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "2  a:second__b:4_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "3  a:second__b:5_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "4   a:first__b:4_4  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "5   a:first__b:4_5  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
       "\n",
       "Defaults: \n",
-      "- created 10:49AM September 19, 2019\n",
+      "- created 09:21AM September 20, 2019\n",
       "- module /Users/robweston/xmen/examples/experiment.py\n",
       "- class AnExperiment\n",
       "- git:\n",
       "   local: /Users/robweston/xmen\n",
-      "   commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
+      "   commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
       "   remote: https://github.com/robw4/xmen.git\n"
      ]
     }
@@ -1044,47 +1053,37 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 63,
+   "execution_count": 14,
    "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "\n",
-      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:second__b:4/params.yml\n",
-      "The experiment state inside run is running for experiment a:second__b:4, a = second, b = 4\n"
-     ]
-    }
-   ],
+   "outputs": [],
    "source": [
     "%xmen run 'a:second__b:4' sh"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 64,
+   "execution_count": 15,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "        overrides      purpose                     created      status                 messages                                    commit\n",
-      "0    a:first__b:4  intial_test  10:50AM September 19, 2019  registered                       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "1    a:first__b:5  intial_test  10:50AM September 19, 2019  registered                       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "2   a:second__b:4  intial_test  10:51AM September 19, 2019    finished  {'Hi': 'I am running!'}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "3   a:second__b:5  intial_test  10:50AM September 19, 2019  registered                       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "4  a:first__b:4_1  intial_test  10:50AM September 19, 2019  registered                       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "5  a:first__b:4_2  intial_test  10:50AM September 19, 2019  registered                       {}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
+      "         overrides      purpose                     created      status messages                                    commit\n",
+      "0   a:first__b:4_3  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "1   a:first__b:5_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "2  a:second__b:4_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "3  a:second__b:5_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "4   a:first__b:4_4  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "5   a:first__b:4_5  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
       "\n",
       "Defaults: \n",
-      "- created 10:49AM September 19, 2019\n",
+      "- created 09:21AM September 20, 2019\n",
       "- module /Users/robweston/xmen/examples/experiment.py\n",
       "- class AnExperiment\n",
       "- git:\n",
       "   local: /Users/robweston/xmen\n",
-      "   commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
+      "   commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
       "   remote: https://github.com/robw4/xmen.git\n"
      ]
     }
@@ -1095,7 +1094,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 65,
+   "execution_count": 16,
    "metadata": {},
    "outputs": [
     {
@@ -1103,35 +1102,38 @@
      "output_type": "stream",
      "text": [
       "\n",
-      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4/params.yml\n",
-      "The experiment state inside run is running for experiment a:first__b:4, a = first, b = 4\n",
+      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4_3/params.yml\n",
+      "The experiment state inside run is running for experiment a:first__b:4_3, a = first, b = 4\n",
       "\n",
-      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4_1/params.yml\n",
-      "The experiment state inside run is running for experiment a:first__b:4_1, a = first, b = 4\n",
+      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4_4/params.yml\n",
+      "The experiment state inside run is running for experiment a:first__b:4_4, a = first, b = 4\n",
       "\n",
-      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4_2/params.yml\n",
-      "The experiment state inside run is running for experiment a:first__b:4_2, a = first, b = 4\n",
+      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4_5/params.yml\n",
+      "The experiment state inside run is running for experiment a:first__b:4_5, a = first, b = 4\n",
       "\n",
-      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:5/params.yml\n",
-      "The experiment state inside run is running for experiment a:first__b:5, a = first, b = 5\n",
+      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:5_1/params.yml\n",
+      "The experiment state inside run is running for experiment a:first__b:5_1, a = first, b = 5\n",
       "\n",
-      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:second__b:5/params.yml\n",
-      "The experiment state inside run is running for experiment a:second__b:5, a = second, b = 5\n",
-      "        overrides      purpose                     created    status                 messages                                    commit\n",
-      "0    a:first__b:4  intial_test  10:51AM September 19, 2019  finished  {'Hi': 'I am running!'}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "1    a:first__b:5  intial_test  10:51AM September 19, 2019  finished  {'Hi': 'I am running!'}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "2   a:second__b:4  intial_test  10:51AM September 19, 2019  finished  {'Hi': 'I am running!'}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "3   a:second__b:5  intial_test  10:51AM September 19, 2019  finished  {'Hi': 'I am running!'}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "4  a:first__b:4_1  intial_test  10:51AM September 19, 2019  finished  {'Hi': 'I am running!'}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "5  a:first__b:4_2  intial_test  10:51AM September 19, 2019  finished  {'Hi': 'I am running!'}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
+      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:second__b:4_1/params.yml\n",
+      "The experiment state inside run is running for experiment a:second__b:4_1, a = second, b = 4\n",
+      "\n",
+      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:second__b:5_1/params.yml\n",
+      "The experiment state inside run is running for experiment a:second__b:5_1, a = second, b = 5\n",
+      "         overrides      purpose                     created    status                 messages                                    commit\n",
+      "0   a:first__b:4_3  intial_test  09:22AM September 20, 2019  finished  {'Hi': 'I am running!'}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "1   a:first__b:5_1  intial_test  09:22AM September 20, 2019  finished  {'Hi': 'I am running!'}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "2  a:second__b:4_1  intial_test  09:22AM September 20, 2019  finished  {'Hi': 'I am running!'}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "3  a:second__b:5_1  intial_test  09:22AM September 20, 2019  finished  {'Hi': 'I am running!'}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "4   a:first__b:4_4  intial_test  09:22AM September 20, 2019  finished  {'Hi': 'I am running!'}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "5   a:first__b:4_5  intial_test  09:22AM September 20, 2019  finished  {'Hi': 'I am running!'}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
       "\n",
       "Defaults: \n",
-      "- created 10:49AM September 19, 2019\n",
+      "- created 09:21AM September 20, 2019\n",
       "- module /Users/robweston/xmen/examples/experiment.py\n",
       "- class AnExperiment\n",
       "- git:\n",
       "   local: /Users/robweston/xmen\n",
-      "   commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
+      "   commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
       "   remote: https://github.com/robw4/xmen.git\n"
      ]
     }
@@ -1150,7 +1152,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 33,
+   "execution_count": 17,
    "metadata": {},
    "outputs": [
     {
@@ -1158,12 +1160,12 @@
      "output_type": "stream",
      "text": [
       "Removing Experiments...\n",
-      "/private/tmp/experiment_manager/root/a:first__b:4\n",
-      "/private/tmp/experiment_manager/root/a:first__b:4_1\n",
-      "/private/tmp/experiment_manager/root/a:first__b:4_2\n",
-      "/private/tmp/experiment_manager/root/a:first__b:5\n",
-      "/private/tmp/experiment_manager/root/a:second__b:4\n",
-      "/private/tmp/experiment_manager/root/a:second__b:5\n",
+      "/private/tmp/experiment_manager/root/a:first__b:4_3\n",
+      "/private/tmp/experiment_manager/root/a:first__b:4_4\n",
+      "/private/tmp/experiment_manager/root/a:first__b:4_5\n",
+      "/private/tmp/experiment_manager/root/a:first__b:5_1\n",
+      "/private/tmp/experiment_manager/root/a:second__b:4_1\n",
+      "/private/tmp/experiment_manager/root/a:second__b:5_1\n",
       "Note models are removed from the experiment list only. To remove the model directories runexperiment rm\n"
      ]
     }
@@ -1175,29 +1177,35 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 66,
+   "execution_count": 18,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
+      "/private/tmp/experiment_manager/root/a:first__b:4\n",
+      "/private/tmp/experiment_manager/root/a:first__b:4_1\n",
+      "/private/tmp/experiment_manager/root/a:first__b:4_2\n",
+      "/private/tmp/experiment_manager/root/a:first__b:4_3\n",
+      "/private/tmp/experiment_manager/root/a:first__b:4_4\n",
+      "/private/tmp/experiment_manager/root/a:first__b:4_5\n",
+      "/private/tmp/experiment_manager/root/a:first__b:5\n",
+      "/private/tmp/experiment_manager/root/a:first__b:5_1\n",
+      "/private/tmp/experiment_manager/root/a:second__b:4\n",
+      "/private/tmp/experiment_manager/root/a:second__b:4_1\n",
+      "/private/tmp/experiment_manager/root/a:second__b:5\n",
+      "/private/tmp/experiment_manager/root/a:second__b:5_1\n",
       "\n",
-      "        overrides      purpose                     created    status                 messages                                    commit\n",
-      "0    a:first__b:4  intial_test  10:51AM September 19, 2019  finished  {'Hi': 'I am running!'}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "1    a:first__b:5  intial_test  10:51AM September 19, 2019  finished  {'Hi': 'I am running!'}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "2   a:second__b:4  intial_test  10:51AM September 19, 2019  finished  {'Hi': 'I am running!'}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "3   a:second__b:5  intial_test  10:51AM September 19, 2019  finished  {'Hi': 'I am running!'}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "4  a:first__b:4_1  intial_test  10:51AM September 19, 2019  finished  {'Hi': 'I am running!'}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "5  a:first__b:4_2  intial_test  10:51AM September 19, 2019  finished  {'Hi': 'I am running!'}  e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
+      "No experiments currently registered!\n",
       "\n",
       "Defaults: \n",
-      "- created 10:49AM September 19, 2019\n",
+      "- created 09:21AM September 20, 2019\n",
       "- module /Users/robweston/xmen/examples/experiment.py\n",
       "- class AnExperiment\n",
       "- git:\n",
       "   local: /Users/robweston/xmen\n",
-      "   commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
+      "   commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
       "   remote: https://github.com/robw4/xmen.git\n"
      ]
     }
@@ -1369,7 +1377,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.6.9"
+   "version": "3.6.8"
   }
  },
  "nbformat": 4,

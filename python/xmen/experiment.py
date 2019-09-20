@@ -287,8 +287,8 @@ class Experiment(object, metaclass=TypedMeta):
         self.update_version()           # Get new version information
         self.root = root
         self.name = name
-        self.status = 'registered'
         self.purpose = purpose
+        self.status = 'registered'
         self._to_yaml()
 
     def to_root(self, root_dir):
@@ -383,13 +383,22 @@ class Experiment(object, metaclass=TypedMeta):
         else:
             raise ValueError('Parameters of a created experiment cannot be updated.')
 
-    # TODO(rw): Fix fixing of attributes
-    # def __setattr__(self, key, value):
-    #     """Attributes can only be changed when the status of the experiment is default"""
-    #     if key[0] != '_' and self.status != 'default':
-    #         raise ValueError('Parameters (public attributes) can only be changed when status = "default"')
-    #     else:
-    #         self.__dict__.update({key: value})
+    def __setattr__(self, key, value):
+        """Attributes can only be changed when the status of the experiment is default"""
+
+        # elf.root = None
+        # self.name = None
+        # self.status = 'default'
+        # self.created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
+        # self.purpose = None
+        # self.messages = {}
+        # self.version = None
+
+        specials = ['name', 'root', 'status', 'created', 'purpose', 'messages', 'version']
+        if 'status' in self.__dict__:
+            if key[0] != '_' and self.status != 'default' and key not in specials:
+                raise AttributeError('Parameters can only be changed when status = "default"')
+        self.__dict__.update({key: value})
 
     def __enter__(self):
         self._update_status('running')
