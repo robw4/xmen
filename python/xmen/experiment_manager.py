@@ -250,6 +250,7 @@ class ExperimentManager(object):
         self.experiments = []
         self.overides = []
         self.created = None
+        self._specials = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version']
 
         # Load dir from yaml
         if os.path.exists(os.path.join(self.root, 'experiment.yml')):
@@ -298,7 +299,7 @@ class ExperimentManager(object):
 
     def _to_yml(self):
         """Save the current experiment manager to an ``experiment.yaml``"""
-        params = {k: v for k, v in self.__dict__.items() if k[0] != '_' and not hasattr(v, '__call__')}
+        params = {k: v for k, v in self.__dict__.items() if k[0] != '_' or k in self._specials}
         with open(os.path.join(self.root, 'experiment.yml'), 'w') as file:
             ruamel.yaml.dump(params, file, Dumper=ruamel.yaml.RoundTripDumper)
 
@@ -442,7 +443,6 @@ class ExperimentManager(object):
                     overides.update({k: type(defaults[k])(v)})
 
             # Check parameters are in the defaults.yml file
-
             if any([k not in defaults for k in overides]):
                 raise ValueError('Some of the specified keys were not found in the defaults')
 
@@ -464,8 +464,8 @@ class ExperimentManager(object):
 
             # Convert defaults to params
             # definition = defaults['definition'] if 'definition' in defaults else None
-            if defaults['version'] is not None:
-                version = defaults['version']
+            if defaults['_version'] is not None:
+                version = defaults['_version']
                 if 'path' in version:
                     version = get_version(path=version['path'])
                 elif 'module' in version and 'class' in version:
@@ -478,17 +478,17 @@ class ExperimentManager(object):
             else:
                 version = None
             extra_params = {
-                'root': self.root,
-                'name': experiment_name,
-                'status': 'registered',
-                'created': datetime.datetime.now().strftime("%I:%M%p %B %d, %Y"),
-                'purpose': purpose,
-                'messages': {},
-                'version': version}
+                '_root': self.root,
+                '_name': experiment_name,
+                '_status': 'registered',
+                '_created': datetime.datetime.now().strftime("%I:%M%p %B %d, %Y"),
+                '_purpose': purpose,
+                '_messages': {},
+                '_version': version}
 
             params = copy.deepcopy(defaults)
             # Remove optional parameters from defaults
-            for k in ['created', 'version']:
+            for k in ['_created', '_version']:
                 if k in params:
                     params.pop(k)
 
@@ -511,11 +511,11 @@ class ExperimentManager(object):
         # Construct dictionary
         if self.experiments != []:
             table = {'overrides': [], 'purpose': [], 'created': [], 'status': [], 'messages': [], 'commit': []}
-            keys = ['name', 'purpose', 'created', 'status', 'messages', 'version']
+            keys = ['_name', '_purpose', '_created', '_status', '_messages', '_version']
             for i, p in enumerate(self.experiments):
                 P = self.load_params(p)
                 for k_table, k_params in zip(table, keys):
-                    if k_params == 'version':
+                    if k_params == '_version':
                         if 'git' in P[k_params]:
                             v = P[k_params]['git']['commit']
                         else:
@@ -534,16 +534,16 @@ class ExperimentManager(object):
         print()
         defaults = self.load_defaults()
         # print(defaults)
-        if 'created' in defaults:
+        if '_created' in defaults:
             print(f'Defaults: \n'
-                  f'- created {defaults["created"]}')
-        if 'version' in defaults:
-            version = defaults["version"]
+                  f'- created: {defaults["_created"]}')
+        if '_version' in defaults:
+            version = defaults["_version"]
             if 'path' in version:
-                print(f'- path {version["path"]}')
+                print(f'- path: {version["path"]}')
             else:
-                print(f'- module {version["module"]}')
-                print(f'- class {version["class"]}')
+                print(f'- module: {version["module"]}')
+                print(f'- class: {version["class"]}')
             if 'git' in version:
                 git = version['git']
                 print('- git:')
@@ -564,12 +564,12 @@ class ExperimentManager(object):
         experiments = [p for p in glob.glob(os.path.join(self.root, pattern)) if p in self.experiments]
         for p in experiments:
             P = self.load_params(p)
-            if P['status'] == 'registered':
+            if P['_status'] == 'registered':
                 args = list(args)
                 subprocess_args = args + [self.script, os.path.join(p, 'params.yml')]
                 print('\nRunning: {}'.format(" ".join(subprocess_args)))
                 subprocess.call(args + [self.script, os.path.join(p, 'params.yml')])
-                time.sleep(1)
+                time.sleep(0.2)
 
     def unlink(self, pattern='*'):
         """Unlink all experiments matching pattern. Does not delete experiment folders simply deletes the experiment

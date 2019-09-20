@@ -17,7 +17,7 @@ class AnExperiment(Experiment):
         print(f'The experiment state inside run is {self.status} for experiment {self.name}, a = {self.a}, b = {self.b}')
         self.leave_message({'Hi': 'I am running!'})
         
-        with open(os.path.join(self.root, self.name, 'logs.txt'), 'w') as f:
+        with open(os.path.join(self.directory, 'logs.txt'), 'w') as f:
             f.write('This was written from a running experiment')
 
 if __name__ == '__main__':

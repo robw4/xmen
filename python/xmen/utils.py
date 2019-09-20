@@ -30,7 +30,7 @@ def get_attribute_helps(cls):
         return helps
     else:
         atts = cls().__dict__.items()
-        att_keys = [k for k, v in atts if k[0] != '_' and not hasattr(v, '__call__')]
+        att_keys = [k for k, v in atts if k[0:2] != '__' and not hasattr(v, '__call__')]
         docs = [d for d in [cls.__doc__, cls.__init__.__doc__] if d is not None]
         for d in docs:
             if 'Parameters' in d:

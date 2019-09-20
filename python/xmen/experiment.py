@@ -186,27 +186,100 @@ class Experiment(object, metaclass=TypedMeta):
         default mode else it is created at '{root}/{name}'.
 
         Parameters:
-            root (str): The root directory to which the experiment belongs (should not be set)
-            name (str): The name of the experiment (should not be set)
-            status (str): The status of the experiment (one of ['default' | 'created' | 'running' | 'error' | 'finished'])
-            created (str): The date the last time the parameters of the model were updated.
-            purpose(str): The purpose for the experiment (should not be set)
-            messages (dict): A dictionary of messages which are able to vary throughout the experiment (should not be set)
-            version (dict): A dictonary containing the experiment version information. See `get_version` for more info
+            _root (str): The root directory to which the experiment belongs (should not be set)
+            _name (str): The name of the experiment (should not be set)
+            _status (str): The status of the experiment (one of ['default' | 'created' | 'running' | 'error' | 'finished'])
+            _created (str): The date the last time the parameters of the model were updated.
+            _purpose(str): The purpose for the experiment (should not be set)
+            _messages (dict): A dictionary of messages which are able to vary throughout the experiment (should not be set)
+            _version (dict): A dictonary containing the experiment version information. See `get_version` for more info
         """
         if (name is None) == (root is None):
-            self.root = None
-            self.name = None
-            self.status = 'default'
-            self.created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
-            self.purpose = None
-            self.messages = {}
-            self.version = None
+            self._root = None
+            self._name = None
+            self._status = 'default'
+            self._created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
+            self._purpose = None
+            self._messages = {}
+            self._version = None
+            self._specials = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version']
             self._helps = None
         else:
             raise ValueError("Either both or neither of name and root can be set")
         if name is not None:
             self.register(name, root, purpose)
+
+    @property
+    def root(self):
+        """The root directory to which the experiment belongs"""
+        return self._root
+
+    @property
+    def name(self):
+        """The name of the current experiment"""
+        return self._name
+
+    @property
+    def directory(self):
+        """The directory assigned to the experiment"""
+        if self._status is 'default':
+            return None
+        else:
+            return os.path.join(self._root, self._name)
+
+    @property
+    def status(self):
+        """The status of the experiment. One of ``'default'``, ``'registered'``, ``'running'``, ``'finished'`` or
+         ``'error'``."""
+        return self._status
+
+    @property
+    def created(self):
+        """The date the experiment parameters were last updated."""
+        return self._created
+
+    @property
+    def purpose(self):
+        """A string giving a purpose message for the experiment"""
+        return self._purpose
+
+    @property
+    def messages(self):
+        """A dictionary of messages logged by the experimet."""
+        return self._messages
+
+    @property
+    def version(self):
+        """A dictionary giving the version information for the experiment"""
+        return self._version
+
+    @root.setter
+    def root(self, value):
+        raise AttributeError('Property root cannot be set.')
+
+    @name.setter
+    def name(self, value):
+        raise AttributeError('Property name cannot be set.')
+
+    @status.setter
+    def status(self, value):
+        raise AttributeError('Property status cannot be set.')
+
+    @created.setter
+    def created(self, value):
+        raise AttributeError('Property created cannot be set.')
+
+    @purpose.setter
+    def purpose(self, value):
+        raise AttributeError('Property purpose cannot be set.')
+
+    @messages.setter
+    def messages(self, value):
+        raise AttributeError('Property messages cannot be set.')
+
+    @version.setter
+    def version(self, value):
+        raise AttributeError('Property version cannot be set.')
 
     def get_attributes_help(self):
         """Get help for all attributes in class (including inherited)."""
@@ -215,7 +288,7 @@ class Experiment(object, metaclass=TypedMeta):
         return self._helps
 
     def update_version(self):
-        self.version = get_version(cls=self.__class__)
+        self._version = get_version(cls=self.__class__)
 
     def to_defaults(self, defaults_dir):
         """Create a defaults.yml file from a class instantiation. This method can be called independent of the
@@ -223,13 +296,11 @@ class Experiment(object, metaclass=TypedMeta):
 
             MyExperiment(a=3, b=9, c='a').to_yaml('/dir/to/defaults/root')
         """
-        self.version = self.update_version()
-        # self.git = self.get_git()
-        # self.definition = self.get_definition()
+        self.update_version()
         if not os.path.exists(defaults_dir):
             os.makedirs(defaults_dir)
 
-        if self.status != 'default':
+        if self._status != 'default':
             raise ValueError('An experiment can only be converted to default if it has not been created')
         else:
             # self.defaults_created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y"
@@ -238,29 +309,22 @@ class Experiment(object, metaclass=TypedMeta):
     def _to_yaml(self, defaults_dir=None):
         """Save experiment to either a defaults.yml file or a params.yml file depending on its status"""
         self.update_version()
-        # print(self.__class__.__module__)
-        # if definition.__name__ == '__main__':
-        #     self.definition = sys.modules['__main__']
-        #     print(self.definition)
-        # else:
-        #     self.definition = definition
-        # print(self.definition)
-        params = {k: v for k, v in self.__dict__.items() if k[0] != '_'}
+        params = {k: v for k, v in self.__dict__.items() if k[0] != '_' or k in self._specials}
         helps = self.get_attributes_help()
 
         # Add definition module to experiment object
         defaults = CommentedMap()
         for i, (k, v) in enumerate(params.items()):
-            if self.status == 'default':
-                if k in ['root', 'name', 'status', 'purpose', 'messages']:
+            if self._status == 'default':
+                if k in ['_root', '_name', '_status', '_purpose', '_messages']:
                     continue
             comment = helps[k].split(':')[1] if helps[k] is not None else None
             defaults.insert(i, k, v, comment=comment)
 
-        if self.status == 'default':
+        if self._status == 'default':
             path = os.path.join(os.path.join(defaults_dir, 'defaults.yml'))
         else:
-            path = os.path.join(self.root, self.name, 'params.yml')
+            path = os.path.join(self._root, self._name, 'params.yml')
 
         # Convert to yaml
         yaml = ruamel.yaml.YAML()
@@ -275,7 +339,8 @@ class Experiment(object, metaclass=TypedMeta):
             params = yaml.load(file)
         params = {k: v for k, v in params.items() if k in self.__dict__}
         self.__dict__.update(params)
-        self.created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
+        # Update created date
+        self._created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
 
     def register(self, root, name, purpose=''):
         """Register an experiment of the experiment."""
@@ -285,10 +350,10 @@ class Experiment(object, metaclass=TypedMeta):
         if not os.path.isdir(os.path.join(root, name)):
             os.makedirs(os.path.join(root, name))
         self.update_version()           # Get new version information
-        self.root = root
-        self.name = name
-        self.purpose = purpose
-        self.status = 'registered'
+        self._root = root
+        self._name = name
+        self._purpose = purpose
+        self._status = 'registered'
         self._to_yaml()
 
     def to_root(self, root_dir):
@@ -302,19 +367,19 @@ class Experiment(object, metaclass=TypedMeta):
         self.update_version()
         sh = ['#!/bin/bash']
         sh += [f'# File generated on the {datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")}']
-        if 'git' in self.version:
+        if 'git' in self._version:
             sh += [f'# GIT:']
-            sh += [f'# - repo {self.version["git"]["local"]}']
-            sh += [f'# - branch {self.version["git"]["branch"]}']
-            sh += [f'# - remote {self.version["git"]["remote"]}']
-            sh += [f'# - commit {self.version["git"]["commit"]}']
+            sh += [f'# - repo {self._version["git"]["local"]}']
+            sh += [f'# - branch {self._version["git"]["branch"]}']
+            sh += [f'# - remote {self._version["git"]["remote"]}']
+            sh += [f'# - commit {self._version["git"]["commit"]}']
             sh += ['']
 
-        possible_roots = sorted([p for p in sys.path if p in self.version['module']])
+        possible_roots = sorted([p for p in sys.path if p in self._version['module']])
         if len(possible_roots) > 0:
             root = possible_roots[0]
             sh += ['export PYTHONPATH="${PYTHONPATH}:' + f'{root}"']
-        sh += ['python ' + self.version['module'] + ' --execute ${1}']
+        sh += ['python ' + self._version['module'] + ' --execute ${1}']
         print('\n'.join(sh))
 
         if not os.path.exists(root_dir):
@@ -368,35 +433,26 @@ class Experiment(object, metaclass=TypedMeta):
 
     def _update_status(self, status):
         """Update the status of the experiment"""
-        self.status = status
+        self._status = status
         self._to_yaml()
 
     def update(self, kwargs):
         """Update the parameters with a given dictionary"""
-        if self.status == 'default':
-            if any([k not in self.__dict__.keys() for k in kwargs]):
+        if self._status == 'default':
+            if any([k not in self.__dict__.keys() and k in self._specials for k in kwargs]):
                 raise ValueError('Key not recognised!')
             else:
                 self.__dict__.update(kwargs)
             # Update the created date
-            self.created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
+            self._created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
         else:
             raise ValueError('Parameters of a created experiment cannot be updated.')
 
     def __setattr__(self, key, value):
         """Attributes can only be changed when the status of the experiment is default"""
-
-        # elf.root = None
-        # self.name = None
-        # self.status = 'default'
-        # self.created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
-        # self.purpose = None
-        # self.messages = {}
-        # self.version = None
-
-        specials = ['name', 'root', 'status', 'created', 'purpose', 'messages', 'version']
+        # specials = ['name', 'root', 'status', 'created', 'purpose', 'messages', 'version']
         if 'status' in self.__dict__:
-            if key[0] != '_' and self.status != 'default' and key not in specials:
+            if key[0] != '_' and self._status != 'default' and key not in self._specials:
                 raise AttributeError('Parameters can only be changed when status = "default"')
         self.__dict__.update({key: value})
 
@@ -416,7 +472,7 @@ class Experiment(object, metaclass=TypedMeta):
         ``'finished'`` else it will be given ``status='error'``.
 
         Both *args and **kwargs are passed to self.run. """
-        if self.status == 'default':
+        if self._status == 'default':
             raise ValueError('An experiment in default status must be registered before it can be executed')
         with self:
             self.run(*args, **kwargs)
@@ -432,8 +488,8 @@ class Experiment(object, metaclass=TypedMeta):
                 messages. If the defaults.yml already contains subject then the message for subject will be
                 updated.
         """
-        if self.status != 'default':
-            self.messages.update(message_dict)
+        if self._status != 'default':
+            self._messages.update(message_dict)
             self._to_yaml()
         else:
             raise ValueError('An experiment must be created to leave a message')
@@ -460,9 +516,9 @@ class Experiment(object, metaclass=TypedMeta):
             return lines
         # params = {k: v for k, v in self.__dict__.items() if k[0] != '_'}
         helps = self.get_attributes_help()
-        base_keys = ['root', 'name', 'status', 'created', 'purpose', 'messages', 'version']
-        base_params = {k: v for k, v in self.__dict__.items() if k in base_keys}
-        params = {k: v for k, v in self.__dict__.items() if k[0] != '_' and k not in base_keys}
+        # base_keys = ['root', 'name', 'status', 'created', 'purpose', 'messages', 'version']
+        base_params = {k[1:]: v for k, v in self.__dict__.items() if k in self._specials}
+        params = {k: v for k, v in self.__dict__.items() if k[0] != '_' and k not in self._specials}
         lines = _recursive_print_dict(base_params)
         lines += ['parameters:']
         lines += ['  ' + l for l in _recursive_print_dict(params, helps)]
