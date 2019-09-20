@@ -338,8 +338,8 @@ class Experiment(object, metaclass=TypedMeta):
         yaml = ruamel.yaml.YAML()
         with open(path, 'r') as file:
             params = yaml.load(file)
-        params = {k: v for k, v in params.items() if k in self.__dict__}
-        self.__dict__.update(commented_to_py(params))
+        params = {k: commented_to_py(v) for k, v in params.items() if k in self.__dict__}
+        self.__dict__.update(params)
         # Update created date
         self._created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
 
