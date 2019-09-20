@@ -13,7 +13,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 2,
+   "execution_count": 15,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -40,7 +40,7 @@
     "        \n",
     "        # You are encouraged to write out any files to {self.root}/{self.name}\n",
     "        # during execution these fields will be populated\n",
-    "        with open(os.path.join(self.root, self.name, 'logs.txt'), 'w') as f:\n",
+    "        with open(os.path.join(self.directory, 'logs.txt'), 'w') as f:\n",
     "            f.write('This was written from a running experiment')"
    ]
   },
@@ -52,8 +52,8 @@
     "\n",
     "* Parameters of the class are defined as public attributes. You are encouraged to define parameters as above sepcifying their name, type, default and help all in a single line of code. The `Experiment` class has a metaclass `TypedMeta` (along with any class inheriting from `Experiment`). `TypedMeta` automatically adds any attributes to the doc sting of the `__init__` and the main class body.\n",
     "* Any attributes begining with `_` are considered pivate and will not be treated as a parameters. These should be used to store dynamic state during experiment execution.\n",
-    "* All experiments inheret several important attributes which can be accessed but not overloaded or overwritten:\n",
-    "    * `root` and `name` together define an experiment folder that is assigned to the experiment. You may assume that these fields will be populated at the time of execution and are encouraged to use this folder to write out anything that needs to be logged during execution (logs, checkpoints etc.)\n",
+    "* All experiments inheret several important properties which can be accessed but not set:\n",
+    "    * `root` and `name` together define an experiment folder that is assigned to the experiment. The `directory` property gives `{root}/{name}` for convenience. You may assume that these fields will be populated at the time of execution and are encouraged to use this folder to write out anything that needs to be logged during execution (logs, checkpoints etc.)\n",
     "    * `status` is one of `'default'`, `'registered`', `'running'`, `'finished'` or `'error'` (more on this to come...)\n",
     "    * `created` gives the date any parameter was last updated\n",
     "    * `version` is a dict used to reproduce an experiment exactly\n",
@@ -81,15 +81,29 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": 16,
    "metadata": {},
-   "outputs": [],
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "status: default\n",
+      "created: 11:58AM September 20, 2019\n",
+      "messages:\n",
+      "parameters:\n",
+      "  a: g   # A parameter (default='h')\n",
+      "  b: 19   # Another parameter (default=17)\n"
+     ]
+    }
+   ],
    "source": [
     "# Initialiase a new experiment\n",
     "exp = AnExperiment()\n",
     "\n",
     "# Update its parameters\n",
     "exp.update({'a': 'g'})\n",
+    "exp.b = 19\n",
     "print(exp)"
    ]
   },
@@ -104,7 +118,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 25,
+   "execution_count": 17,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -114,7 +128,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 26,
+   "execution_count": 18,
    "metadata": {},
    "outputs": [
     {
@@ -122,19 +136,19 @@
      "output_type": "stream",
      "text": [
       "status: default\n",
-      "created: 10:09AM September 19, 2019\n",
+      "created: 11:58AM September 20, 2019\n",
       "messages:\n",
       "version:\n",
-      "  module: /Users/robweston/xmen/examples/<ipython-input-2-dd2184f01e04>\n",
+      "  module: /Users/robweston/xmen/examples/<ipython-input-15-64aecc4b7aea>\n",
       "  class: AnExperiment\n",
       "  git:\n",
       "    local: /Users/robweston/xmen\n",
       "    remote: https://github.com/robw4/xmen.git\n",
-      "    commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "    branch: master\n",
+      "    commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "    branch: with_privates\n",
       "parameters:\n",
       "  a: g   # A parameter (default='h')\n",
-      "  b: 17   # Another parameter (default=17)\n"
+      "  b: 19   # Another parameter (default=17)\n"
      ]
     }
    ],
@@ -154,24 +168,24 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 27,
+   "execution_count": 19,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "created: 10:08AM September 19, 2019  #  The date the last time the parameters of the model were updated.\n",
-      "version: #  A dictonary containing the experiment version information. See `get_version` for more info\n",
-      "  module: /Users/robweston/xmen/examples/<ipython-input-2-dd2184f01e04>\n",
+      "_created: 11:58AM September 20, 2019  #  The date the last time the parameters of the model were updated.\n",
+      "_version: #  A dictonary containing the experiment version information. See `get_version` for more info\n",
+      "  module: /Users/robweston/xmen/examples/<ipython-input-15-64aecc4b7aea>\n",
       "  class: AnExperiment\n",
       "  git:\n",
       "    local: /Users/robweston/xmen\n",
       "    remote: https://github.com/robw4/xmen.git\n",
-      "    commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "    branch: master\n",
+      "    commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "    branch: with_privates\n",
       "a: g #  A parameter (default='h')\n",
-      "b: 17 #  Another parameter (default=17)\n"
+      "b: 19 #  Another parameter (default=17)\n"
      ]
     }
    ],
@@ -190,7 +204,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 28,
+   "execution_count": 20,
    "metadata": {},
    "outputs": [
     {
@@ -229,10 +243,11 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 39,
+   "execution_count": 21,
    "metadata": {},
    "outputs": [],
    "source": [
+    "!rm -f /tmp/a/params.yml\n",
     "exp.register(root='/tmp', name='a', purpose='An example')"
    ]
   },
@@ -245,7 +260,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 40,
+   "execution_count": 22,
    "metadata": {},
    "outputs": [
     {
@@ -253,6 +268,7 @@
      "output_type": "stream",
      "text": [
       "Folder now contains:\n",
+      "logs.txt\n",
       "params.yml\n"
      ]
     }
@@ -272,30 +288,29 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 41,
+   "execution_count": 23,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "root: /tmp  #  The root directory to which the experiment belongs (should not be set)\n",
-      "name: a #  The name of the experiment (should not be set)\n",
-      "status: registered #  The status of the experiment (one of ['default' | 'created' | 'running' | 'error' | 'finished'])\n",
-      "created: 10:08AM September 19, 2019 #  The date the last time the parameters of the model were updated.\n",
-      "purpose: An example #  The purpose for the experiment (should not be set)\n",
-      "messages: #  A dictionary of messages which are able to vary throughout the experiment (should not be set)\n",
-      "  Hi: I am running!\n",
-      "version: #  A dictonary containing the experiment version information. See `get_version` for more info\n",
-      "  module: /Users/robweston/xmen/examples/<ipython-input-2-dd2184f01e04>\n",
+      "_root: /tmp  #  The root directory to which the experiment belongs (should not be set)\n",
+      "_name: a #  The name of the experiment (should not be set)\n",
+      "_status: registered #  The status of the experiment (one of ['default' | 'created' | 'running' | 'error' | 'finished'])\n",
+      "_created: 11:58AM September 20, 2019 #  The date the last time the parameters of the model were updated.\n",
+      "_purpose: An example #  The purpose for the experiment (should not be set)\n",
+      "_messages: {} #  A dictionary of messages which are able to vary throughout the experiment (should not be set)\n",
+      "_version: #  A dictonary containing the experiment version information. See `get_version` for more info\n",
+      "  module: /Users/robweston/xmen/examples/<ipython-input-15-64aecc4b7aea>\n",
       "  class: AnExperiment\n",
       "  git:\n",
       "    local: /Users/robweston/xmen\n",
       "    remote: https://github.com/robw4/xmen.git\n",
-      "    commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "    branch: master\n",
+      "    commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "    branch: with_privates\n",
       "a: g #  A parameter (default='h')\n",
-      "b: 17 #  Another parameter (default=17)$\n"
+      "b: 19 #  Another parameter (default=17)$\n"
      ]
     }
    ],
@@ -307,12 +322,32 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
+    "Once registered an experiemnts parameters cannot be updated:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "try:\n",
+    "    exp.a = 'something'\n",
+    "except AttributeError as e:\n",
+    "    print('AttributeError:', e)\n",
+    "# print(exp)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
     "An experiment **cannot** be registered to a repository already containing a `params.yml` file:"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 42,
+   "execution_count": 25,
    "metadata": {},
    "outputs": [
     {
@@ -340,43 +375,35 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 43,
+   "execution_count": 26,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "status: default\n",
-      "created: 10:20AM September 19, 2019\n",
-      "messages:\n",
-      "parameters:\n",
-      "  a: h   # A parameter (default='h')\n",
-      "  b: 17   # Another parameter (default=17) \n",
-      "\n",
       "root: /tmp\n",
       "name: a\n",
       "status: registered\n",
-      "created: 10:20AM September 19, 2019\n",
+      "created: 11:58AM September 20, 2019\n",
       "purpose: An example\n",
       "messages:\n",
-      "  Hi: I am running!\n",
       "version:\n",
-      "  module: /Users/robweston/xmen/examples/<ipython-input-2-dd2184f01e04>\n",
+      "  module: /Users/robweston/xmen/examples/<ipython-input-15-64aecc4b7aea>\n",
       "  class: AnExperiment\n",
       "  git:\n",
       "    local: /Users/robweston/xmen\n",
       "    remote: https://github.com/robw4/xmen.git\n",
-      "    commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "    branch: master\n",
+      "    commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "    branch: with_privates\n",
       "parameters:\n",
       "  a: g   # A parameter (default='h')\n",
-      "  b: 17   # Another parameter (default=17)\n"
+      "  b: 19   # Another parameter (default=17)\n"
      ]
     }
    ],
    "source": [
-    "print(exp2, '\\n')\n",
+    "# print(exp2, '\\n')\n",
     "exp2.from_yml('/tmp/a/params.yml')\n",
     "print(exp2)"
    ]
@@ -404,7 +431,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 44,
+   "execution_count": 27,
    "metadata": {},
    "outputs": [
     {
@@ -413,7 +440,7 @@
      "text": [
       "Before running:\n",
       "registered\n",
-      "The experiment state inside run is running for experiment a, a = g, b = 17\n",
+      "The experiment state inside run is running for experiment a, a = something, b = 19\n",
       "\n",
       "After running:\n",
       "finished\n"
@@ -422,18 +449,18 @@
    ],
    "source": [
     "print('Before running:')\n",
-    "print(exp.status)\n",
+    "print(exp._status)\n",
     "\n",
     "# Run the experiment using the __call__ method\n",
     "exp()\n",
     "\n",
     "print('\\nAfter running:')\n",
-    "print(exp.status)"
+    "print(exp._status)"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 45,
+   "execution_count": 28,
    "metadata": {},
    "outputs": [
     {
@@ -471,7 +498,7 @@
     "\n",
     "As parameters are part of the class definition they (including their defaults and documentation) evolve with the execution code. If the experiment is defined within a git repository then the `Experiment` class automatically takes care of versioning config files. This allows `defaults.yml` which are no longer compatibile with the current experiment definition to be easily identify. Likewise experiments can be perfectly recreated from the information within a `params.yml` by first checking out the correct experiment version.\n",
     "\n",
-    "The version information is stored in the `version` attribute including:\n",
+    "The version information is stored in the `version` property including:\n",
     "* The `'module'` the experiment was defined in\n",
     "* The name of the experiment `'class'` within the `'module'`\n",
     "* Available `git` information:\n",
@@ -485,7 +512,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 46,
+   "execution_count": 30,
    "metadata": {},
    "outputs": [
     {
@@ -494,37 +521,37 @@
      "text": [
       "The params.yml file:\n",
       "----------------------\n",
-      "root: /tmp  #  The root directory to which the experiment belongs (should not be set)\n",
-      "name: a #  The name of the experiment (should not be set)\n",
-      "status: finished #  The status of the experiment (one of ['default' | 'created' | 'running' | 'error' | 'finished'])\n",
-      "created: 10:08AM September 19, 2019 #  The date the last time the parameters of the model were updated.\n",
-      "purpose: An example #  The purpose for the experiment (should not be set)\n",
-      "messages: #  A dictionary of messages which are able to vary throughout the experiment (should not be set)\n",
+      "_root: /tmp  #  The root directory to which the experiment belongs (should not be set)\n",
+      "_name: a #  The name of the experiment (should not be set)\n",
+      "_status: finished #  The status of the experiment (one of ['default' | 'created' | 'running' | 'error' | 'finished'])\n",
+      "_created: 11:58AM September 20, 2019 #  The date the last time the parameters of the model were updated.\n",
+      "_purpose: An example #  The purpose for the experiment (should not be set)\n",
+      "_messages: #  A dictionary of messages which are able to vary throughout the experiment (should not be set)\n",
       "  Hi: I am running!\n",
-      "version: #  A dictonary containing the experiment version information. See `get_version` for more info\n",
-      "  module: /Users/robweston/xmen/examples/<ipython-input-2-dd2184f01e04>\n",
+      "_version: #  A dictonary containing the experiment version information. See `get_version` for more info\n",
+      "  module: /Users/robweston/xmen/examples/<ipython-input-15-64aecc4b7aea>\n",
       "  class: AnExperiment\n",
       "  git:\n",
       "    local: /Users/robweston/xmen\n",
       "    remote: https://github.com/robw4/xmen.git\n",
-      "    commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "    branch: master\n",
-      "a: g #  A parameter (default='h')\n",
-      "b: 17 #  Another parameter (default=17)\n",
+      "    commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "    branch: with_privates\n",
+      "a: something #  A parameter (default='h')\n",
+      "b: 19 #  Another parameter (default=17)\n",
       "\n",
       "The defaults.yml file:\n",
       "----------------------\n",
-      "created: 10:08AM September 19, 2019  #  The date the last time the parameters of the model were updated.\n",
-      "version: #  A dictonary containing the experiment version information. See `get_version` for more info\n",
-      "  module: /Users/robweston/xmen/examples/<ipython-input-2-dd2184f01e04>\n",
+      "_created: 11:58AM September 20, 2019  #  The date the last time the parameters of the model were updated.\n",
+      "_version: #  A dictonary containing the experiment version information. See `get_version` for more info\n",
+      "  module: /Users/robweston/xmen/examples/<ipython-input-15-64aecc4b7aea>\n",
       "  class: AnExperiment\n",
       "  git:\n",
       "    local: /Users/robweston/xmen\n",
       "    remote: https://github.com/robw4/xmen.git\n",
-      "    commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "    branch: master\n",
+      "    commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "    branch: with_privates\n",
       "a: g #  A parameter (default='h')\n",
-      "b: 17 #  Another parameter (default=17)\n"
+      "b: 19 #  Another parameter (default=17)\n"
      ]
     }
    ],
@@ -548,19 +575,19 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 47,
+   "execution_count": 31,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "module: /Users/robweston/xmen/examples/<ipython-input-2-dd2184f01e04>\n",
+      "module: /Users/robweston/xmen/examples/<ipython-input-15-64aecc4b7aea>\n",
       "class: AnExperiment\n",
       "  local: /Users/robweston/xmen\n",
       "  remote: https://github.com/robw4/xmen.git\n",
-      "  commit: e93091a1995cfad2e48c12b26a1974c3116f66eb\n",
-      "  branch: master\n"
+      "  commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "  branch: with_privates\n"
      ]
     }
    ],
@@ -619,7 +646,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 1,
+   "execution_count": 32,
    "metadata": {},
    "outputs": [
     {
@@ -664,7 +691,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 2,
+   "execution_count": 33,
    "metadata": {},
    "outputs": [
     {
@@ -706,7 +733,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 3,
+   "execution_count": 34,
    "metadata": {},
    "outputs": [
     {
@@ -716,20 +743,20 @@
       "\n",
       "/tmp/command_line/an_experiment/params.yml\n",
       "----------------------------------------------------\n",
-      "root: /tmp/command_line  #  The root directory to which the experiment belongs (should not be set)\n",
-      "name: an_experiment #  The name of the experiment (should not be set)\n",
-      "status: registered #  The status of the experiment (one of ['default' | 'created' | 'running' | 'error' | 'finished'])\n",
-      "created: 09:21AM September 20, 2019 #  The date the last time the parameters of the model were updated.\n",
-      "purpose: '' #  The purpose for the experiment (should not be set)\n",
-      "messages: {} #  A dictionary of messages which are able to vary throughout the experiment (should not be set)\n",
-      "version: #  A dictonary containing the experiment version information. See `get_version` for more info\n",
+      "_root: /tmp/command_line  #  The root directory to which the experiment belongs (should not be set)\n",
+      "_name: an_experiment #  The name of the experiment (should not be set)\n",
+      "_status: registered #  The status of the experiment (one of ['default' | 'created' | 'running' | 'error' | 'finished'])\n",
+      "_created: 11:59AM September 20, 2019 #  The date the last time the parameters of the model were updated.\n",
+      "_purpose: '' #  The purpose for the experiment (should not be set)\n",
+      "_messages: {} #  A dictionary of messages which are able to vary throughout the experiment (should not be set)\n",
+      "_version: #  A dictonary containing the experiment version information. See `get_version` for more info\n",
       "  module: /Users/robweston/xmen/examples/experiment.py\n",
       "  class: AnExperiment\n",
       "  git:\n",
       "    local: /Users/robweston/xmen\n",
       "    remote: https://github.com/robw4/xmen.git\n",
-      "    commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "    branch: master\n",
+      "    commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "    branch: with_privates\n",
       "a: h #  A parameter (default='h')\n",
       "b: 17 #  Another parameter (default=17)\n"
      ]
@@ -749,7 +776,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 4,
+   "execution_count": 35,
    "metadata": {},
    "outputs": [
     {
@@ -761,21 +788,21 @@
       "After executing the experiment...\n",
       "/tmp/command_line/an_experiment/params.yml\n",
       "----------------------------------------------------\n",
-      "root: /tmp/command_line  #  The root directory to which the experiment belongs (should not be set)\n",
-      "name: an_experiment #  The name of the experiment (should not be set)\n",
-      "status: finished #  The status of the experiment (one of ['default' | 'created' | 'running' | 'error' | 'finished'])\n",
-      "created: 09:21AM September 20, 2019 #  The date the last time the parameters of the model were updated.\n",
-      "purpose: '' #  The purpose for the experiment (should not be set)\n",
-      "messages: #  A dictionary of messages which are able to vary throughout the experiment (should not be set)\n",
+      "_root: /tmp/command_line  #  The root directory to which the experiment belongs (should not be set)\n",
+      "_name: an_experiment #  The name of the experiment (should not be set)\n",
+      "_status: finished #  The status of the experiment (one of ['default' | 'created' | 'running' | 'error' | 'finished'])\n",
+      "_created: 11:59AM September 20, 2019 #  The date the last time the parameters of the model were updated.\n",
+      "_purpose: '' #  The purpose for the experiment (should not be set)\n",
+      "_messages: #  A dictionary of messages which are able to vary throughout the experiment (should not be set)\n",
       "  Hi: I am running!\n",
-      "version: #  A dictonary containing the experiment version information. See `get_version` for more info\n",
+      "_version: #  A dictonary containing the experiment version information. See `get_version` for more info\n",
       "  module: /Users/robweston/xmen/examples/experiment.py\n",
       "  class: AnExperiment\n",
       "  git:\n",
       "    local: /Users/robweston/xmen\n",
       "    remote: https://github.com/robw4/xmen.git\n",
-      "    commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "    branch: master\n",
+      "    commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "    branch: with_privates\n",
       "a: h #  A parameter (default='h')\n",
       "b: 17 #  Another parameter (default=17)\n"
      ]
@@ -803,7 +830,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 5,
+   "execution_count": 1,
    "metadata": {},
    "outputs": [
     {
@@ -811,12 +838,12 @@
      "output_type": "stream",
      "text": [
       "#!/bin/bash\n",
-      "# File generated on the 09:21AM September 20, 2019\n",
+      "# File generated on the 12:12PM September 20, 2019\n",
       "# GIT:\n",
       "# - repo /Users/robweston/xmen\n",
-      "# - branch master\n",
+      "# - branch with_privates\n",
       "# - remote https://github.com/robw4/xmen.git\n",
-      "# - commit a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "# - commit 25e54f1a04e7f0ee377715c52235f8a204734325\n",
       "\n",
       "export PYTHONPATH=\"${PYTHONPATH}:/Users/robweston/xmen/examples\"\n",
       "python /Users/robweston/xmen/examples/experiment.py --execute ${1}\n"
@@ -836,7 +863,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 6,
+   "execution_count": 2,
    "metadata": {},
    "outputs": [
     {
@@ -844,15 +871,18 @@
      "output_type": "stream",
      "text": [
       "total 24\n",
-      "drwxr-xr-x  4 robweston  wheel  136 19 Sep 10:51 \u001b[1m\u001b[36ma:first__b:4\u001b[m\u001b[m\n",
-      "drwxr-xr-x  4 robweston  wheel  136 19 Sep 10:51 \u001b[1m\u001b[36ma:first__b:4_1\u001b[m\u001b[m\n",
-      "drwxr-xr-x  4 robweston  wheel  136 19 Sep 10:51 \u001b[1m\u001b[36ma:first__b:4_2\u001b[m\u001b[m\n",
-      "drwxr-xr-x  4 robweston  wheel  136 19 Sep 10:51 \u001b[1m\u001b[36ma:first__b:5\u001b[m\u001b[m\n",
-      "drwxr-xr-x  4 robweston  wheel  136 19 Sep 10:51 \u001b[1m\u001b[36ma:second__b:4\u001b[m\u001b[m\n",
-      "drwxr-xr-x  4 robweston  wheel  136 19 Sep 10:51 \u001b[1m\u001b[36ma:second__b:5\u001b[m\u001b[m\n",
-      "-rw-r--r--  1 robweston  wheel  517 20 Sep 09:21 defaults.yml\n",
-      "-rw-r--r--  1 robweston  wheel  645 19 Sep 10:50 experiment.yml\n",
-      "-rw-r--r--  1 robweston  wheel  348 20 Sep 09:21 script.sh\n"
+      "drwxr-xr-x  2 robweston  wheel   68 20 Sep 12:08 \u001b[1m\u001b[36ma:first__b:4\u001b[m\u001b[m\n",
+      "drwxr-xr-x  3 robweston  wheel  102 20 Sep 12:10 \u001b[1m\u001b[36ma:first__b:4_1\u001b[m\u001b[m\n",
+      "drwxr-xr-x  3 robweston  wheel  102 20 Sep 12:10 \u001b[1m\u001b[36ma:first__b:4_2\u001b[m\u001b[m\n",
+      "drwxr-xr-x  3 robweston  wheel  102 20 Sep 12:10 \u001b[1m\u001b[36ma:first__b:4_3\u001b[m\u001b[m\n",
+      "drwxr-xr-x  3 robweston  wheel  102 20 Sep 12:11 \u001b[1m\u001b[36ma:first__b:4_4\u001b[m\u001b[m\n",
+      "drwxr-xr-x  3 robweston  wheel  102 20 Sep 12:11 \u001b[1m\u001b[36ma:first__b:4_5\u001b[m\u001b[m\n",
+      "drwxr-xr-x  3 robweston  wheel  102 20 Sep 12:10 \u001b[1m\u001b[36ma:first__b:5\u001b[m\u001b[m\n",
+      "drwxr-xr-x  3 robweston  wheel  102 20 Sep 12:10 \u001b[1m\u001b[36ma:second__b:4\u001b[m\u001b[m\n",
+      "drwxr-xr-x  3 robweston  wheel  102 20 Sep 12:10 \u001b[1m\u001b[36ma:second__b:5\u001b[m\u001b[m\n",
+      "-rw-r--r--  1 robweston  wheel  526 20 Sep 12:12 defaults.yml\n",
+      "-rw-r--r--  1 robweston  wheel  791 20 Sep 12:11 experiment.yml\n",
+      "-rw-r--r--  1 robweston  wheel  355 20 Sep 12:12 script.sh\n"
      ]
     }
    ],
@@ -869,7 +899,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 7,
+   "execution_count": 3,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -885,7 +915,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 8,
+   "execution_count": 4,
    "metadata": {},
    "outputs": [
     {
@@ -910,7 +940,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 9,
+   "execution_count": 5,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -926,7 +956,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 10,
+   "execution_count": 6,
    "metadata": {},
    "outputs": [
     {
@@ -936,12 +966,12 @@
       "No experiments currently registered!\n",
       "\n",
       "Defaults: \n",
-      "- created 09:21AM September 20, 2019\n",
-      "- module /Users/robweston/xmen/examples/experiment.py\n",
-      "- class AnExperiment\n",
+      "- created: 12:12PM September 20, 2019\n",
+      "- module: /Users/robweston/xmen/examples/experiment.py\n",
+      "- class: AnExperiment\n",
       "- git:\n",
       "   local: /Users/robweston/xmen\n",
-      "   commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "   commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
       "   remote: https://github.com/robw4/xmen.git\n"
      ]
     }
@@ -959,7 +989,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 11,
+   "execution_count": 19,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -975,7 +1005,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 12,
+   "execution_count": 8,
    "metadata": {},
    "outputs": [
     {
@@ -983,18 +1013,18 @@
      "output_type": "stream",
      "text": [
       "         overrides      purpose                     created      status messages                                    commit\n",
-      "0   a:first__b:4_3  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "1   a:first__b:5_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "2  a:second__b:4_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "3  a:second__b:5_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "0   a:first__b:4_6  intial_test  12:12PM September 20, 2019  registered       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "1   a:first__b:5_1  intial_test  12:12PM September 20, 2019  registered       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "2  a:second__b:4_1  intial_test  12:12PM September 20, 2019  registered       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "3  a:second__b:5_1  intial_test  12:12PM September 20, 2019  registered       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
       "\n",
       "Defaults: \n",
-      "- created 09:21AM September 20, 2019\n",
-      "- module /Users/robweston/xmen/examples/experiment.py\n",
-      "- class AnExperiment\n",
+      "- created: 12:12PM September 20, 2019\n",
+      "- module: /Users/robweston/xmen/examples/experiment.py\n",
+      "- class: AnExperiment\n",
       "- git:\n",
       "   local: /Users/robweston/xmen\n",
-      "   commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "   commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
       "   remote: https://github.com/robw4/xmen.git\n"
      ]
     }
@@ -1012,7 +1042,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 13,
+   "execution_count": 9,
    "metadata": {},
    "outputs": [
     {
@@ -1020,20 +1050,20 @@
      "output_type": "stream",
      "text": [
       "         overrides      purpose                     created      status messages                                    commit\n",
-      "0   a:first__b:4_3  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "1   a:first__b:5_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "2  a:second__b:4_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "3  a:second__b:5_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "4   a:first__b:4_4  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "5   a:first__b:4_5  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "0   a:first__b:4_6  intial_test  12:12PM September 20, 2019  registered       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "1   a:first__b:5_1  intial_test  12:12PM September 20, 2019  registered       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "2  a:second__b:4_1  intial_test  12:12PM September 20, 2019  registered       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "3  a:second__b:5_1  intial_test  12:12PM September 20, 2019  registered       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "4   a:first__b:4_7  intial_test  12:12PM September 20, 2019  registered       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "5   a:first__b:4_8  intial_test  12:12PM September 20, 2019  registered       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
       "\n",
       "Defaults: \n",
-      "- created 09:21AM September 20, 2019\n",
-      "- module /Users/robweston/xmen/examples/experiment.py\n",
-      "- class AnExperiment\n",
+      "- created: 12:12PM September 20, 2019\n",
+      "- module: /Users/robweston/xmen/examples/experiment.py\n",
+      "- class: AnExperiment\n",
       "- git:\n",
       "   local: /Users/robweston/xmen\n",
-      "   commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "   commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
       "   remote: https://github.com/robw4/xmen.git\n"
      ]
     }
@@ -1069,21 +1099,21 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "         overrides      purpose                     created      status messages                                    commit\n",
-      "0   a:first__b:4_3  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "1   a:first__b:5_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "2  a:second__b:4_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "3  a:second__b:5_1  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "4   a:first__b:4_4  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "5   a:first__b:4_5  intial_test  09:22AM September 20, 2019  registered       {}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "         overrides      purpose                     created      status                 messages                                    commit\n",
+      "0   a:first__b:4_6  intial_test  12:12PM September 20, 2019  registered                       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "1   a:first__b:5_1  intial_test  12:12PM September 20, 2019  registered                       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "2  a:second__b:4_1  intial_test  12:12PM September 20, 2019    finished  {'Hi': 'I am running!'}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "3  a:second__b:5_1  intial_test  12:12PM September 20, 2019  registered                       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "4   a:first__b:4_7  intial_test  12:12PM September 20, 2019  registered                       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "5   a:first__b:4_8  intial_test  12:12PM September 20, 2019  registered                       {}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
       "\n",
       "Defaults: \n",
-      "- created 09:21AM September 20, 2019\n",
-      "- module /Users/robweston/xmen/examples/experiment.py\n",
-      "- class AnExperiment\n",
+      "- created: 12:12PM September 20, 2019\n",
+      "- module: /Users/robweston/xmen/examples/experiment.py\n",
+      "- class: AnExperiment\n",
       "- git:\n",
       "   local: /Users/robweston/xmen\n",
-      "   commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "   commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
       "   remote: https://github.com/robw4/xmen.git\n"
      ]
     }
@@ -1102,38 +1132,35 @@
      "output_type": "stream",
      "text": [
       "\n",
-      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4_3/params.yml\n",
-      "The experiment state inside run is running for experiment a:first__b:4_3, a = first, b = 4\n",
+      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4_6/params.yml\n",
+      "The experiment state inside run is running for experiment a:first__b:4_6, a = first, b = 4\n",
       "\n",
-      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4_4/params.yml\n",
-      "The experiment state inside run is running for experiment a:first__b:4_4, a = first, b = 4\n",
+      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4_7/params.yml\n",
+      "The experiment state inside run is running for experiment a:first__b:4_7, a = first, b = 4\n",
       "\n",
-      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4_5/params.yml\n",
-      "The experiment state inside run is running for experiment a:first__b:4_5, a = first, b = 4\n",
+      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:4_8/params.yml\n",
+      "The experiment state inside run is running for experiment a:first__b:4_8, a = first, b = 4\n",
       "\n",
       "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:first__b:5_1/params.yml\n",
       "The experiment state inside run is running for experiment a:first__b:5_1, a = first, b = 5\n",
       "\n",
-      "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:second__b:4_1/params.yml\n",
-      "The experiment state inside run is running for experiment a:second__b:4_1, a = second, b = 4\n",
-      "\n",
       "Running: sh /private/tmp/experiment_manager/root/script.sh /private/tmp/experiment_manager/root/a:second__b:5_1/params.yml\n",
       "The experiment state inside run is running for experiment a:second__b:5_1, a = second, b = 5\n",
       "         overrides      purpose                     created    status                 messages                                    commit\n",
-      "0   a:first__b:4_3  intial_test  09:22AM September 20, 2019  finished  {'Hi': 'I am running!'}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "1   a:first__b:5_1  intial_test  09:22AM September 20, 2019  finished  {'Hi': 'I am running!'}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "2  a:second__b:4_1  intial_test  09:22AM September 20, 2019  finished  {'Hi': 'I am running!'}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "3  a:second__b:5_1  intial_test  09:22AM September 20, 2019  finished  {'Hi': 'I am running!'}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "4   a:first__b:4_4  intial_test  09:22AM September 20, 2019  finished  {'Hi': 'I am running!'}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
-      "5   a:first__b:4_5  intial_test  09:22AM September 20, 2019  finished  {'Hi': 'I am running!'}  a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "0   a:first__b:4_6  intial_test  12:13PM September 20, 2019  finished  {'Hi': 'I am running!'}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "1   a:first__b:5_1  intial_test  12:13PM September 20, 2019  finished  {'Hi': 'I am running!'}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "2  a:second__b:4_1  intial_test  12:12PM September 20, 2019  finished  {'Hi': 'I am running!'}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "3  a:second__b:5_1  intial_test  12:13PM September 20, 2019  finished  {'Hi': 'I am running!'}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "4   a:first__b:4_7  intial_test  12:13PM September 20, 2019  finished  {'Hi': 'I am running!'}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
+      "5   a:first__b:4_8  intial_test  12:13PM September 20, 2019  finished  {'Hi': 'I am running!'}  25e54f1a04e7f0ee377715c52235f8a204734325\n",
       "\n",
       "Defaults: \n",
-      "- created 09:21AM September 20, 2019\n",
-      "- module /Users/robweston/xmen/examples/experiment.py\n",
-      "- class AnExperiment\n",
+      "- created: 12:12PM September 20, 2019\n",
+      "- module: /Users/robweston/xmen/examples/experiment.py\n",
+      "- class: AnExperiment\n",
       "- git:\n",
       "   local: /Users/robweston/xmen\n",
-      "   commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "   commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
       "   remote: https://github.com/robw4/xmen.git\n"
      ]
     }
@@ -1160,9 +1187,9 @@
      "output_type": "stream",
      "text": [
       "Removing Experiments...\n",
-      "/private/tmp/experiment_manager/root/a:first__b:4_3\n",
-      "/private/tmp/experiment_manager/root/a:first__b:4_4\n",
-      "/private/tmp/experiment_manager/root/a:first__b:4_5\n",
+      "/private/tmp/experiment_manager/root/a:first__b:4_6\n",
+      "/private/tmp/experiment_manager/root/a:first__b:4_7\n",
+      "/private/tmp/experiment_manager/root/a:first__b:4_8\n",
       "/private/tmp/experiment_manager/root/a:first__b:5_1\n",
       "/private/tmp/experiment_manager/root/a:second__b:4_1\n",
       "/private/tmp/experiment_manager/root/a:second__b:5_1\n",
@@ -1190,6 +1217,9 @@
       "/private/tmp/experiment_manager/root/a:first__b:4_3\n",
       "/private/tmp/experiment_manager/root/a:first__b:4_4\n",
       "/private/tmp/experiment_manager/root/a:first__b:4_5\n",
+      "/private/tmp/experiment_manager/root/a:first__b:4_6\n",
+      "/private/tmp/experiment_manager/root/a:first__b:4_7\n",
+      "/private/tmp/experiment_manager/root/a:first__b:4_8\n",
       "/private/tmp/experiment_manager/root/a:first__b:5\n",
       "/private/tmp/experiment_manager/root/a:first__b:5_1\n",
       "/private/tmp/experiment_manager/root/a:second__b:4\n",
@@ -1200,12 +1230,12 @@
       "No experiments currently registered!\n",
       "\n",
       "Defaults: \n",
-      "- created 09:21AM September 20, 2019\n",
-      "- module /Users/robweston/xmen/examples/experiment.py\n",
-      "- class AnExperiment\n",
+      "- created: 12:12PM September 20, 2019\n",
+      "- module: /Users/robweston/xmen/examples/experiment.py\n",
+      "- class: AnExperiment\n",
       "- git:\n",
       "   local: /Users/robweston/xmen\n",
-      "   commit: a692bc7ea31af51890c828ddc836456b1f7776e3\n",
+      "   commit: 25e54f1a04e7f0ee377715c52235f8a204734325\n",
       "   remote: https://github.com/robw4/xmen.git\n"
      ]
     }
