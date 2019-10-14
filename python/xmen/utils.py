@@ -98,7 +98,7 @@ class TypedMeta(type):
                 l = l.strip()
                 default = l.split('=')[1] if '=' in l else None    # default always appears after = and before comment
                 comment = l.split('#')[1] if '#' in l else None    # comment always appears after #
-                if comment is not None:
+                if comment is not None and default is not None:
                     default = default.split('#')[0].strip()
                 ty = None
                 if ':' in l:   # self.a: int ...
