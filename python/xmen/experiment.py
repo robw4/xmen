@@ -365,8 +365,8 @@ class Experiment(object, metaclass=TypedMeta):
                                  f'An Exeperiment cannot be created in an already existing experiment folder')
 
         # Make the folder if it does not exist
-        if not os.path.isdir(os.path.join(root, name)):
-            os.makedirs(os.path.join(root, name))
+        if not os.path.isdir(folder):
+            os.makedirs(folder)
 
         self.update_version()  # Get new version information
         self._root = root
