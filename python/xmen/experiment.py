@@ -343,18 +343,32 @@ class Experiment(object, metaclass=TypedMeta):
         # Update created date
         self._created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
 
-    def register(self, root, name, purpose=''):
-        """Register an experiment to an experiment directory. Its status will be updated to ``registered``.
+    def register(self, root, name, purpose='', force=True):
+        """Register an experiment to an experiment directory. Its status will be updated to ``registered``. If an
+        experiment called ``name`` exists in ``root`` and ``force==True`` then name will be appended with an int
+        (eg. ``{name}_0``) until a unique name is found in ``root``. If ``force==False`` a ``ValueError`` will be raised.
 
         Raises:
             ValueError: if ``{root}/{name}`` already contains a ``params.yml`` file
         """
-        if os.path.exists(os.path.join(root, name, 'params.yml')):
-            raise ValueError(f'Experiment folder {os.path.join(root, name)} already contains a params.yml file. '
-                             f'An Exeperiment cannot be created in an already existing experiment folder')
+        folder = os.path.join(root, name)
+        if os.path.exists(os.path.join(folder, 'params.yml')):
+            i = 1
+            if force:
+                while i < 100:
+                    if not os.path.exists(os.path.join(folder + '_' + str(i), 'params.yml')):
+                        folder = folder + '_' + str(i)
+                        break
+                    i += 1
+            elif i == 100 or not force:
+                raise ValueError(f'Experiment folder {os.path.join(root, name)} already contains a params.yml file. '
+                                 f'An Exeperiment cannot be created in an already existing experiment folder')
+
+        # Make the folder if it does not exist
         if not os.path.isdir(os.path.join(root, name)):
             os.makedirs(os.path.join(root, name))
-        self.update_version()           # Get new version information
+
+        self.update_version()  # Get new version information
         self._root = root
         self._name = name
         self._purpose = purpose
