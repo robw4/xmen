@@ -358,7 +358,7 @@ class Experiment(object, metaclass=TypedMeta):
             if force:
                 while i < 100:
                     if not os.path.exists(os.path.join(folder + '_' + str(i), 'params.yml')):
-                        folder += folder + '_' + str(i)
+                        folder += '_' + str(i)
                         name += '_' + str(i)
                         break
                     i += 1
