@@ -354,14 +354,15 @@ class Experiment(object, metaclass=TypedMeta):
         """
         folder = os.path.join(root, name)
         if os.path.exists(os.path.join(folder, 'params.yml')):
-            i = 1
+            i = 0
             if force:
                 while i < 100:
                     if not os.path.exists(os.path.join(folder + '_' + str(i), 'params.yml')):
-                        folder = folder + '_' + str(i)
+                        folder += folder + '_' + str(i)
+                        name += '_' + str(i)
                         break
                     i += 1
-            elif i == 100 or not force:
+            elif i == 99 or not force:
                 raise ValueError(f'Experiment folder {os.path.join(root, name)} already contains a params.yml file. '
                                  f'An Exeperiment cannot be created in an already existing experiment folder')
 
