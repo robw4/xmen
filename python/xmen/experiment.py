@@ -310,7 +310,7 @@ class Experiment(object, metaclass=TypedMeta):
         """Save experiment to either a defaults.yml file or a params.yml file depending on its status"""
         self.update_version()
         params = {k: v for k, v in self.__dict__.items() if k[0] != '_' or k in self._specials}
-        params = {k: v for k, v in params.items() if '_' + k not in self.__dict__.items()}
+        params = {k: v for k, v in params.items() if '_' + k not in self.__dict__}
         helps = self.get_attributes_help()
 
         # Add definition module to experiment object
