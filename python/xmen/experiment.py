@@ -45,6 +45,7 @@ experiment_parser.add_argument('--to_defaults', type=str, default=None, metavar=
 experiment_parser.add_argument('--register', type=str, nargs=2, default=None, metavar=('ROOT', 'NAME'),
                                help='Register an experiment at root (1st positional) name (2nd'
                                     'positional)')
+experiment_parser.add_argument('--debug', type=bool, default=None, metavar=('BOOL'))
 
 
 class Experiment(object, metaclass=TypedMeta):
@@ -432,9 +433,12 @@ class Experiment(object, metaclass=TypedMeta):
         if sum_check > 1:
             print(f'ERROR: Only one of register, to_defaults and root can be set but {sum_check} were set')
             exit()
-        elif (sum_check == 1) == (args.execute is not None):  # exclusive or
+        elif (sum_check == 1) == (args.execute is not None or args.debug is not None):  # exclusive or
             print('ERROR: Either one of --register, --to_defaults and --to_root must be passed or --execute must'
                   'be passed.')
+        if args.debug is not None and args.execute is not None:
+            print(f'ERROR: Only one of debug and execute can be set')
+            exit()
 
         if args.update is not None:
             overrides = ruamel.yaml.load(args.update, Loader=ruamel.yaml.Loader)
@@ -447,6 +451,11 @@ class Experiment(object, metaclass=TypedMeta):
             self.to_root(args.to_root)
         if args.register is not None:
             self.register(args.register[0], args.register[1])
+
+        if args.debug is not None:
+            self.register(root='/tmp', name='test')
+            print(self.directory)
+            self.__call__()
 
         if args.execute is not None:
             self.from_yml(args.execute)
