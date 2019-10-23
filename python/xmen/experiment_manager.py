@@ -612,7 +612,7 @@ class ExperimentManager(object):
 
         for d in subdirs:
             params, defaults = self.load_params(d, True), self.load_defaults()
-            if any([k not in defaults and not k.startwith('_') not in k for k in params]):
+            if any([k not in defaults and not k.startswith('_') not in k for k in params]):
                 print(f'Cannot re-link folder {d} as params are not compatible with defaults')
             else:
                 print(f'Relinking {d}')
