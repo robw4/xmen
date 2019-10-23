@@ -504,6 +504,19 @@ class ExperimentManager(object):
             self.overides.append(overides)
             self._to_yml()
 
+    def reset(self, pattern):
+        """Update the status of the experiment. This is useful if you need to re-run an experiment
+        from a latest saved checkpoint for example.
+
+        Args:
+            pattern: The experiment name
+        """
+        experiments = [p for p in glob.glob(os.path.join(self.root, pattern)) if p in self.experiments]
+        for p in experiments:
+            P = self.load_params(p)
+            P['_status'] = 'registered'
+            self.save_params(P, P['_name'])
+
     def list(self):
         """List all experiments currently created with the experiment manager."""
         self.check_initialised()
@@ -629,6 +642,12 @@ def main(argv):
         # print("Enter purpose for the current experiment:")
         # purpose = input()
         experiment_manager.register(argv[2], argv[3])
+
+    elif mode == 'reset':
+        if len(argv) != 3:
+            raise ValueError('Missing experiment names to reset. For reset the call should be xmen '
+                             'reset {GLOB_PATTERN}')
+        experiment_manager.reset(argv[2])
 
     elif mode == 'list':
         experiment_manager.list()
