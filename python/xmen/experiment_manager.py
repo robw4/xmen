@@ -617,7 +617,7 @@ class ExperimentManager(object):
             else:
                 print(f'Relinking {d}')
                 self.experiments += [d]
-                self.overides += [{pk: pv for pk, pv in params.items() if defaults[pk] != pv}]
+                self.overides += [{pk: pv for pk, pv in params.items() if defaults[pk] != pv and not pk.startswith('_')}]
         self._to_yml()
 
 
