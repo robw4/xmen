@@ -58,7 +58,7 @@ def _list_exp(args):
 
 
 def _run(args):
-    experiment_manager = ExperimentManager()
+    experiment_manager = ExperimentManager(args.root)
     experiment_manager.run(args.experiments, *args.append)
 
 
@@ -93,19 +93,21 @@ init_parser.add_argument('-r', '--root', metavar='DIR', default='',
                          help='Path to the root experiment folder. If None then the current work directory will be '
                               'used')
 init_parser.set_defaults(func=_init)
+
 # Register
 register_parser = subparsers.add_parser('register', help='Register a set of experiments.')
 register_parser.add_argument('updates', metavar='YAML_STR',
                              help='Defaults to update to register experiments passes as a yaml dict. The special character'
                                   '"|" is interpreted as an or operator. all combinations of parameters appearing '
                                   'either side of "|" will be registered.')
-register_parser.add_argument('-H', '--header', metavar='PATH', help='A header file to prepend to each run script')
+register_parser.add_argument('-H', '--header', metavar='PATH', help='A header file to prepend to each run script', default=None)
 register_parser.add_argument('-p', '--purpose', metavar='STR', help='A string giving the purpose of the experiment.')
 register_parser.add_argument('-r', '--root', metavar='DIR', default='',
                              help='Path to the root experiment folder. If None then the current work directory will be '
                                   'used')
-init_parser.set_defaults(func=_register)
+register_parser.set_defaults(func=_register)
 # List
+
 list_parser = subparsers.add_parser('list', help='List all experiments to screen')
 list_parser.add_argument('-r', '--root', metavar='DIR', default='',
                          help='Path to the root experiment folder. If None then the current work directory will be '
@@ -116,9 +118,12 @@ list_parser.set_defaults(func=_list_exp)
 run_parser = subparsers.add_parser('run', help='Run a set of experiments')
 run_parser.add_argument('experiments', metavar='NAMES', help='A unix glob giving the experiments whos status '
                                                              'should be updated (relative to experiment manager root)')
-run_parser.add_argument('append', metavar='FLAG', nargs='*',
+run_parser.add_argument('append', metavar='FLAG', nargs=argparse.REMAINDER,
                         help='A set of run command options to prepend to the run.sh for each experiment '
                              '(eg. "sh", "srun", "sbatch" etc.)')
+run_parser.add_argument('-r', '--root', metavar='DIR', default='',
+                         help='Path to the root experiment folder. If None then the current work directory will be '
+                              'used')
 run_parser.set_defaults(func=_run)
 
 # Reset
@@ -623,11 +628,11 @@ class ExperimentManager(object):
                 params.insert(i, k, v, h)
 
             # Generate a script.sh in each folder that can be used to run the experiment
-            if header is not None:
-                header = open(header).read()
+            if header is not None and header != '':
+                header_str = open(header).read()
             else:
-                header = ''
-            script = f'#!{shell}\n{header}\nsh {os.path.join(self.script)} {os.path.join(experiment_path, "params.yml")}'
+                header_str = ''
+            script = f'#!{shell}\n{header_str}\nsh {os.path.join(self.script)} {os.path.join(experiment_path, "params.yml")}'
             with open(os.path.join(self.root, experiment_name, 'run.sh'), 'w') as f:
                 f.write(script)
 
