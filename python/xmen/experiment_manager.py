@@ -29,11 +29,130 @@ import subprocess
 import glob
 import time
 import importlib.util
+import argparse
 import copy
 from xmen.utils import *
 pd.set_option('expand_frame_repr', False)
 
 from xmen.experiment import Experiment
+
+
+def _init(args):
+    experiment_manager = ExperimentManager(args.root)
+    experiment_manager.initialise(defaults=args.defaults, script=args.script)
+
+
+def _register(args):
+    experiment_manager = ExperimentManager(args.root)
+    experiment_manager.register(args.updates, args.purpose, args.header)
+
+
+def _reset(args):
+    experiment_manager = ExperimentManager(args.root)
+    experiment_manager.reset(args.experiments)
+
+
+def _list_exp(args):
+    experiment_manager = ExperimentManager(args.root)
+    experiment_manager.list()
+
+
+def _run(args):
+    experiment_manager = ExperimentManager()
+    experiment_manager.run(args.experiments, *args.append)
+
+
+def _unlink(args):
+    experiment_manager = ExperimentManager(args.root)
+    experiment_manager.unlink(args.experiments)
+
+
+def _relink(args):
+    experiment_manager = ExperimentManager(args.root)
+    experiment_manager.relink(args.experiments)
+
+
+def _rm(args):
+    experiment_manager = ExperimentManager(args.root)
+    experiment_manager.rm()
+
+
+parser = argparse.ArgumentParser(prog='xmen',
+                                 description='A helper module for the quick setup and management of experiments')
+
+subparsers = parser.add_subparsers()
+# Init
+init_parser = subparsers.add_parser('init', help='Initialise an experiment.')
+init_parser.add_argument('-d', '--defaults', metavar='PATH', default='',
+                         help='Path to defaults.yml file. If None then a defaults.yml will be looked for in the current'
+                              'work directory.')
+init_parser.add_argument('-s', '--script', metavar='PATH', default='',
+                         help="Path to a script.sh file. If None a script.sh will be searched for in the current "
+                              "work directory.")
+init_parser.add_argument('-r', '--root', metavar='DIR', default='',
+                         help='Path to the root experiment folder. If None then the current work directory will be '
+                              'used')
+init_parser.set_defaults(func=_init)
+# Register
+register_parser = subparsers.add_parser('register', help='Register a set of experiments.')
+register_parser.add_argument('updates', metavar='YAML_STR',
+                             help='Defaults to update to register experiments passes as a yaml dict. The special character'
+                                  '"|" is interpreted as an or operator. all combinations of parameters appearing '
+                                  'either side of "|" will be registered.')
+register_parser.add_argument('-H', '--header', metavar='PATH', help='A header file to prepend to each run script')
+register_parser.add_argument('-p', '--purpose', metavar='STR', help='A string giving the purpose of the experiment.')
+register_parser.add_argument('-r', '--root', metavar='DIR', default='',
+                             help='Path to the root experiment folder. If None then the current work directory will be '
+                                  'used')
+init_parser.set_defaults(func=_register)
+# List
+list_parser = subparsers.add_parser('list', help='List all experiments to screen')
+list_parser.add_argument('-r', '--root', metavar='DIR', default='',
+                         help='Path to the root experiment folder. If None then the current work directory will be '
+                              'used')
+list_parser.set_defaults(func=_list_exp)
+
+# Run
+run_parser = subparsers.add_parser('run', help='Run a set of experiments')
+run_parser.add_argument('experiments', metavar='NAMES', help='A unix glob giving the experiments whos status '
+                                                             'should be updated (relative to experiment manager root)')
+run_parser.add_argument('append', metavar='FLAG', nargs='*',
+                        help='A set of run command options to prepend to the run.sh for each experiment '
+                             '(eg. "sh", "srun", "sbatch" etc.)')
+run_parser.set_defaults(func=_run)
+
+# Reset
+status_parser = subparsers.add_parser('reset', help='Reset an experiment to registered status')
+status_parser.add_argument('experiments', metavar='NAME', help='A unix glob giving the experiments whos status '
+                                                               'should be updated (relative to experiment manager root)')
+status_parser.add_argument('-r', '--root', metavar='DIR', default='',
+                           help='Path to the root experiment folder. If None then the current work directory will be '
+                                'used')
+status_parser.set_defaults(func=_reset)
+
+# Remove
+reset_parser = subparsers.add_parser('rm', help='(DESTRUCTIVE) Remove experiments no longer managed by the experiment manager')
+reset_parser.add_argument('-r', '--root', metavar='DIR', default='',
+                          help='Path to the root experiment folder. If None then the current work directory will be '
+                               'used')
+reset_parser.set_defaults(func=_rm)
+
+# Unlink
+unlink_parser = subparsers.add_parser('unlink', help='Unlink experiments from the experiment manager')
+unlink_parser.add_argument('experiments', metavar='NAMES', help='A unix glob giving the experiments to be unlinked')
+unlink_parser.add_argument('-r', '--root', metavar='DIR', default='',
+                           help='Path to the root experiment folder. If None then the current work directory will be '
+                                'used')
+unlink_parser.set_defaults(func=_unlink)
+
+# Relink
+relink_parser = subparsers.add_parser('relink', help='Relink experiments to the experiment manager')
+relink_parser.add_argument('experiments', metavar='NAMES', help='A unix glob giving the experiments to be relinked '
+                                                                '(relative to experiment manager root)')
+relink_parser.add_argument('-r', '--root', metavar='DIR', default='',
+                           help='Path to the root experiment folder. If None then the current work directory will be '
+                                'used')
+relink_parser.set_defaults(func=_relink)
 
 
 class ExperimentManager(object):
@@ -246,7 +365,7 @@ class ExperimentManager(object):
             overides: A list of dictionaries giving the names (keys) and values of the parameters overridden from the
                 defaults for each experiment in experiments.
         """
-        self.root = os.getcwd() if root == "" else os.path.expanduser(root)
+        self.root = os.getcwd() if root == "" else os.path.abspath(root)
         if not os.path.isdir(self.root):
             os.makedirs(self.root)
         self.defaults = None
@@ -323,20 +442,24 @@ class ExperimentManager(object):
                 directory.
         """
         # Load defaults
-        self.defaults = os.path.join(self.root, 'defaults.yml') if defaults == "" else defaults
+        self.defaults = os.path.join(self.root, 'defaults.yml') if defaults == "" else os.path.abspath(defaults)
+        print(f'Defaults from {self.defaults}')
         if os.path.exists(self.defaults):
             if defaults != "":
                 copyfile(self.defaults, os.path.join(self.root, 'defaults.yml'))
+                self.defaults = os.path.join(self.root, 'defaults.yml')
         else:
             raise ValueError(f"No defaults.yml file exists in {self.root}. Either use the root argument to copy "
                              f"a default file from another location or add a 'defaults.yml' to the root directory"
                              f"manually.")
 
         # Load script file
-        self.script = os.path.join(self.root, 'script.sh') if script == "" else script
+        self.script = os.path.abspath(os.path.join(self.root, 'script.sh')) if script == "" else os.path.abspath(script)
+        print(f'Script from {self.script}')
         if os.path.exists(self.script):
             if script != "":
                 copyfile(self.script, os.path.join(self.root, 'script.sh'))
+                self.script = os.path.join(self.root, 'script.sh')
         else:
             raise ValueError(f"File {self.script} does not exist. Either use the script argument to copy "
                              f"a script file from another location or add a 'script.sh' to the root directory"
@@ -351,6 +474,7 @@ class ExperimentManager(object):
             print(f"There already exists a experiment.yml file in the root directory {self.root}. "
                   f"To reinitialise an experiment folder remove the experiment.yml.")
             exit()
+        print(f'Experiment root created at {self.root}')
         self._to_yml()
 
     def _generate_params_from_string_params(self, x):
@@ -380,7 +504,7 @@ class ExperimentManager(object):
             values = new_values
         return values, keys
 
-    def register(self, string_params, purpose):
+    def register(self, string_params, purpose, header=None, shell='/bin/bash'):
         """Register a set of experiments with the experiment manager.
 
         Experiments are created by passing a yaml dictionary string of parameters to overload in the ``params.yml``
@@ -402,6 +526,7 @@ class ExperimentManager(object):
                 ``N = 2 * 2 * 3 = 12`` experiments will be generated representing all the possible values for
                 parameters ``p1``, ``p3`` and ``p4`` can take with ``p2`` set to ``val2`` for all.
             purpose (str): An optional purpose message for the experiment.
+            header (str): An optional header message prepended to each run script.sh
 
         .. note ::
 
@@ -497,6 +622,15 @@ class ExperimentManager(object):
                 h = helps[k].split(':')[1] if helps[k] is not None else helps[k]
                 params.insert(i, k, v, h)
 
+            # Generate a script.sh in each folder that can be used to run the experiment
+            if header is not None:
+                header = open(header).read()
+            else:
+                header = ''
+            script = f'#!{shell}\n{header}\nsh {os.path.join(self.script)} {os.path.join(experiment_path, "params.yml")}'
+            with open(os.path.join(self.root, experiment_name, 'run.sh'), 'w') as f:
+                f.write(script)
+
             # Update the overridden parameters
             params.update(overides)
             self.save_params(params, experiment_name)
@@ -504,7 +638,7 @@ class ExperimentManager(object):
             self.overides.append(overides)
             self._to_yml()
 
-    def reset(self, pattern):
+    def reset(self, pattern, status='registered'):
         """Update the status of the experiment. This is useful if you need to re-run an experiment
         from a latest saved checkpoint for example.
 
@@ -514,7 +648,7 @@ class ExperimentManager(object):
         experiments = [p for p in glob.glob(os.path.join(self.root, pattern)) if p in self.experiments]
         for p in experiments:
             P = self.load_params(p)
-            P['_status'] = 'registered'
+            P['_status'] = status
             self.save_params(P, P['_name'])
 
     def list(self):
@@ -578,7 +712,8 @@ class ExperimentManager(object):
             P = self.load_params(p)
             if P['_status'] == 'registered':
                 args = list(args)
-                subprocess_args = args + [self.script, os.path.join(p, 'params.yml')]
+                # subprocess_args = args + [self.script, os.path.join(p, 'params.yml')]
+                subprocess_args = args + [os.path.join(p, 'run.sh')]
                 print('\nRunning: {}'.format(" ".join(subprocess_args)))
                 subprocess.call(args + [self.script, os.path.join(p, 'params.yml')])
                 time.sleep(0.2)
@@ -621,64 +756,6 @@ class ExperimentManager(object):
         self._to_yml()
 
 
-def main(argv):
-    mode = argv[1]
-    experiment_manager = ExperimentManager()
-    if mode == "init":
-        init_args = ['', '']  # [defaults, script]
-        for p in argv[2:]:
-            if '.yml' in os.path.basename(p):
-                init_args[0] = p
-            elif '.sh' in os.path.basename(p):
-                init_args[1] = p
-            else:
-                raise ValueError(f'Path {p} is not to either a params.yml file or script.sh file')
-        experiment_manager.initialise(*init_args)
-
-    elif mode == 'register':  # --params --purpose
-        if len(argv) != 4:
-            raise ValueError('Missing parameter string or purpose message. For register the call should be experiment '
-                             'register {PARAM_STRING} {PURPOSE}')
-        # print("Enter purpose for the current experiment:")
-        # purpose = input()
-        experiment_manager.register(argv[2], argv[3])
-
-    elif mode == 'reset':
-        if len(argv) != 3:
-            raise ValueError('Missing experiment names to reset. For reset the call should be xmen '
-                             'reset {GLOB_PATTERN}')
-        experiment_manager.reset(argv[2])
-
-    elif mode == 'list':
-        experiment_manager.list()
-
-    elif mode == 'rm':
-        experiment_manager.rm()
-
-    elif mode == 'run':
-        if len(argv) < 3:
-            raise ValueError("Missing experiment name to run. (To run all experiments pass 'all')")
-        elif len(argv) == 3:
-            experiment_manager.run(argv[2])
-        elif len(argv) == 4:
-            options = ruamel.yaml.load(argv[3], Loader=ruamel.yaml.Loader)
-            if type(options) is not list:
-                options = [options]
-            experiment_manager.run(argv[2], *options)
-
-    elif mode == 'unlink':
-        if len(argv) != 3:
-            raise ValueError("Missing experiment name argument")
-        pattern = argv[2]
-        experiment_manager.unlink(pattern)
-
-    elif mode == 'help':
-        help(ExperimentManager)
-
-    elif mode == 'relink':
-        pattern = argv[2]
-        experiment_manager.relink(pattern)
-
-
 if __name__ == "__main__":
-    main(sys.argv)
+    args = parser.parse_args()
+    args.func(args)
