@@ -467,9 +467,12 @@ class Experiment(object, metaclass=TypedMeta):
         self._status = status
         self._to_yaml()
 
+    def detach(self):
+        self._status = 'detached'
+
     def update(self, kwargs):
         """Update the parameters with a given dictionary"""
-        if self._status == 'default':
+        if self._status in ['default', 'detached']:
             if any([k not in self.__dict__.keys() and k in self._specials for k in kwargs]):
                 raise ValueError('Key not recognised!')
             else:
