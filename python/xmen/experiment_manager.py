@@ -720,7 +720,7 @@ class ExperimentManager(object):
                 # subprocess_args = args + [self.script, os.path.join(p, 'params.yml')]
                 subprocess_args = args + [os.path.join(p, 'run.sh')]
                 print('\nRunning: {}'.format(" ".join(subprocess_args)))
-                subprocess.call(args + [self.script, os.path.join(p, 'params.yml')])
+                subprocess.call(subprocess_args)
                 time.sleep(0.2)
 
     def unlink(self, pattern='*'):
