@@ -509,7 +509,7 @@ class ExperimentManager(object):
             values = new_values
         return values, keys
 
-    def register(self, string_params, purpose, header=None, shell='/bin/bash'):
+    def register(self, string_params, purpose, header=None, shell='bash'):
         """Register a set of experiments with the experiment manager.
 
         Experiments are created by passing a yaml dictionary string of parameters to overload in the ``params.yml``
@@ -632,7 +632,7 @@ class ExperimentManager(object):
                 header_str = open(header).read()
             else:
                 header_str = ''
-            script = f'#!{shell}\n{header_str}\nsh {os.path.join(self.script)} {os.path.join(experiment_path, "params.yml")}'
+            script = f'#!/bin/{shell}\n{header_str}\n{shell} {os.path.join(self.script)} {os.path.join(experiment_path, "params.yml")}'
             with open(os.path.join(self.root, experiment_name, 'run.sh'), 'w') as f:
                 f.write(script)
 
