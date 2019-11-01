@@ -48,6 +48,8 @@ experiment_parser.add_argument('--register', type=str, nargs=2, default=None, me
 experiment_parser.add_argument('--debug', type=bool, default=None, help='Run experiment in debug mode. Experiment is '
                                                                          'registered to a folder in /tmp')
 
+experiment_parser.add_argument('--name', action='store_true', help='Return the name of the experiment class')
+
 
 class Experiment(object, metaclass=TypedMeta):
     """A generic experiment type.
@@ -434,9 +436,9 @@ class Experiment(object, metaclass=TypedMeta):
         if sum_check > 1:
             print(f'ERROR: Only one of register, to_defaults and root can be set but {sum_check} were set')
             exit()
-        elif (sum_check == 1) == (args.execute is not None or args.debug is not None):  # exclusive or
-            print('ERROR: Either one of --register, --to_defaults and --to_root must be passed or --execute must'
-                  'be passed.')
+        elif (sum_check == 1) == (args.execute is not None or args.debug is not None or args.name):  # exclusive or
+            print('ERROR: Either one of --register, --to_defaults and --to_root must be passed or --execute, --debug'
+                  'and --name must be passed.')
         if args.debug is not None and args.execute is not None:
             print(f'ERROR: Only one of debug and execute can be set')
             exit()
@@ -461,6 +463,9 @@ class Experiment(object, metaclass=TypedMeta):
         if args.execute is not None:
             self.from_yml(args.execute)
             self.__call__()
+
+        if args.name is not None:
+            print(self.__class__.__name__)
 
     def _update_status(self, status):
         """Update the status of the experiment"""

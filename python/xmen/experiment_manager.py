@@ -39,7 +39,7 @@ from xmen.experiment import Experiment
 
 def _init(args):
     experiment_manager = ExperimentManager(args.root)
-    experiment_manager.initialise(defaults=args.defaults, script=args.script)
+    experiment_manager.initialise(defaults=args.defaults, script=args.script, purpose=args.purpose, name=args.name)
 
 
 def _register(args):
@@ -52,9 +52,14 @@ def _reset(args):
     experiment_manager.reset(args.experiments)
 
 
-def _list_exp(args):
-    experiment_manager = ExperimentManager(args.root)
-    experiment_manager.list()
+def _list(args):
+    if not args.all and not args.config:
+        experiment_manager = ExperimentManager(args.root)
+        experiment_manager.list()
+    if args.config:
+        print(Config())
+    if args.all:
+        Config().list()
 
 
 def _run(args):
@@ -72,15 +77,71 @@ def _relink(args):
     experiment_manager.relink(args.experiments)
 
 
+def _clean(args):
+    experiment_manager = ExperimentManager(args.root)
+    experiment_manager.clean()
+
+
+def _note(args):
+    experiment_manager = ExperimentManager(args.root)
+    experiment_manager.note(args.message, args.delete)
+
 def _rm(args):
     experiment_manager = ExperimentManager(args.root)
     experiment_manager.rm()
 
+def _config(args):
+    with Config() as config:
+        if args.disable_prompt is not None:
+            config.prompt_for_message = False
+        elif args.enable_prompt is not None:
+            config.prompt_for_message = True
+        if args.add is not None:
+            config.add_class(args.add)
+        if args.add_path is not None:
+            if args.add_path not in config.python_paths:
+                config.python_paths.append(os.path.abspath(args.add_path))
+        if args.header is not None:
+            if os.path.exists(args.header):
+                config.header = open(args.header, 'r').read()
+            else:
+                config.header = args.header
+        if args.remove is not None:
+            if args.remove in config.python_paths:
+                config.python_paths.remove(args.remove)
+            if args.remove in config.python_experiments:
+                config.python_experiments.pop(args.remove)
+
 
 parser = argparse.ArgumentParser(prog='xmen',
                                  description='A helper module for the quick setup and management of experiments')
-
 subparsers = parser.add_subparsers()
+
+# Config
+config_parser = subparsers.add_parser('config')
+config_parser.add_argument('--disable_prompt', action='store_false',
+                           help='Turn purpose prompting off', default=None)
+config_parser.add_argument('--enable_prompt', action='store_false',
+                           help='Turn purpose prompting on', default=None)
+config_parser.add_argument('--add_path', type=str, default=None, help='Add pythonpath to the global config')
+config_parser.add_argument('--add', default=None, metavar='PATH',
+                            help='Add an Experiment api python script (it must already be on PYTHONPATH)')
+config_parser.add_argument('-r', '--remove', default=None, help='Remove a python path or experiment (passed by Name) '
+                                                                'from the config.')
+config_parser.add_argument('-H', '--header', type=str, help='Update the default header used when generating experiments')
+config_parser.set_defaults(func=_config)
+
+# Note parser
+note_parser = subparsers.add_parser('note')
+note_parser.add_argument('message', help='A note to add to the experiment manager')
+note_parser.add_argument('-r', '--root', metavar='DIR', default='',
+                         help='Path to the root experiment folder. If None then the current work directory will be '
+                              'used')
+note_parser.add_argument('-d', '--delete', default='', action='store_true',
+                         help='Delete the note corresponding to message.')
+note_parser.set_defaults(func=_note)
+
+
 # Init
 init_parser = subparsers.add_parser('init', help='Initialise an experiment.')
 init_parser.add_argument('-d', '--defaults', metavar='PATH', default='',
@@ -92,6 +153,10 @@ init_parser.add_argument('-s', '--script', metavar='PATH', default='',
 init_parser.add_argument('-r', '--root', metavar='DIR', default='',
                          help='Path to the root experiment folder. If None then the current work directory will be '
                               'used')
+init_parser.add_argument('-n', '--name', metavar='NAME', default=None,
+                         help='A name of a python experiment registered with the global configuration.')
+init_parser.add_argument('--purpose', metavar='PURPOSE', default='',
+                         help='A string giving the purpose of the experiment set (only used if message prompting is disabled).')
 init_parser.set_defaults(func=_init)
 
 # Register
@@ -112,7 +177,10 @@ list_parser = subparsers.add_parser('list', help='List all experiments to screen
 list_parser.add_argument('-r', '--root', metavar='DIR', default='',
                          help='Path to the root experiment folder. If None then the current work directory will be '
                               'used')
-list_parser.set_defaults(func=_list_exp)
+list_parser.add_argument('-a', '--all', action='store_true',
+                         help='List all experiments roots initialised globally')
+list_parser.add_argument('--config', action='store_true', help='List the global configuration.')
+list_parser.set_defaults(func=_list)
 
 # Run
 run_parser = subparsers.add_parser('run', help='Run a set of experiments')
@@ -135,12 +203,18 @@ status_parser.add_argument('-r', '--root', metavar='DIR', default='',
                                 'used')
 status_parser.set_defaults(func=_reset)
 
-# Remove
-reset_parser = subparsers.add_parser('rm', help='(DESTRUCTIVE) Remove experiments no longer managed by the experiment manager')
-reset_parser.add_argument('-r', '--root', metavar='DIR', default='',
+# Clean
+clean_parser = subparsers.add_parser('clean', help='(DESTRUCTIVE) Remove experiments no longer managed by the experiment manager')
+clean_parser.add_argument('-r', '--root', metavar='DIR', default='',
                           help='Path to the root experiment folder. If None then the current work directory will be '
                                'used')
-reset_parser.set_defaults(func=_rm)
+clean_parser.set_defaults(func=_clean)
+
+# Removes
+remove_parser = subparsers.add_parser('rm', help='(DESTRUCTIVE) Remove experiment manager')
+remove_parser.add_argument('root', metavar='ROOT_DIR',
+                            help='Path to the root experiment folder to be removed.')
+remove_parser.set_defaults(func=_rm)
 
 # Unlink
 unlink_parser = subparsers.add_parser('unlink', help='Unlink experiments from the experiment manager')
@@ -158,6 +232,92 @@ relink_parser.add_argument('-r', '--root', metavar='DIR', default='',
                            help='Path to the root experiment folder. If None then the current work directory will be '
                                 'used')
 relink_parser.set_defaults(func=_relink)
+
+
+class Config(object):
+    """A helper class used to manage global configuration of the Experiment Manager"""
+    def __init__(self):
+        self.python_experiments = {}   # A dictionary of paths to python modules compatible with the experiment api
+        self.python_paths = []         # A list of python paths needed to run each module
+        self.prompt_for_message = True
+        self.experiments = []          # A list of all experiments registered with an Experiment Manager
+        self.header = ''
+        self._dir = os.path.join(os.getenv('HOME'), '.xmen')
+
+        if not os.path.isdir(self._dir):
+            os.makedirs(self._dir)
+            self._to_yml()
+        else:
+            self._from_yml()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._to_yml()
+
+    def _to_yml(self):
+        """Save the current config to an ``config.yaml``"""
+
+        params = {k: v for k, v in self.__dict__.items() if k[0] != '_'}
+        with open(os.path.join(self._dir, 'config.yml'), 'w') as file:
+            ruamel.yaml.dump(params, file, Dumper=ruamel.yaml.RoundTripDumper)
+
+    def _from_yml(self):
+        """Load the experiment config from an ``config.yml`` file"""
+        with open(os.path.join(self._dir, 'config.yml'), 'r') as file:
+            params = ruamel.yaml.load(file, ruamel.yaml.RoundTripLoader)
+            for k, v in params.items():
+                self.__dict__[k] = v
+
+    def __str__(self):
+        string = f'Prompt for Message: {self.prompt_for_message}\n'
+        string += f'Python Path:\n'
+        for p in self.python_paths:
+            string += f'  - {p}\n'
+        string += 'Python Experiments:\n'
+        for k, v in self.python_experiments.items():
+           string += f'  - {k}: {v}\n'
+        string += 'Header:\n'
+        string += self.header + '\n'
+        string += 'Experiment Roots:\n'
+        for e in self.experiments:
+            string += f'  - {e}\n'
+        return string
+
+    def list(self):
+        """List all experiments currently created with the experiment manager."""
+        if self.experiments != []:
+            table = {'purpose': [], 'created': [], 'root': [], 'class': [], 'commit': []}
+            for root in self.experiments:
+                em = ExperimentManager(root)
+                table['purpose'] += [em.purpose]
+                table['created'] += [em.created]
+                table['root'] += [em.root]
+                defaults = em.load_defaults()
+                if '_version' in defaults:
+                    version = defaults["_version"]
+                    if 'class' in version:
+                        table['class'] += [version['class']]
+                    if 'git' in version:
+                        table['commit'] += [version['git']['commit']]
+            print(pd.DataFrame(table))
+
+    def add_class(self, path):
+        path = os.path.abspath(path)
+        for p in self.python_paths:
+            if p not in sys.path:
+                sys.path.append(p)
+        sys_paths = [p for p in sys.path if p in path]
+        if len(sys_paths) == 0:
+            print('ERROR: The module has not been added to the PYTHONPATH. Please add!')
+        else:
+            try:
+                name = subprocess.check_output(['python', path, '--name'])
+            except subprocess.CalledProcessError:
+                exit()
+            self.python_experiments.update({name.decode("utf-8").replace('\n', ''): path})
+            self._to_yml()
 
 
 class ExperimentManager(object):
@@ -206,10 +366,10 @@ class ExperimentManager(object):
             exp unlink 'a:1__*'
             #(see method unlink)
 
-        * ``rm`` - Remove folders of experiments that are no longer managed by the experiment manager::
+        * ``clean`` - Remove folders of experiments that are no longer managed by the experiment manager::
 
-            exp rm
-            #(see method rm)
+            exp clean
+            #(see method clean)
 
         * ``run`` - Run a group of experiments matching pattern::
 
@@ -333,7 +493,7 @@ class ExperimentManager(object):
                  Print all the experiments and their associated information
             * ``unlink(pattern)``:
                  Relieve the experiment manager of responsibility for all experiment names matching pattern
-            * ``rm()``:
+            * ``clean()``:
                  Delete any experiments which are no longer the responsibility of the experiment manager
             * ``run(string, options)``:
                  Run an experiment or all experiments (if string is ``'all'``) with options prepended.
@@ -344,7 +504,7 @@ class ExperimentManager(object):
             experiment_manager.initialise(PATH_TO_SCRIPT, PATH_TO_DEFAULTS)
             experiment_manager.register('parama: 1, paramb: [x, y]')   # Register a set of experiments
             experiment_manger.unlink('parama_1__paramb_y')                    # Remove an experiment
-            experiment_manager.rm()                                    # Get rid of any experiments no longer managed
+            experiment_manager.clean()                                    # Get rid of any experiments no longer managed
             experiment_run('parama:1__paramb:x', sh)                      # Run an experiment
             experiment_run('all')                                         # Run all created experiments
         """
@@ -378,7 +538,10 @@ class ExperimentManager(object):
         self.experiments = []
         self.overides = []
         self.created = None
+        self.purpose = None
+        self.notes = []
         self._specials = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version']
+        self._config = Config()
 
         # Load dir from yaml
         if os.path.exists(os.path.join(self.root, 'experiment.yml')):
@@ -436,8 +599,16 @@ class ExperimentManager(object):
             self.created = params['created']
             self.experiments = params['experiments']
             self.overides = params['overides']
+            try:
+                self.purpose = params['purpose']
+            except KeyError:
+                pass
+            try:
+                self.notes = params['notes']
+            except KeyError:
+                pass
 
-    def initialise(self, defaults="", script=""):
+    def initialise(self, *, defaults="", script="", purpose="", name=None):
         """Link an experiment manager with a ``defaults.yml`` file and ``sript.sh``.
 
         Args:
@@ -446,30 +617,44 @@ class ExperimentManager(object):
             script (str): A path to a ``script.sh``. If ``""`` then a script.sh file is searched for in the current work
                 directory.
         """
-        # Load defaults
-        self.defaults = os.path.join(self.root, 'defaults.yml') if defaults == "" else os.path.abspath(defaults)
-        print(f'Defaults from {self.defaults}')
-        if os.path.exists(self.defaults):
-            if defaults != "":
-                copyfile(self.defaults, os.path.join(self.root, 'defaults.yml'))
-                self.defaults = os.path.join(self.root, 'defaults.yml')
-        else:
-            raise ValueError(f"No defaults.yml file exists in {self.root}. Either use the root argument to copy "
-                             f"a default file from another location or add a 'defaults.yml' to the root directory"
-                             f"manually.")
+        print(name)
+        if name is None:
+            # Load defaults
+            self.defaults = os.path.join(self.root, 'defaults.yml') if defaults == "" else os.path.abspath(defaults)
+            print(f'Defaults from {self.defaults}')
+            if os.path.exists(self.defaults):
+                if defaults != "":
+                    copyfile(self.defaults, os.path.join(self.root, 'defaults.yml'))
+                    self.defaults = os.path.join(self.root, 'defaults.yml')
+            else:
+                raise ValueError(f"No defaults.yml file exists in {self.root}. Either use the root argument to copy "
+                                 f"a default file from another location or add a 'defaults.yml' to the root directory"
+                                 f"manually.")
 
-        # Load script file
-        self.script = os.path.abspath(os.path.join(self.root, 'script.sh')) if script == "" else os.path.abspath(script)
-        print(f'Script from {self.script}')
-        if os.path.exists(self.script):
-            if script != "":
-                copyfile(self.script, os.path.join(self.root, 'script.sh'))
-                self.script = os.path.join(self.root, 'script.sh')
+            # Load script file
+            self.script = os.path.abspath(os.path.join(self.root, 'script.sh')) if script == "" else os.path.abspath(script)
+            print(f'Script from {self.script}')
+            if os.path.exists(self.script):
+                if script != "":
+                    copyfile(self.script, os.path.join(self.root, 'script.sh'))
+                    self.script = os.path.join(self.root, 'script.sh')
+            else:
+                raise ValueError(f"File {self.script} does not exist. Either use the script argument to copy "
+                                 f"a script file from another location or add a 'script.sh' to the root directory"
+                                 f"manually.")
+            self.script = os.path.join(self.root, 'script.sh')
         else:
-            raise ValueError(f"File {self.script} does not exist. Either use the script argument to copy "
-                             f"a script file from another location or add a 'script.sh' to the root directory"
-                             f"manually.")
-        self.script = os.path.join(self.root, 'script.sh')
+            if name not in self._config.python_experiments:
+                print(f'Python Experiment {name} has not been registered with the global configuration. Aborting!')
+                return
+
+            # Add experiments to python path if they are not there already
+            for p in self._config.python_paths:
+                if p not in sys.path:
+                    sys.path.append(p)
+            subprocess.call(['python', self._config.python_experiments[name], '--to_root', self.root])
+            self.script = os.path.join(self.root, 'script.sh')
+            self.defaults = os.path.join(self.root, 'defaults.yml')
 
         # Meta Information
         self.created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
@@ -480,6 +665,16 @@ class ExperimentManager(object):
                   f"To reinitialise an experiment folder remove the experiment.yml.")
             exit()
         print(f'Experiment root created at {self.root}')
+
+        # Add experiment to global config
+        with self._config:
+            self._config.experiments.append(self.root)
+
+        # Add purpose message
+        if self._config.prompt_for_message:
+            purpose = input('\nPlease enter the purpose of the experiments: ')
+
+        self.purpose = purpose
         self._to_yml()
 
     def _generate_params_from_string_params(self, x):
@@ -509,7 +704,16 @@ class ExperimentManager(object):
             values = new_values
         return values, keys
 
-    def register(self, string_params, purpose, header=None, shell='bash'):
+    def note(self, msg, remove=False):
+        """Add a note to the epxeriment manager. If remove is True msg is deleted instead."""
+        self.check_initialised()
+        if not remove:
+            self.notes += [msg.strip()]
+        else:
+            self.notes = [n for n in self.notes if msg.strip() != n]
+        self._to_yml()
+
+    def register(self, string_params, purpose, header=None, shell='/bin/bash'):
         """Register a set of experiments with the experiment manager.
 
         Experiments are created by passing a yaml dictionary string of parameters to overload in the ``params.yml``
@@ -536,8 +740,13 @@ class ExperimentManager(object):
         .. note ::
 
             This function is currently only able to register list or dictionary parameters at the first level.
-            ``{a: {a: 1.. b: 2.} | {a: 2.. b: 2.}}`` works creating two experiments with overloadeded dicts in each case
+            ``{a: {a: 1.. b: 2.} | {a: 2.. b: 2.}}`` works creating two experiments with over-ridden dicts in each case
             but ``{a: {a: 1. | 2.,  b:2.}}`` will fail.
+
+            The type of each override is inferred from the type contained in the defaults.yml file (ints will be cast
+            to floats etc.) where possible. This is not the case when there is an optional parameter that can take a
+            None value. If None (null yaml) is passed as a value it will not be cast. If a default.yml entry is
+            given the value null the type of any overrides in this case will be inferred from the yaml string.
         """
         # TODO: This function is currently able to register or arguments only at the first level
         self.check_initialised()
@@ -545,7 +754,6 @@ class ExperimentManager(object):
 
         # Convert input string to dictionary
         p = ruamel.yaml.load(string_params, Loader=ruamel.yaml.Loader)
-
         values, keys = self._generate_params_from_string_params(p)
 
         # Add new experiments
@@ -560,22 +768,25 @@ class ExperimentManager(object):
                     for dict_k, dict_v in v.items():
                         if dict_k not in defaults[k]:
                             raise ValueError(f'key {dict_k} not found in defaults {k}')
-                        overides[k].update({dict_k: type(defaults[k][dict_k])(dict_v)})
+                        overides[k].update(
+                            {dict_k: type(defaults[k][dict_k])(dict_v)
+                                if defaults[k][dict_k] is not None and dict_k is not None else dict_v})
                 if v is list:
                     if defaults[k] is not list:
                         raise ValueError(f'Attempting to update a list of parameters but key {k} does not have '
                                          f'a list value')
                     if len(v) != len(defaults[k]):
                         raise ValueError(f'Override list length does not match default list length')
-                    overides.update({k: [type(defaults[k][i])(v[i]) for i in range(len(v))]})
+                    overides.update({k: [type(defaults[k][i])(v[i]) if defaults[k][i] is not None and v[i] is not None
+                                         else v[i] for i in range(len(v))]})
                 else:
-                    overides.update({k: type(defaults[k])(v)})
+                    overides.update({k: type(defaults[k])(v) if defaults[k] is not None and v is not None else v})
 
             # Check parameters are in the defaults.yml file
             if any([k not in defaults for k in overides]):
                 raise ValueError('Some of the specified keys were not found in the defaults')
 
-            experiment_name = '__'.join([k + ':' + str(v) for k, v in overides.items()])
+            experiment_name = '__'.join([k + '=' + str(v) for k, v in overides.items()])
             experiment_path = os.path.join(self.root, experiment_name)
 
             # Setup experiment folder
@@ -631,8 +842,8 @@ class ExperimentManager(object):
             if header is not None and header != '':
                 header_str = open(header).read()
             else:
-                header_str = ''
-            script = f'#!/bin/{shell}\n{header_str}\n{shell} {os.path.join(self.script)} {os.path.join(experiment_path, "params.yml")}'
+                header_str = self._config.header
+            script = f'#!{shell}\n{header_str}\n{shell} {os.path.join(self.script)} {os.path.join(experiment_path, "params.yml")}'
             with open(os.path.join(self.root, experiment_name, 'run.sh'), 'w') as f:
                 f.write(script)
 
@@ -659,6 +870,11 @@ class ExperimentManager(object):
     def list(self):
         """List all experiments currently created with the experiment manager."""
         self.check_initialised()
+
+        if self.purpose is not None:
+            print('Purpose: ' + self.purpose)
+        print()
+
         # Construct dictionary
         if self.experiments != []:
             table = {'overrides': [], 'purpose': [], 'created': [], 'status': [], 'messages': [], 'commit': []}
@@ -683,8 +899,15 @@ class ExperimentManager(object):
         else:
             print('No experiments currently registered!')
         print()
+
+        # Print Notes
+        if len(self.notes) > 0:
+            print('Notes:')
+            for n in self.notes:
+                print('- ' + n)
+
+        # Get defaults information
         defaults = self.load_defaults()
-        # print(defaults)
         if '_created' in defaults:
             print(f'Defaults: \n'
                   f'- created: {defaults["_created"]}')
@@ -702,13 +925,26 @@ class ExperimentManager(object):
                 print(f'   commit: {git["commit"]}')
                 print(f'   remote: {git["remote"]}')
 
-    def rm(self):
+    def clean(self):
         """Remove directories no longer linked to the experiment manager"""
         self.check_initialised()
         subdirs = [x[0] for x in os.walk(self.root) if x[0] != self.root and x[0] not in self.experiments]
         for d in subdirs:
             print(d)
             rmtree(d)
+
+    def rm(self):
+        self.check_initialised()
+        if self._config.prompt_for_message:
+            inp = input(f'This command will remove the whole experiment folder {self.root}. '
+                        f'Do you wish to continue? [y | n]: ')
+            if inp != 'y':
+                print('Aborting!')
+                return
+        with self._config:
+            self._config.experiments.remove(self.root)
+            rmtree(self.root)
+            print(f'Removed {self.root}')
 
     def run(self, pattern, *args):
         """Run all experiments that match the global pattern using the run command given by args."""
@@ -725,7 +961,7 @@ class ExperimentManager(object):
 
     def unlink(self, pattern='*'):
         """Unlink all experiments matching pattern. Does not delete experiment folders simply deletes the experiment
-        paths from the experiment folder. To delete call method ``rm``."""
+        paths from the experiment folder. To delete call method ``clean``."""
         self.check_initialised()
         remove_paths = [p for p in glob.glob(os.path.join(self.root, pattern)) if p in self.experiments]
         if len(remove_paths) != 0:
@@ -735,7 +971,7 @@ class ExperimentManager(object):
                 self.experiments.remove(p)
             self._to_yml()
             print("Note models are removed from the experiment list only. To remove the model directories run"
-                  "experiment rm")
+                  "experiment clean")
         else:
             print(f"No experiments match pattern {pattern}")
 
