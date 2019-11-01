@@ -777,8 +777,6 @@ class ExperimentManager(object):
                         raise ValueError(f'Override list length does not match default list length')
                     overides.update({k: [v[i] for i in range(len(v))]})
                 else:
-                    if type(v) is float:
-                        v = f"{v:.9f}"
                     overides.update({k: v})
 
             # Check parameters are in the defaults.yml file
