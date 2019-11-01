@@ -768,19 +768,18 @@ class ExperimentManager(object):
                     for dict_k, dict_v in v.items():
                         if dict_k not in defaults[k]:
                             raise ValueError(f'key {dict_k} not found in defaults {k}')
-                        overides[k].update(
-                            {dict_k: type(defaults[k][dict_k])(dict_v)
-                                if defaults[k][dict_k] is not None and dict_k is not None else dict_v})
+                        overides[k].update({dict_k: dict_v})
                 if v is list:
                     if defaults[k] is not list:
                         raise ValueError(f'Attempting to update a list of parameters but key {k} does not have '
                                          f'a list value')
                     if len(v) != len(defaults[k]):
                         raise ValueError(f'Override list length does not match default list length')
-                    overides.update({k: [type(defaults[k][i])(v[i]) if defaults[k][i] is not None and v[i] is not None
-                                         else v[i] for i in range(len(v))]})
+                    overides.update({k: [v[i] for i in range(len(v))]})
                 else:
-                    overides.update({k: type(defaults[k])(v) if defaults[k] is not None and v is not None else v})
+                    if type(v) is float:
+                        v = f"{v:.9f}"
+                    overides.update({k: v})
 
             # Check parameters are in the defaults.yml file
             if any([k not in defaults for k in overides]):
