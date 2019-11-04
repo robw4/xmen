@@ -212,8 +212,7 @@ clean_parser.set_defaults(func=_clean)
 
 # Removes
 remove_parser = subparsers.add_parser('rm', help='(DESTRUCTIVE) Remove experiment manager')
-remove_parser.add_argument('root', metavar='ROOT_DIR',
-                            help='Path to the root experiment folder to be removed.')
+remove_parser.add_argument('root', metavar='ROOT_DIR', help='Path to the root experiment folder to be removed.')
 remove_parser.set_defaults(func=_rm)
 
 # Unlink
@@ -240,7 +239,7 @@ class Config(object):
         self.python_experiments = {}   # A dictionary of paths to python modules compatible with the experiment api
         self.python_paths = []         # A list of python paths needed to run each module
         self.prompt_for_message = True
-        self.experiments = []          # A list of all experiments registered with an Experiment Manager
+        self.experiments = {}          # A list of all experiments registered with an Experiment Manager
         self.header = ''
         self._dir = os.path.join(os.getenv('HOME'), '.xmen')
 
@@ -258,7 +257,6 @@ class Config(object):
 
     def _to_yml(self):
         """Save the current config to an ``config.yaml``"""
-
         params = {k: v for k, v in self.__dict__.items() if k[0] != '_'}
         with open(os.path.join(self._dir, 'config.yml'), 'w') as file:
             ruamel.yaml.dump(params, file, Dumper=ruamel.yaml.RoundTripDumper)
@@ -268,7 +266,16 @@ class Config(object):
         with open(os.path.join(self._dir, 'config.yml'), 'r') as file:
             params = ruamel.yaml.load(file, ruamel.yaml.RoundTripLoader)
             for k, v in params.items():
-                self.__dict__[k] = v
+                if k == 'experiments' and len(v) != 0 and type(v[0]) is not CommentedMap:
+                    experiments = []
+                    for vv in v:
+                        em = ExperimentManager(root=vv, headless=True)
+                        experiments.append({
+                            'root': em.root, 'created': em.created, 'purpose': em.purpose, 'notes': em.notes})
+                    self.__dict__[k] = experiments
+                    self._to_yml()
+                else:
+                    self.__dict__[k] = v
 
     def __str__(self):
         string = f'Prompt for Message: {self.prompt_for_message}\n'
@@ -280,9 +287,17 @@ class Config(object):
            string += f'  - {k}: {v}\n'
         string += 'Header:\n'
         string += self.header + '\n'
-        string += 'Experiment Roots:\n'
+        string += 'Experiments:\n'
         for e in self.experiments:
-            string += f'  - {e}\n'
+            e = dict(e)
+            string += f'  - root: {e["root"]}\n'
+            string += f'  - created: {e["created"]}\n'
+            string += f'  - purpose: {e["purpose"]}\n'
+            for i, note in enumerate(e['notes']):
+                if i == 0:
+                    string += f'  - Notes:'
+                string += f'    - {note}\n'
+            string +='\n'
         return string
 
     def list(self):
@@ -509,7 +524,7 @@ class ExperimentManager(object):
             experiment_run('all')                                         # Run all created experiments
         """
 
-    def __init__(self, root=""):
+    def __init__(self, root="", headless=False):
         """Link an experiment manager to root. If root already contains an ``experiment.yml`` then it is loaded.
 
         In order to link a new experiment with a defaults.yml and script.sh file then the initialise method must be
@@ -541,7 +556,10 @@ class ExperimentManager(object):
         self.purpose = None
         self.notes = []
         self._specials = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version']
-        self._config = Config()
+        if not headless:
+            self._config = Config()
+        else:
+            self._config = None
 
         # Load dir from yaml
         if os.path.exists(os.path.join(self.root, 'experiment.yml')):
@@ -666,15 +684,19 @@ class ExperimentManager(object):
             exit()
         print(f'Experiment root created at {self.root}')
 
-        # Add experiment to global config
-        with self._config:
-            self._config.experiments.append(self.root)
-
         # Add purpose message
         if self._config.prompt_for_message:
             purpose = input('\nPlease enter the purpose of the experiments: ')
-
         self.purpose = purpose
+
+        # Add experiment to global config
+        with self._config:
+            self._config.experiments.append(
+                {'path': self.root,
+                 'created': self.created,
+                 'purpose': self.purpose,
+                 'notes': self.notes})
+
         self._to_yml()
 
     def _generate_params_from_string_params(self, x):
@@ -711,6 +733,10 @@ class ExperimentManager(object):
             self.notes += [msg.strip()]
         else:
             self.notes = [n for n in self.notes if msg.strip() != n]
+
+        # Add experiment to global config
+        with self._config:
+            self._config.experiments[self.root]['notes'] = self.notes
         self._to_yml()
 
     def register(self, string_params, purpose, header=None, shell='/bin/bash'):
@@ -847,6 +873,11 @@ class ExperimentManager(object):
             # Update the overridden parameters
             params.update(overides)
             self.save_params(params, experiment_name)
+            self.experiments = []
+            self.overides = []
+            self.created = None
+            self.purpose = None
+            self.notes = []
             self.experiments.append(experiment_path)
             self.overides.append(overides)
             self._to_yml()
