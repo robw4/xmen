@@ -269,14 +269,13 @@ class Config(object):
             params = ruamel.yaml.load(file, ruamel.yaml.RoundTripLoader)
             to_yml = False
             for k, v in params.items():
-                if k == 'experiments' and len(v) != 0 and type(v[0]) is not CommentedMap:
-                    experiments = []
+                if k == 'experiments' and len(v) != 0 and type(v) is not CommentedMap:
+                    experiments = {}
                     to_yml = True
                     for vv in v:
                         em = ExperimentManager(root=vv, headless=True)
-                        experiments.append({
-                            'root': em.root, 'created': em.created, 'type':
-                                em.type, 'purpose': em.purpose, 'notes': em.notes})
+                        experiments[em.root] = {
+                            'created': em.created, 'type': em.type, 'purpose': em.purpose, 'notes': em.notes}
                     self.__dict__[k] = experiments
                 else:
                     self.__dict__[k] = v
@@ -298,9 +297,9 @@ class Config(object):
         string += self.header + '\n'
         string += '\n'
         string += 'Experiments:\n'
-        for e in self.experiments:
+        for k, e in self.experiments.items():
             e = dict(e)
-            string += f'  - root: {e["root"]}\n'
+            string += f'  - root: {k}\n'
             string += f'    - created: {e["created"]}\n'
             string += f'    - type: {e["type"]}\n'
             string += f'    - purpose: {e["purpose"]}\n'
@@ -701,12 +700,11 @@ class ExperimentManager(object):
 
         # Add experiment to global config
         with self._config:
-            self._config.experiments.append(
-                {'path': self.root,
-                 'created': self.created,
-                 'purpose': self.purpose,
-                 'notes': self.notes})
-
+            self._config.experiments[self.root] = {
+                'created': self.created,
+                'type': self.type,
+                'purpose': self.purpose,
+                'notes': self.notes}
         self._to_yml()
 
     def _generate_params_from_string_params(self, x):
@@ -980,8 +978,9 @@ class ExperimentManager(object):
                 print('Aborting!')
                 return
         with self._config:
-            self._config.experiments.remove(self.root)
+            self._config.experiments.pop(self.root)
             rmtree(self.root)
+            
             print(f'Removed {self.root}')
 
     def run(self, pattern, *args):
