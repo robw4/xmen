@@ -86,9 +86,11 @@ def _note(args):
     experiment_manager = ExperimentManager(args.root)
     experiment_manager.note(args.message, args.delete)
 
+
 def _rm(args):
     experiment_manager = ExperimentManager(args.root)
     experiment_manager.rm()
+
 
 def _config(args):
     with Config() as config:
@@ -265,39 +267,47 @@ class Config(object):
         """Load the experiment config from an ``config.yml`` file"""
         with open(os.path.join(self._dir, 'config.yml'), 'r') as file:
             params = ruamel.yaml.load(file, ruamel.yaml.RoundTripLoader)
+            to_yml = False
             for k, v in params.items():
                 if k == 'experiments' and len(v) != 0 and type(v[0]) is not CommentedMap:
                     experiments = []
+                    to_yml = True
                     for vv in v:
                         em = ExperimentManager(root=vv, headless=True)
                         experiments.append({
-                            'root': em.root, 'created': em.created, 'purpose': em.purpose, 'notes': em.notes})
+                            'root': em.root, 'created': em.created, 'type':
+                                em.type, 'purpose': em.purpose, 'notes': em.notes})
                     self.__dict__[k] = experiments
-                    self._to_yml()
                 else:
                     self.__dict__[k] = v
+        if to_yml:
+            self._to_yml()
 
     def __str__(self):
         string = f'Prompt for Message: {self.prompt_for_message}\n'
+        string += '\n'
         string += f'Python Path:\n'
         for p in self.python_paths:
             string += f'  - {p}\n'
+        string += '\n'
         string += 'Python Experiments:\n'
         for k, v in self.python_experiments.items():
            string += f'  - {k}: {v}\n'
+        string += '\n'
         string += 'Header:\n'
         string += self.header + '\n'
+        string += '\n'
         string += 'Experiments:\n'
         for e in self.experiments:
             e = dict(e)
             string += f'  - root: {e["root"]}\n'
-            string += f'  - created: {e["created"]}\n'
-            string += f'  - purpose: {e["purpose"]}\n'
+            string += f'    - created: {e["created"]}\n'
+            string += f'    - type: {e["type"]}\n'
+            string += f'    - purpose: {e["purpose"]}\n'
             for i, note in enumerate(e['notes']):
                 if i == 0:
-                    string += f'  - Notes:'
-                string += f'    - {note}\n'
-            string +='\n'
+                    string += f'    - notes:\n'
+                string += f'      - {note}\n'
         return string
 
     def list(self):
@@ -555,6 +565,7 @@ class ExperimentManager(object):
         self.created = None
         self.purpose = None
         self.notes = []
+        self.type = None
         self._specials = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version']
         if not headless:
             self._config = Config()
@@ -617,14 +628,12 @@ class ExperimentManager(object):
             self.created = params['created']
             self.experiments = params['experiments']
             self.overides = params['overides']
-            try:
+            if 'purpose' in params:
                 self.purpose = params['purpose']
-            except KeyError:
-                pass
-            try:
+            if 'notes' in params:
                 self.notes = params['notes']
-            except KeyError:
-                pass
+            if 'type' in params:
+                self.type = params['type']
 
     def initialise(self, *, defaults="", script="", purpose="", name=None):
         """Link an experiment manager with a ``defaults.yml`` file and ``sript.sh``.
@@ -673,6 +682,7 @@ class ExperimentManager(object):
             subprocess.call(['python', self._config.python_experiments[name], '--to_root', self.root])
             self.script = os.path.join(self.root, 'script.sh')
             self.defaults = os.path.join(self.root, 'defaults.yml')
+            self.type = name
 
         # Meta Information
         self.created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
