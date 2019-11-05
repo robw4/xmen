@@ -881,11 +881,6 @@ class ExperimentManager(object):
             # Update the overridden parameters
             params.update(overides)
             self.save_params(params, experiment_name)
-            self.experiments = []
-            self.overides = []
-            self.created = None
-            self.purpose = None
-            self.notes = []
             self.experiments.append(experiment_path)
             self.overides.append(overides)
             self._to_yml()
@@ -980,7 +975,7 @@ class ExperimentManager(object):
         with self._config:
             self._config.experiments.pop(self.root)
             rmtree(self.root)
-            
+
             print(f'Removed {self.root}')
 
     def run(self, pattern, *args):
