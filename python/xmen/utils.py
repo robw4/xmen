@@ -38,7 +38,7 @@ def get_attribute_helps(cls):
                 candidates = d.split('Parameters')[1].splitlines()
                 candidates = [c.strip() for c in candidates]
                 for a in att_keys:
-                    h = [s.strip() for s in candidates if s[:len(a)] == a]
+                    h = [s.strip() for s in candidates if s.startswith(a + ' ')]
                     if len(h) > 1:
                         # Be even more restrictive
                         h = [s for s in h if ':' in s]
