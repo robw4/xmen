@@ -61,6 +61,46 @@ def get_docs(cl):
         return [cl.__doc__] + get_docs(cl.__base__)
 
 
+def get_parameters(cls):
+    code = inspect.getsource(cls.__init__)
+    lines = code.splitlines()
+    new_lines = []
+    # new_lines = ['', '', 'Attributes:']
+    for l in lines:
+        if 'self.' in l and 'self._' not in l:
+            l = l.strip()
+            default = l.split('=')[1] if '=' in l else None  # default always appears after = and before comment
+            comment = l.split('#')[1] if '#' in l else None  # comment always appears after #
+            if comment is not None and default is not None:
+                default = default.split('#')[0].strip()
+            ty = None
+            if ':' in l:  # self.a: int ...
+                attr = l.split(':')[0].replace('self.', '')
+                if '=' in l:
+                    ty = l.split(':')[1].split('=')[0].strip()
+                elif '#' in l:
+                    ty = l.split(':')[1].split('#')[0].strip()
+                else:
+                    ty = l.split(':')[1].strip()
+            elif '=' in l:  # self.a = 3 ....
+                attr = l.split('=')[0].replace('self.', '')
+            elif '#' in l:  # self.a # Some docs
+                attr = l.split('#')[0].replace('self.', '')
+            else:  # self.a (already stripped)
+                attr = l.replace('self.', '')
+            # Generate attribute lines
+            new_line = f'    {attr}'
+            if ty is not None:
+                new_line += f' ({ty}):'
+            else:
+                new_line += ':'
+            if comment is not None:
+                new_line += f' {comment.strip()}'
+            if default is not None:
+                new_line += f' (default={default})'
+            new_lines += [new_line]
+
+
 class TypedMeta(type):
     """A meta class helper used to generate automatic doc strings generated from typed class definitions. This allows
     the docstrings to be defined inside the ``__init__`` body instead of inside the doc string iradicating the need
@@ -68,8 +108,9 @@ class TypedMeta(type):
 
         MyClass(metaclass=TypedMeta):
             '''This class is bound to do something...'''
-            a int: 3   # My first attribute
-            b int: 5   # My second attribute
+
+            a int: 3   # @p My first attribute
+            b int: 5   # @p My second attribute
 
          m = MyClass()
          print(m.__init.__.__doc__)
@@ -86,35 +127,35 @@ class TypedMeta(type):
 
     The doc string has automatically been updated.
     """
-
     def __init__(cls, name, bases, attr_dict):
         super(TypedMeta, cls).__init__(name, bases, attr_dict)
         code = inspect.getsource(cls.__init__)
+
+        # indent = len(code.split('with RegisterParams(self):')[0].splitlines()[-1]) + 4
+        # param_blocks = code.split('with RegisterParams(self):')[1:]
+        helps = []
+
+        # for param_block in param_blocks:
+            # indent = len(register_line) - len(register_line.lstrip(' '))
         lines = code.splitlines()
-        new_lines = []
-        # new_lines = ['', '', 'Attributes:']
         for l in lines:
-            if 'self.' in l and 'self._' not in l:
+            # if l.startswith(indent * ' ' + 'self.')  and 'self._' not in l:
+            # All parameters will have a comment
+            if '#@p' in l.replace(' ', ''):
                 l = l.strip()
-                default = l.split('=')[1] if '=' in l else None    # default always appears after = and before comment
-                comment = l.split('#')[1] if '#' in l else None    # comment always appears after #
-                if comment is not None and default is not None:
-                    default = default.split('#')[0].strip()
+                default = l.split('=')[1].split('#')[0].strip() if '=' in l else None    # default always appears after = and before comment
+                comment = l.split('@p')[1].strip() if len(l.split('@p')) > 1 else None  # comment always appears after #@p
+                if comment == '':
+                    comment = None
+                # New line
+                l = l.split('#')[0]
+                l = l.split('=')[0]
                 ty = None
                 if ':' in l:   # self.a: int ...
-                    attr = l.split(':')[0].replace('self.', '')
-                    if '=' in l:
-                        ty = l.split(':')[1].split('=')[0].strip()
-                    elif '#' in l:
-                        ty = l.split(':')[1].split('#')[0].strip()
-                    else:
-                        ty = l.split(':')[1].strip()
-                elif '=' in l:  # self.a = 3 ....
-                    attr = l.split('=')[0].replace('self.', '')
-                elif '#' in l:  # self.a # Some docs
-                    attr = l.split('#')[0].replace('self.', '')
+                    attr = l.split(':')[0].replace('self.', '').strip()
+                    ty = l.split(':')[1].strip()
                 else:   # self.a (already stripped)
-                    attr = l.replace('self.', '')
+                    attr = l.replace('self.', '').strip()
                 # Generate attribute lines
                 new_line = f'    {attr}'
                 if ty is not None:
@@ -125,15 +166,20 @@ class TypedMeta(type):
                     new_line += f' {comment.strip()}'
                 if default is not None:
                     new_line += f' (default={default})'
-                new_lines += [new_line]
-        # Add to __class__.__init__.__doc__
+                # Log parametes
+                cls._Experiment__params.update({attr.strip(' '): (default, ty, comment, new_line)})
+                helps += [new_line]
+
+        # Update class __doc__ strings documentation
         if cls.__init__.__doc__ is None:
             cls.__init__.__doc__ = ''
-        cls.__init__.__doc__ += '\n'.join(['', '', 'Parameters:'] + new_lines)
+        cls.__init__.__doc__ += '\n'.join(['', '', 'Parameters:'] + helps)
         # Add to __class__.__doc__
         if cls.__doc__ is None:
             cls.__doc__ = ""
-        cls.__doc__ += '\n'.join(['', '', f'Parameters:'] + new_lines)
+        cls.__doc__ += '\n'.join(['', '', f'Parameters:'] + helps)
+
+
 
     # def __new__(mcs, name, bases, attr_dict):
     #     x = super(TypedMeta, mcs).__new__(mcs, name, bases, attr_dict)

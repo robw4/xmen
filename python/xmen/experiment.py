@@ -24,6 +24,7 @@ from ruamel.yaml.comments import CommentedMap
 import pandas as pd
 import collections
 import argparse
+from typing import Optional
 
 from xmen.utils import *
 
@@ -47,9 +48,9 @@ experiment_parser.add_argument('--register', type=str, nargs=2, default=None, me
                                     'positional)')
 experiment_parser.add_argument('--debug', type=bool, default=None, help='Run experiment in debug mode. Experiment is '
                                                                          'registered to a folder in /tmp')
-
 experiment_parser.add_argument('--name', action='store_true', help='Return the name of the experiment class')
 
+_SPECIALS =  ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version']
 
 class Experiment(object, metaclass=TypedMeta):
     """A generic experiment type.
@@ -57,7 +58,8 @@ class Experiment(object, metaclass=TypedMeta):
     **The Experiment Class**
     Experiments are defined by:
 
-    1. *Parameters*: public attributes to the class definition (eg. ``self.a``, ``self.b`` etc.)
+    1. *Parameters*: public attributes to the class definition (eg. ``self.a``, ``self.b`` etc.), decalared with the
+        special parameter ``# @p`` in a comment after the definition.
     2. *Execution*: defined by overloading the ``run()`` method
 
     For example::
@@ -71,13 +73,12 @@ class Experiment(object, metaclass=TypedMeta):
              In this case Attributes documentation will be added to the docstring
              automatically by the TypedMeta metaclass.
              '''
-             self.a: int = 3     # This is the first parameter
-             self.b: str = '4'   # This is the second parameter
-             self.c: int = 2     # This is the third parameter
+             self.a: int = 3     # @p This is the first parameter
+             self.b: str = '4'   # @p This is the second parameter
+             self.c: int = 2     # @p This is the third parameter
 
-             # Private attributes are not assumed to be parameters. Use these to store
-             # state information that vary with program execution.
-             self._a = None
+             # Other attributes are not assumed to be parameters and cun run throughout excution
+             self.a = None   # This is not a parameter
 
        def run(self):
            '''The execution of an experiment is defined by overloading the run method.
@@ -125,6 +126,7 @@ class Experiment(object, metaclass=TypedMeta):
 
          exp = AnExperiment()
          exp.update({'a': 3, 'b': 'z'})
+         exp.c = 4    # Direct parameter access is also aloud
          exp.to_root('/path/to/root/dir')
 
     * *Loading experiments configured with the experiment manager*: Each experiment can also be loaded from a
@@ -184,30 +186,23 @@ class Experiment(object, metaclass=TypedMeta):
        path/to/an_experiment.py -h
 
     """
+    __params = {}
 
     def __init__(self, name=None, root=None, purpose=''):
         """Initialise the experiment object. If name and root are not None then the experiment is initialised in
         default mode else it is created at '{root}/{name}'.
-
-        Attributes:
-            _root (str): The root directory to which the experiment belongs (should not be set)
-            _name (str): The name of the experiment (should not be set)
-            _status (str): The status of the experiment (one of ['default' | 'created' | 'running' | 'error' | 'finished'])
-            _created (str): The date the last time the parameters of the model were updated.
-            _purpose(str): The purpose for the experiment (should not be set)
-            _messages (dict): A dictionary of messages which are able to vary throughout the experiment (should not be set)
-            _version (dict): A dictonary containing the experiment version information. See `get_version` for more info
         """
         if (name is None) == (root is None):
-            self._root = None
-            self._name = None
-            self._status = 'default'
-            self._created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
-            self._purpose = None
-            self._messages = {}
-            self._version = None
-            self._specials = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version']
-            self._helps = None
+            now_time = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
+            self._root: Optional[str] = None  # @p The root directory of the experiment
+            self._name: Optional[str] = None  # @p The name of the experiment (under root)
+            self._status: str = 'default'  # @p One of ['default' | 'created' | 'running' | 'error' | 'finished']
+            self._created: str = now_time # @p The date the experiment was created
+            self._purpose: str = Optional[None] # @p A description of the experiment purpose
+            self._messages: Dict[Any, Any] = {}  # @p Messages left by the experiment
+            self._version: str = Optional[None] # @p Experiment version information. See `get_version`
+            self._specials: List[str] = _SPECIALS
+            self._helps: Optional[Dict] = None
         else:
             raise ValueError("Either both or neither of name and root can be set")
         if name is not None:
@@ -285,11 +280,15 @@ class Experiment(object, metaclass=TypedMeta):
     def version(self, value):
         raise AttributeError('Property version cannot be set.')
 
+    def register_param(self, k, default, type=None, help=None):
+        self._params.update(k, (defualt, type, help))
+
+    def param_keys(self):
+        return self._Experiment__params.keys()
+
     def get_attributes_help(self):
         """Get help for all attributes in class (including inherited and private)."""
-        if self._helps is None:
-            self._helps = get_attribute_helps(type(self))
-        return self._helps
+        return {k: v[-1].strip() for k, v in self._Experiment__params.items()}
 
     def update_version(self):
         self._version = get_version(cls=self.__class__)
@@ -313,7 +312,7 @@ class Experiment(object, metaclass=TypedMeta):
     def _to_yaml(self, defaults_dir=None):
         """Save experiment to either a defaults.yml file or a params.yml file depending on its status"""
         self.update_version()
-        params = {k: v for k, v in self.__dict__.items() if k[0] != '_' or k in self._specials}
+        params = {k: v for k, v in self.__dict__.items() if k in self.param_keys() or k in self._specials}
         params = {k: v for k, v in params.items() if '_' + k not in self.__dict__}
         helps = self.get_attributes_help()
 
@@ -348,7 +347,7 @@ class Experiment(object, metaclass=TypedMeta):
         # Update created date
         self._created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")
 
-    def register(self, root, name, purpose='', force=True):
+    def register(self, root, name, purpose='', force=True, same_names=100):
         """Register an experiment to an experiment directory. Its status will be updated to ``registered``. If an
         experiment called ``name`` exists in ``root`` and ``force==True`` then name will be appended with an int
         (eg. ``{name}_0``) until a unique name is found in ``root``. If ``force==False`` a ``ValueError`` will be raised.
@@ -360,13 +359,13 @@ class Experiment(object, metaclass=TypedMeta):
         if os.path.exists(os.path.join(folder, 'params.yml')):
             i = 0
             if force:
-                while i < 100:
+                while i < same_names:
                     if not os.path.exists(os.path.join(folder + '_' + str(i), 'params.yml')):
                         folder += '_' + str(i)
                         name += '_' + str(i)
                         break
                     i += 1
-            elif i == 99 or not force:
+            elif i == same_names or not force:
                 raise ValueError(f'Experiment folder {os.path.join(root, name)} already contains a params.yml file. '
                                  f'An Exeperiment cannot be created in an already existing experiment folder')
 
@@ -478,7 +477,7 @@ class Experiment(object, metaclass=TypedMeta):
     def update(self, kwargs):
         """Update the parameters with a given dictionary"""
         if self._status in ['default', 'detached']:
-            if any([k not in self.__dict__.keys() and k in self._specials for k in kwargs]):
+            if any([k not in self.param_keys() and k in self._specials for k in kwargs]):
                 raise ValueError('Key not recognised!')
             else:
                 self.__dict__.update(kwargs)
@@ -490,9 +489,9 @@ class Experiment(object, metaclass=TypedMeta):
     def __setattr__(self, key, value):
         """Attributes can only be changed when the status of the experiment is default"""
         # specials = ['name', 'root', 'status', 'created', 'purpose', 'messages', 'version']
-        if 'status' in self.__dict__:
-            if key[0] != '_' and self._status != 'default' and key not in self._specials:
-                raise AttributeError('Parameters can only be changed when status = "default"')
+        if '_status' in self.__dict__:
+            if key in self.param_keys() and not self._status in ['default', 'detached'] and key not in self._specials:
+                raise AttributeError('Parameters can only be changed when status = "default" or "detecahed"')
         self.__dict__.update({key: value})
 
     def __enter__(self):
@@ -562,3 +561,4 @@ class Experiment(object, metaclass=TypedMeta):
         lines += ['parameters:']
         lines += ['  ' + l for l in _recursive_print_dict(params, helps)]
         return '\n'.join(lines)
+
