@@ -866,7 +866,7 @@ class ExperimentManager(object):
             # Add base parameters to params
             helps = get_attribute_helps(Experiment)
             for i, (k, v) in enumerate(extra_params.items()):
-                h = helps[k].split(':')[1] if helps[k] is not None else helps[k]
+                h = Experiment._Experiment__params[k][2]
                 params.insert(i, k, v, h)
 
             # Generate a script.sh in each folder that can be used to run the experiment

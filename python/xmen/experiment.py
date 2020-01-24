@@ -24,7 +24,7 @@ from ruamel.yaml.comments import CommentedMap
 import pandas as pd
 import collections
 import argparse
-from typing import Optional
+from typing import Optional, Dict, List, Any
 
 from xmen.utils import *
 
@@ -281,7 +281,7 @@ class Experiment(object, metaclass=TypedMeta):
         raise AttributeError('Property version cannot be set.')
 
     def register_param(self, k, default, type=None, help=None):
-        self._params.update(k, (defualt, type, help))
+        self._params.update(k, (default, type, help))
 
     def param_keys(self):
         return self._Experiment__params.keys()
