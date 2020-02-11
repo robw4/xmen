@@ -202,7 +202,6 @@ class Experiment(object, metaclass=TypedMeta):
             self._purpose: Optional[str] = None   # @p A description of the experiment purpose
             self._messages: Dict[Any, Any] = {}   # @p Messages left by the experiment
             self._version: Optional[Dict[Any, Any]] = None   # @p Experiment version information. See `get_version`
-            self._home: Optional[None] = os.getenv('HOME')    # @p The root directory for the HOME environment variable
             self._specials: List[str] = _SPECIALS
             self._helps: Optional[Dict] = None
         else:
