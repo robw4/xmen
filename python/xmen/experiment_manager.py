@@ -35,7 +35,9 @@ import copy
 import re
 from copy import deepcopy
 from xmen.utils import *
+
 pd.set_option('expand_frame_repr', False)
+pd.set_option('display.max_rows', 500)
 
 from xmen.experiment import Experiment
 
@@ -75,13 +77,14 @@ def _list(args):
     results, special_keys = global_exp_manager.find(
         mode='all', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
         load_params=args.load_params)
-    data_frame = global_exp_manager.find_to_dataframe(
+    data_frame, root = global_exp_manager.find_to_dataframe(
         results, special_keys, verbose=args.verbose)
     if data_frame.empty:
         print(f'No experiments found which match glob pattern {pattern}. With parameter filter = {args.param_match} '
               f'and type filter = {args.type_match}.')
     else:
         print(data_frame)
+        print(f'Roots relative to {root}')
     # else:
     #     root = os.getcwd() if args.pattern == '*' else args.pattern
     #     if os.path.exists(os.path.join(root, 'experiment.yml')):
@@ -553,15 +556,15 @@ class GlobalExperimentManager(object):
 
         # Created table
         df = pd.DataFrame(display)
-        # # Shorten roots
-        # roots = [v["root"] for v in df.transpose().to_dict().values()]
-        # prefix = os.path.dirname(os.path.commonprefix(roots))
-        # roots = [r[len(prefix) + 1:] for r in roots]
-        # df.update({'root': roots})
+        # Shorten roots
+        roots = [v["root"] for v in df.transpose().to_dict().values()]
+        prefix = os.path.dirname(os.path.commonprefix(roots))
+        roots = [r[len(prefix) + 1:] for r in roots]
+        df.update({'root': roots})
         # if prefix != '':
         #     print(f'Roots Relative to {prefix}')
         df = df.filter(items=display_keys)
-        return df
+        return df, prefix
 
     def find_to_records(self, table, display_git=True):
         display_keys = ['root', 'defaults created', 'type', 'purpose', 'notes']
