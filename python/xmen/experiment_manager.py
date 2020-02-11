@@ -84,6 +84,7 @@ def _list(args):
               f'and type filter = {args.type_match}.')
     else:
         print(data_frame)
+        print(f'\n ------------------')
         print(f'Roots relative to {root}')
     # else:
     #     root = os.getcwd() if args.pattern == '*' else args.pattern
