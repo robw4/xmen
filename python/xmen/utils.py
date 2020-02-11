@@ -22,6 +22,30 @@ import os
 import inspect
 import git
 from ruamel.yaml.comments import CommentedSeq, CommentedMap
+import collections
+
+DATE_FORMAT = "%Y-%m-%d-%H-%M-%S"
+
+
+def recursive_print_lines(dic, helps=None, start=''):
+    lines = []
+    dic = commented_to_py(dic)
+    for k, v in dic.items():
+        if type(v) is dict or type(v) is collections.OrderedDict or type(v) is CommentedMap:
+            lines += [f'{k}:']
+            lines += ['  ' + start + l for l in recursive_print_lines(v)]
+        elif v is not None:
+            h = ''
+            if helps is not None:
+                if helps[k] is not None:
+                    h = helps[k].split(":")[1].strip()
+                else:
+                    h = ''
+            if h != '':
+                lines += [f'{start}{k}: {v}   # {h}']
+            else:
+                lines += [f'{start}{k}: {v}']
+    return lines
 
 
 def get_attribute_helps(cls):
@@ -215,7 +239,7 @@ class TypedMeta(type):
     # for l in lines:
     #     if l == '' or l.isspace():
     #         continue
-    #     # Get attribute and default types
+    #     # Get attribute and default types_match
     #     definition, comment = l.split('#') if '#' in l else (l, None)
     #     attr, type_default = definition.replace(" ", "").split(':')
     #     ty, default = type_default.split('=') if '=' in l else (type_default, None)
@@ -228,7 +252,6 @@ class TypedMeta(type):
     # docs = '\n'.join(new_lines)
     # x.__doc__ = x.__doc__ + docs
     # return x
-
 
 def get_git(path):
     """Get git information for the given path.
