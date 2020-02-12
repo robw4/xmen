@@ -498,6 +498,7 @@ class GlobalExperimentManager(object):
                     if mode == 'all':
                         if not load_defaults:
                             params = em.load_params(path)
+                            print(path, params)
                         else:
                             params = deepcopy(defaults)
                             params.update(em.overides[i])
