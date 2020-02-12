@@ -113,7 +113,8 @@ def _list(args):
         print(f'ERROR: Only one pattern may be passed but got {args.pattern}')
     pattern = args.pattern[0]
     if pattern == '':
-        pattern = os.getcwd()
+        pattern = os.path.join(os.getcwd() + '*')
+
     global_exp_manager = GlobalExperimentManager()
     results, special_keys = global_exp_manager.find(
         mode='all', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
@@ -130,9 +131,7 @@ def _list(args):
         print(f'No experiments found which match glob pattern {pattern}. With parameter filter = {args.param_match} '
               f'and type filter = {args.type_match}.')
     else:
-        print(tabulate(data_frame))
-        #
-        # print(f'\nRoots relative to {root}')
+        print(data_frame)
 
 
 def _run(args):
@@ -466,7 +465,7 @@ class GlobalExperimentManager(object):
                 out = False
             return out
 
-        # Will use same pattern to search for parameters and messages
+        # Will use same pattern to search for  parameters and messages
         # All special parameters are recorded
 
         # Search through valid experiments
@@ -558,12 +557,15 @@ class GlobalExperimentManager(object):
                                 if k not in extracted:
                                     table[k] += ['']
                     else:
-                        for k, v in params.items():
-                            if k.startswith('_') and k not in ['_root', '_purpose']:
-                                if k not in table:
-                                    table[k] = [v]
-                                else:
-                                    table[k] += [v]
+                        try:
+                            for k, v in params.items():
+                                if k.startswith('_') and k not in ['_root', '_purpose']:
+                                    if k not in table:
+                                        table[k] = [v]
+                                    else:
+                                        table[k] += [v]
+                        except:
+                            print(f'Failed for {params}')
 
                     # Add data to table from experiment.yml
                     if load_defaults:
@@ -591,10 +593,10 @@ class GlobalExperimentManager(object):
             'purpose': table.pop('_purpose')})
         # Remove Notes
         notes = table.pop('_notes')
-        for i in range(len(notes)):
-            if notes[i] is not None:
-                notes[i] = '\n'.join(notes[i])
-        display['notes'] = notes
+        # for i in range(len(notes)):
+        #     if notes[i] is not None:
+        #         notes[i] = '\n'.join(notes[i])
+        # display['notes'] = notes
 
         if '_status' in special_keys:
             display['status'] = table.pop('_status')
