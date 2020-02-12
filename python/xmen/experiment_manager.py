@@ -88,7 +88,7 @@ def _notebook(args):
             note += ('\n' + ' ' * k).join(['|- ' + ee[len(r) + 1:] for ee in e]) + '\n' + ' ' * k
         note += 'Purpose: ' + p + '\n' + ' ' * k
         note += 'Created: ' + d + '\n' + ' ' * k
-        note += 'Type: ' + t
+        note += 'Type: ' + str(t)
         if len(n) > 0:
             note += '\n' + ' ' * k + 'Notes: ' + '\n' + ' ' * (k + 2)
             note += ('\n' + ' ' * (k + 2)).join(['\n'.join(textwrap.wrap(nn, width=1000, subsequent_indent=' ' * (k + 3))) for i, nn in enumerate(n)])
