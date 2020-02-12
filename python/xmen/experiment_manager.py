@@ -595,10 +595,6 @@ class GlobalExperimentManager(object):
             'purpose': table.pop('_purpose')})
         # Remove Notes
         notes = table.pop('_notes')
-        # for i in range(len(notes)):
-        #     if notes[i] is not None:
-        #         notes[i] = '\n'.join(notes[i])
-        # display['notes'] = notes
 
         if '_status' in special_keys:
             display['status'] = table.pop('_status')
@@ -647,6 +643,9 @@ class GlobalExperimentManager(object):
         display.update(table)
 
         # Created table
+        for k, v in display.items():
+            print(k, len(v))
+
         df = pd.DataFrame(display)
         # Shorten roots
         roots = [v["root"] for v in df.transpose().to_dict().values()]
