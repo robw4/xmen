@@ -539,13 +539,22 @@ class GlobalExperimentManager(object):
         # Messages
         if '_messages' in special_keys:
             messages = table.pop('_messages')  # List of dict
-            all_keys = []
+            message_dict = {}
+            encountered = []
             for m in messages:
-                all_keys += list(m.keys())
-            all_keys = list(set(all_keys))
-            for m in messages:
-                for k in all_keys:
-                    display[k] = m.get(k, None)
+                table_length = max([len(v) for v in message_dict.values()]) if len(message_dict) != 0 else 0
+                for k, v in m.items():
+                    if k not in ['_root', '_purpose']:
+                        if k not in message_dict:
+                            encountered += [k]
+                            message_dict[k] = [''] * table_length + [v]
+                        else:
+                            message_dict[k] += [v]
+                for k in encountered:
+                    if k not in m:
+                        message_dict[k] += ['']
+            # print(message_dict)
+            display.update(message_dict)
         if verbose:
             display_keys = list(display.keys())
         else:
