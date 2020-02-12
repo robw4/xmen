@@ -472,7 +472,7 @@ class GlobalExperimentManager(object):
         # table = {'root': [], 'name': [], 'defaults created': [], 'type': [], 'purpose': [], 'defaults git': [], 'notes': []}
         experiments = fnmatch.filter(self.experiments.keys(), pattern)
         # From experiment.yml
-        table = {'_root': [], '_purpose': [], '_notes': [], '_type': []}
+        table = {'_root': [], '_purpose': [], '_type': [], '_notes': []}
         # Additional
         if load_defaults:
             table.update({'_name': [], '_created': [], '_version': []})
@@ -498,7 +498,6 @@ class GlobalExperimentManager(object):
                     if mode == 'all':
                         if not load_defaults:
                             params = em.load_params(path)
-                            print(path, params)
                         else:
                             params = deepcopy(defaults)
                             params.update(em.overides[i])
