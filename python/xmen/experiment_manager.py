@@ -33,8 +33,10 @@ import importlib.util
 import argparse
 import copy
 import re
+import textwrap
 from copy import deepcopy
 from xmen.utils import *
+from tabulate import tabulate
 
 pd.set_option('expand_frame_repr', False)
 pd.set_option('display.max_rows', 500)
@@ -65,33 +67,59 @@ def _records(args):
     print(records)
 
 
+def _notebook(args):
+    if len(args.pattern) > 1:
+        print(f'ERROR: Only one pattern may be passed but got {args.pattern}')
+    pattern = args.pattern[0]
+    if pattern == '':
+        pattern = os.getcwd()
+    global_exp_manager = GlobalExperimentManager()
+    results, special_keys = global_exp_manager.find(
+        mode='set', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
+        load_defaults=True)
+
+    experiments = []
+    notes = []
+    for r, e in zip(results['_root'], results['_experiments']):
+        experiments += [r + '\n' + '\n'.join(['|- ' + ee[len(r) + 1:] for ee in e])]
+    for p, n in zip(results['_purpose'], results['_notes']):
+        note = p
+        if len(n) > 0:
+            note += '\n'.join(['\n'.join(textwrap.wrap(nn, width=50, subsequent_indent=' ')) for i, nn in enumerate(n)])
+        notes += [note]
+    display = {
+        # 'root': results['_root'],
+        'experiments': experiments,
+        'notes': notes}
+    df = pd.DataFrame(display)
+    print(tabulate(df, headers='keys'))
+
+
 def _list(args):
     if len(args.pattern) > 1:
         print(f'ERROR: Only one pattern may be passed but got {args.pattern}')
     pattern = args.pattern[0]
     if pattern == '':
         pattern = os.getcwd()
-        args.load_params = True
-
     global_exp_manager = GlobalExperimentManager()
     results, special_keys = global_exp_manager.find(
         mode='all', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
-        load_params=args.load_params)
+        load_defaults=args.load_defaults)
     data_frame, root = global_exp_manager.find_to_dataframe(
-        results, special_keys, verbose=args.verbose)
+        results, special_keys,
+        verbose=args.verbose,
+        display_git=args.display_git,
+        display_purpose=args.display_purpose,
+        display_date=args.display_date,
+        display_messages=args.display_messages,
+        display_status=args.display_status)
     if data_frame.empty:
         print(f'No experiments found which match glob pattern {pattern}. With parameter filter = {args.param_match} '
               f'and type filter = {args.type_match}.')
     else:
-        print(data_frame)
-        print(f'\n ------------------')
-        print(f'Roots relative to {root}')
-    # else:
-    #     root = os.getcwd() if args.pattern == '*' else args.pattern
-    #     if os.path.exists(os.path.join(root, 'experiment.yml')):
-    #         # If an experiment.yml file lives in the current root then print experiments
-    #         experiment_manager = ExperimentManager(root)
-    #         experiment_manager.list()
+        print(tabulate(data_frame))
+        #
+        # print(f'\nRoots relative to {root}')
 
 
 def _run(args):
@@ -222,19 +250,19 @@ register_parser.add_argument('-r', '--root', metavar='DIR', default='',
 register_parser.set_defaults(func=_register)
 
 # Records
-record_parser = subparsers.add_parser('records', help='Print notes and purpose of each experiement sets')
-record_parser.add_argument('pattern', type=str, help='List experiments which match pattern', default='*',
-                           nargs='*')
-record_parser.add_argument('-p', '--param_match', type=str, default=None, nargs='*',
-                           help="List only sets with certain parameter conditions of the form reg, reg==val or "
+notebook_parser = subparsers.add_parser('notebook', help='Print notes and purpose of each experiement sets')
+notebook_parser.add_argument('pattern', type=str, help='List experiments which match pattern', default='*',
+                             nargs='*')
+notebook_parser.add_argument('-p', '--param_match', type=str, default=None, nargs='*',
+                             help="List only sets with certain parameter conditions of the form reg, reg==val or "
                                 "val1==reg==val2. Here reg is a regex matching a set of parameters. "
                                 "==, <, >, !=, >=, <=  are all supported with meaning defined as in python. Eg. "
                                 "a.*==cat and 1.0<a.*<=2.0 will return any experiment that has parameters that match "
                                 "a.* provided that each match satisfies the condition.")
-record_parser.add_argument('-n', '--type_match', type=str, default=None, nargs='*',
-                           help="List only experiments with this type (class).")
-record_parser.add_argument('-g', '--display_git', action='store_true', default=None, help="Display GIT information")
-record_parser.set_defaults(func=_records)
+notebook_parser.add_argument('-n', '--type_match', type=str, default=None, nargs='*',
+                             help="List only experiments with this type (class).")
+notebook_parser.add_argument('-g', '--display_git', action='store_true', default=None, help="Display GIT information")
+notebook_parser.set_defaults(func=_notebook)
 
 # List
 list_parser = subparsers.add_parser('list', help='List experiments to screen')
@@ -248,9 +276,23 @@ list_parser.add_argument('-p', '--param_match', type=str, default=None, nargs='*
 list_parser.add_argument('-n', '--type_match', type=str, default=None, nargs='*',
                          help="List only experiments with this type (class).")
 list_parser.add_argument('-v', '--verbose', action='store_true', default=None,
-                         help="Display created and type information for each experiment")
-list_parser.add_argument('--load_params', action='store_true', default=None,
-                         help='Load params.yml to load status and messages for each experiment (warning slower)')
+                         help="Display all information for each experiment")
+list_parser.add_argument('-d', '--display_date', action='store_true', default=None,
+                         help="Display created date for each experiment")
+list_parser.add_argument('-g', '--display_git', action='store_true', default=None,
+                         help="Display git commit for each experiment")
+list_parser.add_argument('-P', '--display_purpose', action='store_true', default=None,
+                         help="Display purpose for each experiment")
+list_parser.add_argument('-s', '--display_status', action='store_true', default=None,
+                         help="Display status for each experiment")
+list_parser.add_argument('-m', '--display_messages', action='store_true', default=None,
+                         help="Display messages for each experiment")
+
+
+
+list_parser.add_argument('--load_defaults', action='store_true', default=None,
+                         help='Infer parameters from load defaults.yml and overides instead of params.yml. Potentially'
+                              'faster but no messages are available.')
 list_parser.set_defaults(func=_list)
 
 # Run
@@ -402,7 +444,7 @@ class GlobalExperimentManager(object):
         #         string += f'      - {note}\n'
         return string
 
-    def find(self, mode='all', pattern="*", param_match=None, types_match=None, load_params=False):
+    def find(self, mode='all', pattern="*", param_match=None, types_match=None, load_defaults=False):
         def _comparison(*args):
             arg = ''.join(args)
             try:
@@ -420,10 +462,12 @@ class GlobalExperimentManager(object):
         # From experiment.yml
         table = {'_root': [], '_purpose': [], '_notes': [], '_type': []}
         # Additional
-        if not load_params:
+        if load_defaults:
             table.update({'_name': [], '_created': [], '_version': []})
         else:
             table.update({'_name': [], '_created': [], '_status': [], '_messages': [], '_version': []})
+        if mode != 'all':
+            table.update({'_experiments': []})
 
         special_keys = tuple(table.keys())
         # remove_paths = [p for p in glob.glob(os.path.join(self.root, pattern)) if p in self.experiments]
@@ -431,16 +475,16 @@ class GlobalExperimentManager(object):
         for root in experiments:
             try:
                 em = ExperimentManager(root)
-                if not load_params:
+                if load_defaults:
                     defaults = em.load_defaults()
                 if types_match is not None:
                     if em.type not in types_match:
                         raise NoMatchException(root)
-                paths = em.experiments if mode == 'all' else em.defaults
+                paths = em.experiments if mode == 'all' else [em.defaults]
 
                 for i, path in enumerate(paths):
                     if mode == 'all':
-                        if load_params:
+                        if not load_defaults:
                             params = em.load_params(path)
                         else:
                             params = deepcopy(defaults)
@@ -509,17 +553,20 @@ class GlobalExperimentManager(object):
                                     table[k] += [v]
 
                     # Add data to table from experiment.yml
-                    if not load_params:
+                    if load_defaults:
                         table['_name'] += [path.replace(em.root, '')[1:]]
+                    if mode != 'all':
+                        table['_experiments'] += [em.experiments]
                     table['_root'] += [em.root]
                     table['_purpose'] += [em.purpose]
                     table['_type'] += [em.type]
-                    table['_notes'] += [em.notes if em.notes else None]
+                    table['_notes'] += [em.notes]
             except NoMatchException as m:
                 continue
         return table, special_keys
 
-    def find_to_dataframe(self, table, special_keys, verbose=True, display_notes=None, display_git=None):
+    def find_to_dataframe(self, table, special_keys, verbose=True, display_git=None,
+                          display_purpose=None, display_date=None, display_messages=None, display_status=None):
         display = {
             'root': table.pop('_root')}
 
@@ -530,17 +577,23 @@ class GlobalExperimentManager(object):
             'type': table.pop('_type'),
             'purpose': table.pop('_purpose')})
         # Remove Notes
-        table.pop('_notes')
+        notes = table.pop('_notes')
+        for i in range(len(notes)):
+            if notes[i] is not None:
+                notes[i] = '\n'.join(notes[i])
+        display['notes'] = notes
+
         if '_status' in special_keys:
             display['status'] = table.pop('_status')
         # Add version information to table
         versions = table.pop('_version')
         display['commit'] = [version.get('git', {}).get('commit', None) for version in versions]
         # Messages
+
+        encountered = []
         if '_messages' in special_keys:
             messages = table.pop('_messages')  # List of dict
             message_dict = {}
-            encountered = []
             for m in messages:
                 table_length = max([len(v) for v in message_dict.values()]) if len(message_dict) != 0 else 0
                 for k, v in m.items():
@@ -555,10 +608,22 @@ class GlobalExperimentManager(object):
                         message_dict[k] += ['']
             # print(message_dict)
             display.update(message_dict)
+
         if verbose:
             display_keys = list(display.keys())
         else:
             display_keys = [v for v in ('root', 'name') if v in display]
+            if display_git:
+                display_keys += ['commit']
+            if display_status:
+                display_keys += ['status']
+            if display_date:
+                display_keys += ['date']
+            if display_messages and '_messages' in special_keys:
+                display_keys += encountered
+                display_keys += ['date']
+            if display_purpose:
+                display_keys += ['purpose']
 
         display_keys += list(table.keys())
         # Add other params
@@ -569,11 +634,13 @@ class GlobalExperimentManager(object):
         # Shorten roots
         roots = [v["root"] for v in df.transpose().to_dict().values()]
         prefix = os.path.dirname(os.path.commonprefix(roots))
-        roots = [r[len(prefix) + 1:] for r in roots]
+        if prefix != '/':
+            roots = [r[len(prefix) + 1:] for r in roots]
         df.update({'root': roots})
-        # if prefix != '':
-        #     print(f'Roots Relative to {prefix}')
+
+
         df = df.filter(items=display_keys)
+        # df.update({'notes': df.notes.str.split("\n", expand=True).stack()})
         return df, prefix
 
     def find_to_records(self, table, display_git=True):
