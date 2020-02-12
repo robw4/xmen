@@ -77,22 +77,35 @@ def _notebook(args):
     results, special_keys = global_exp_manager.find(
         mode='set', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
         load_defaults=True)
-
     experiments = []
     notes = []
-    for r, e in zip(results['_root'], results['_experiments']):
-        experiments += [r + '\n' + '\n'.join(['|- ' + ee[len(r) + 1:] for ee in e])]
-    for p, n in zip(results['_purpose'], results['_notes']):
-        note = p
+    for i, (r, e, p, n, d, t) in enumerate(
+            zip(*[results[j] for j in ('_root', '_experiments', '_purpose', '_notes', '_created', '_type')])):
+        k = 5
+        i = str(i)
+        note = ' ' * (k // 2 - len(str(i))) + str(i) + ' ' * (k // 2 - 1) + r + '\n' + ' ' * k
+        if len(e) > 0:
+            note += ('\n' + ' ' * k).join(['|- ' + ee[len(r) + 1:] for ee in e]) + '\n' + ' ' * k
+        note += 'Purpose: ' + p + '\n' + ' ' * k
+        note += 'Created: ' + d + '\n' + ' ' * k
+        note += 'Type: ' + t
         if len(n) > 0:
-            note += '\n'.join(['\n'.join(textwrap.wrap(nn, width=50, subsequent_indent=' ')) for i, nn in enumerate(n)])
+            note += '\n' + ' ' * k + 'Notes: ' + '\n' + ' ' * (k + 2)
+            note += ('\n' + ' ' * (k + 2)).join(['\n'.join(textwrap.wrap(nn, width=1000, subsequent_indent=' ' * (k + 3))) for i, nn in enumerate(n)])
         notes += [note]
+    print('\n'.join(notes))
+
+    # for p, n in zip(results['_purpose'], results['_notes']):
+    #     note = p
+    #     if len(n) > 0:
+    #         note += '\n'.join(['\n'.join(textwrap.wrap(nn, width=50, subsequent_indent=' ')) for i, nn in enumerate(n)])
+    #     notes += [note]
     display = {
         # 'root': results['_root'],
-        'experiments': experiments,
+        # 'experiments': experiments,
         'notes': notes}
     df = pd.DataFrame(display)
-    print(tabulate(df, headers='keys'))
+    # print(tabulate(df, headers='keys'))
 
 
 def _list(args):
