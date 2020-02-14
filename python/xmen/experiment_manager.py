@@ -36,12 +36,6 @@ import re
 import textwrap
 from copy import deepcopy
 from xmen.utils import *
-import math
-
-pd.set_option('expand_frame_repr', False)
-pd.set_option('display.width', None)
-pd.set_option('display.max_rows', 500)
-# pd.set_option('max_colwidth', 70)
 
 from xmen.experiment import Experiment
 
@@ -70,6 +64,10 @@ def _records(args):
 
 
 def _list(args):
+    # pd.set_option('expand_frame_repr', True)
+    pd.set_option('display.max_colwidth', args.max_width)
+    pd.set_option('display.max_rows', args.max_rows)
+
     if len(args.pattern) > 1:
         print(f'ERROR: Only one pattern may be passed but got {args.pattern}')
     pattern = args.pattern[0]
@@ -78,7 +76,7 @@ def _list(args):
     global_exp_manager = GlobalExperimentManager()
 
     if args.list:
-        results, special_keys = global_exp_manager.find(
+        results = global_exp_manager.find(
             mode='set', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
             load_defaults=True)
         notes = []
@@ -100,11 +98,11 @@ def _list(args):
             notes += [note]
         print('\n'.join(notes))
     else:
-        results, special_keys = global_exp_manager.find(
+        results = global_exp_manager.find(
             mode='all', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
             load_defaults=args.load_defaults)
         data_frame, root = global_exp_manager.find_to_dataframe(
-            results, special_keys,
+            results,
             verbose=args.verbose,
             display_git=args.display_git,
             display_purpose=args.display_purpose,
@@ -268,6 +266,10 @@ list_parser.add_argument('-l', '--list', action='store_true', default=None,
 list_parser.add_argument('--load_defaults', action='store_true', default=None,
                          help='Infer parameters from defaults.yml and overides instead of params.yml. Potentially '
                               'faster but no messages are available.')
+list_parser.add_argument('--max_width', default=60, help='The maximum width of an individual collumn. '
+                                                           'If None then will print for ever', type=int)
+list_parser.add_argument('--max_rows', default=None, help='Display tables with this number of rows.', type=int)
+
 list_parser.set_defaults(func=_list)
 
 # Run
@@ -324,6 +326,7 @@ relink_parser.set_defaults(func=_relink)
 
 class NoMatchException(Exception):
     def __init__(self, path):
+        """Experiment at ``path`` does not contain a match"""
         super(NoMatchException, self).__init__()
         self.path = path
 
@@ -376,6 +379,13 @@ class GlobalExperimentManager(object):
             self._to_yml()
 
     def clean(self):
+        """Iteratively search through experiment sets and remove any that no longer exist.
+
+        Note:
+            This is performed by checking that experiment folder is a valid set using
+            using ``ExperimentManager(p).check_initialised()``
+
+        """
         corrupted = []
         for p in self.experiments:
             try:
@@ -389,7 +399,8 @@ class GlobalExperimentManager(object):
                 self.experiments.pop(c)
                 print('  - ' + c)
 
-    def __str__(self):
+    def __repr__(self):
+        """The current configuration as a string"""
         string = f'Prompt for Message: {self.prompt_for_message}\n'
         string += '\n'
         string += f'Python Path:\n'
@@ -410,7 +421,41 @@ class GlobalExperimentManager(object):
 
         return string
 
-    def find(self, mode='all', pattern="*", param_match=None, types_match=None, load_defaults=False):
+    def find(self, mode='all', pattern="*", param_match=None, types_match=None, load_defaults=False, missing_entry=''):
+        """Search through all experiments in the globally filtering by experiment location, parameters, and type.
+
+        Args:
+            mode (str): If 'all' then all experiments for each set will be concatenated and summarised individually
+                whilst if 'set' then experiments will be summarised and searched for based on the default parameters.
+            pattern (str): A unix glob pattern of experiments to consider
+            param_match (list): A list of strings providing a condition to filter experiments by their parameters.
+                Compatible string formats are "regex", "regex op val" or "val1 op1 regex op2 val2" where op is in
+                ``[<=,==,>=,<,>,!=]``. If just a regex is supplied then only experiments with parameters matching the
+                regex will be returned. If an op is supplied then only experiments with all parameters which match the
+                regex and satisfy the condition will be returned.
+            types_match (list): A list of types of experiments to search for
+            load_defaults (bool): If True then ``defaults.yml`` files will be loaded and the parameters of each
+                experiment inferred from the overides defined in the ``experiment.yml`` file for each experiment set.
+                This is potentially faster (less io) but means that the messages for each experiment will not be
+                returned.
+            missing_entry: Assign this parameter to missing values (see notes).
+
+        Returns:
+            matches (dict): A dict with possible keys ``['_root', '_purpose', '_type', '_notes',  '_name', '_created',
+                '_version', '_status', '_messages', '_experiments', *param_keys]`` where  ``param_keys`` correspond to
+                any parameters that satisfy the conditions in param_match. The keys
+                ``['_root', '_purpose', '_type', '_notes', '_created']`` will always be present,
+                ``['_name', '_version']`` will be added if ``load_defaults==True`` and ``['_name', '_version',
+                '_status', '_messages]`` if ``load_defaults==False``. If [mode == 'set'] then
+                the key  '_experiments' will also be added (giving a list of paths to the experiments in each set).
+                The created dates in this case correspond to the date the set was created
+                (given in defaults.yml).
+            special_keys (dict): A list of keys starting with '_' present in the dictionary.
+
+        Note:
+            Due to the use of regex and conditions it is possible for parameters to match in one experiment which are
+                not present in another. In this case missing parameters are given a value equal to ``missing_string``.
+        """
         def _comparison(*args):
             arg = ''.join(args)
             try:
@@ -421,10 +466,6 @@ class GlobalExperimentManager(object):
 
         # Will use same pattern to search for  parameters and messages
         # All special parameters are recorded
-
-        # Search through valid experiments
-        # table = {'root': [], 'name': [], 'defaults created': [], 'type': [], 'purpose': [], 'defaults git': [], 'notes': []}
-        experiments = fnmatch.filter(self.experiments.keys(), pattern)
         # From experiment.yml
         table = {'_root': [], '_purpose': [], '_type': [], '_notes': []}
         # Additional
@@ -436,7 +477,9 @@ class GlobalExperimentManager(object):
             table.update({'_experiments': []})
 
         special_keys = tuple(table.keys())
-        # remove_paths = [p for p in glob.glob(os.path.join(self.root, pattern)) if p in self.experiments]
+
+        # Filter experimente by name
+        experiments = fnmatch.filter(self.experiments.keys(), pattern)
         encountered = []
         for root in experiments:
             try:
@@ -446,8 +489,8 @@ class GlobalExperimentManager(object):
                 if types_match is not None:
                     if em.type not in types_match:
                         raise NoMatchException(root)
-                paths = em.experiments if mode == 'all' else [em.defaults]
 
+                paths = em.experiments if mode == 'all' else [em.defaults]
                 for i, path in enumerate(paths):
                     if mode == 'all':
                         if not load_defaults:
@@ -498,7 +541,7 @@ class GlobalExperimentManager(object):
                             raise NoMatchException(root)
                         else:
                             # If we get here add parameters to experiments (extracted must have at least one element)
-                            # Current length of table
+                            # Infer current length of table (same length for every entry)
                             table_length = max([len(v) for v in table.values()])
                             if any([len(next(iter(table.values()))) != len(v) for v in table.values()]):
                                 raise RuntimeError('This should not happen')
@@ -507,12 +550,12 @@ class GlobalExperimentManager(object):
                                 if k not in ['_root', '_purpose']:
                                     if k not in table:
                                         encountered += [k]
-                                        table[k] = [''] * table_length + [v]
+                                        table[k] = [missing_entry] * table_length + [v]
                                     else:
                                         table[k] += [v]
                             for k in encountered:
                                 if k not in extracted:
-                                    table[k] += ['']
+                                    table[k] += [missing_entry]
                     else:
 
                         for k, v in params.items():
@@ -527,6 +570,7 @@ class GlobalExperimentManager(object):
                         table['_name'] += [path.replace(em.root, '')[1:]]
                     if mode != 'all':
                         table['_experiments'] += [em.experiments]
+
                     table['_root'] += [em.root]
                     table['_purpose'] += [em.purpose]
                     table['_type'] += [em.type]
@@ -534,10 +578,16 @@ class GlobalExperimentManager(object):
             except NoMatchException as m:
                 continue
 
-        return table, special_keys
+        if mode != 'all':
+            table.pop('_name')
+        return table
 
-    def find_to_dataframe(self, table, special_keys, verbose=True, display_git=None,
+    def find_to_dataframe(self, table, verbose=True, display_git=None,
                           display_purpose=None, display_date=None, display_messages=None, display_status=None):
+        """Convert the output of the `find` method to a formatted data frame configured by args. If verbose then all
+        entries will be displayed (independent of the other args)"""
+
+        special_keys = [k for k in table if k.startswith('_')]
         display = {
             'root': table.pop('_root')}
 
@@ -549,7 +599,7 @@ class GlobalExperimentManager(object):
             'purpose': table.pop('_purpose')})
 
         # Remove Notes
-        notes = table.pop('_notes')
+        table.pop('_notes')
 
         if '_status' in special_keys:
             display['status'] = table.pop('_status')
@@ -557,6 +607,7 @@ class GlobalExperimentManager(object):
         versions = table.pop('_version')
         display['commit'] = [version.get('git', {}).get('commit', None) for version in versions]
 
+        # Add messages to table
         encountered = []
         if '_messages' in special_keys:
             messages = table.pop('_messages')  # List of dict
@@ -597,6 +648,7 @@ class GlobalExperimentManager(object):
         if prefix != '/':
             roots = [r[len(prefix) + 1:] for r in roots]
         df.update({'root': roots})
+        # Finally filter
         df = df.filter(items=display_keys)
         return df, prefix
 
