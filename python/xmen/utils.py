@@ -23,6 +23,8 @@ import inspect
 import git
 from ruamel.yaml.comments import CommentedSeq, CommentedMap
 import collections
+import socket
+import getpass
 
 DATE_FORMAT = "%Y-%m-%d-%H-%M-%S"
 
@@ -46,6 +48,11 @@ def recursive_print_lines(dic, helps=None, start=''):
             else:
                 lines += [f'{start}{k}: {v}']
     return lines
+
+
+def get_meta():
+    """Get Meta information for the system"""
+    return {'host': socket.getfqdn(), 'user': getpass.getuser(), 'home': os.path.expanduser("~")}
 
 
 def get_attribute_helps(cls):
@@ -252,7 +259,6 @@ class TypedMeta(type):
     # docs = '\n'.join(new_lines)
     # x.__doc__ = x.__doc__ + docs
     # return x
-
 def get_git(path):
     """Get git information for the given path.
 
@@ -273,8 +279,7 @@ def get_git(path):
         'local': git_repo.git.rev_parse("--show-toplevel"),
         'remote': git_repo.remotes.origin.url,
         'commit': next(git_repo.iter_commits()).hexsha,
-        'branch': git_repo.active_branch.name
-    }
+        'branch': git_repo.active_branch.name}
     return info
 
 

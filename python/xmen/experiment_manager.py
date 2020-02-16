@@ -36,9 +36,8 @@ import re
 import textwrap
 from copy import deepcopy
 from xmen.utils import *
-
-from xmen.experiment import Experiment
-
+import socket
+import getpass
 
 def _init(args):
     experiment_manager = ExperimentManager(args.root)
@@ -108,6 +107,7 @@ def _list(args):
             display_purpose=args.display_purpose,
             display_date=args.display_date,
             display_messages=args.display_messages,
+            display_meta=args.display_meta,
             display_status=args.display_status)
         if data_frame.empty:
             print(f'No experiments found which match glob pattern {pattern}. With parameter filter = {args.param_match} '
@@ -158,6 +158,10 @@ def _config(args):
         if args.add_path is not None:
             if args.add_path not in config.python_paths:
                 config.python_paths.append(os.path.abspath(args.add_path))
+        if args.update_meta is not None:
+            config.update_meta()
+            # config.meta.update({args.update_meta[0]: args.update_meta[1]})
+
         if args.header is not None:
             if os.path.exists(args.header):
                 config.header = open(args.header, 'r').read()
@@ -190,6 +194,10 @@ config_parser.add_argument('--enable_prompt', action='store_false',
 config_parser.add_argument('--add_path', type=str, default=None, help='Add pythonpath to the global config')
 config_parser.add_argument('--add', default=None, metavar='PATH',
                             help='Add an Experiment api python script (it must already be on PYTHONPATH)')
+config_parser.add_argument('--update_meta', default=None, action='store_true',
+                           help='Update meta information in each experiment (both defaults.yml and params.yml). '
+                                'WARNING: Overwrites information in the params.yml or defaults.yml')
+
 config_parser.add_argument('-r', '--remove', default=None, help='Remove a python path or experiment (passed by Name) '
                                                                 'from the config.')
 config_parser.add_argument('-H', '--header', type=str, help='Update the default header used when generating experiments'
@@ -260,6 +268,8 @@ list_parser.add_argument('-P', '--display_purpose', action='store_true', default
 list_parser.add_argument('-s', '--display_status', action='store_true', default=None,
                          help="Display status for each experiment")
 list_parser.add_argument('-m', '--display_messages', action='store_true', default=None,
+                         help="Display messages for each experiment")
+list_parser.add_argument('-M', '--display_meta', action='store_true', default=None,
                          help="Display messages for each experiment")
 list_parser.add_argument('-l', '--list', action='store_true', default=None,
                          help="Display as list and not a table")
@@ -338,7 +348,7 @@ class GlobalExperimentManager(object):
         self.python_paths = []         # A list of python paths needed to run each module
         self.prompt_for_message = True
         self.experiments = {}          # A list of all experiments registered with an Experiment Manager
-        self.header = ''
+        self.meta = get_meta()
         self._dir = os.path.join(os.getenv('HOME'), '.xmen')
 
         if not os.path.isdir(self._dir):
@@ -360,7 +370,7 @@ class GlobalExperimentManager(object):
             ruamel.yaml.dump(params, file, Dumper=ruamel.yaml.RoundTripDumper)
 
     def _from_yml(self):
-        """Load the experiment config from an ``config.yml`` file"""
+        """Load the experiment config from a ``config.yml`` file"""
         with open(os.path.join(self._dir, 'config.yml'), 'r') as file:
             params = ruamel.yaml.load(file, ruamel.yaml.RoundTripLoader)
             to_yml = False
@@ -375,8 +385,15 @@ class GlobalExperimentManager(object):
                     self.__dict__[k] = experiments
                 else:
                     self.__dict__[k] = v
+            if 'meta' not in params:
+                to_yml = True
         if to_yml:
             self._to_yml()
+
+    def update_meta(self):
+        for p in self.experiments:
+            em = ExperimentManager(p)
+            em.update_meta()
 
     def clean(self):
         """Iteratively search through experiment sets and remove any that no longer exist.
@@ -413,6 +430,10 @@ class GlobalExperimentManager(object):
         string += '\n'
         string += 'Header:\n'
         string += self.header + '\n'
+        string += '\n'
+        string += 'Meta:\n'
+        for k, m in self.meta.items():
+            string += f'  - {k}: {m}\n'
         string += '\n'
         string += 'Experiments:\n'
         for k, e in self.experiments.items():
@@ -467,7 +488,7 @@ class GlobalExperimentManager(object):
         # Will use same pattern to search for  parameters and messages
         # All special parameters are recorded
         # From experiment.yml
-        table = {'_root': [], '_purpose': [], '_type': [], '_notes': []}
+        table = {'_root': [], '_purpose': [], '_type': [], '_notes': [], '_meta': []}
         # Additional
         if load_defaults:
             table.update({'_name': [], '_created': [], '_version': []})
@@ -476,9 +497,7 @@ class GlobalExperimentManager(object):
         if mode != 'all':
             table.update({'_experiments': []})
 
-        special_keys = tuple(table.keys())
-
-        # Filter experimente by name
+        # Filter experiment by name
         experiments = fnmatch.filter(self.experiments.keys(), pattern)
         encountered = []
         for root in experiments:
@@ -553,17 +572,21 @@ class GlobalExperimentManager(object):
                                         table[k] = [missing_entry] * table_length + [v]
                                     else:
                                         table[k] += [v]
+
+                            if '_meta' not in extracted:
+                                table['_meta'] += [get_meta()]
                             for k in encountered:
                                 if k not in extracted:
                                     table[k] += [missing_entry]
                     else:
-
                         for k, v in params.items():
                             if k.startswith('_') and k not in ['_root', '_purpose']:
                                 if k not in table:
                                     table[k] = [v]
                                 else:
                                     table[k] += [v]
+                        if '_meta' not in params:
+                            table['_meta'] += [get_meta()]
 
                     # Add data to table from experiment.yml
                     if load_defaults:
@@ -583,7 +606,8 @@ class GlobalExperimentManager(object):
         return table
 
     def find_to_dataframe(self, table, verbose=True, display_git=None,
-                          display_purpose=None, display_date=None, display_messages=None, display_status=None):
+                          display_purpose=None, display_date=None, display_messages=None, display_status=None,
+                          display_meta=None):
         """Convert the output of the `find` method to a formatted data frame configured by args. If verbose then all
         entries will be displayed (independent of the other args)"""
 
@@ -597,6 +621,16 @@ class GlobalExperimentManager(object):
             'created': table.pop('_created'),
             'type': table.pop('_type'),
             'purpose': table.pop('_purpose')})
+
+        meta = table.pop('_meta')
+        meta_dict = {}
+        for m in meta:
+            for k, v in m.items():
+                if k in meta_dict:
+                    meta_dict[k] += [m[k]]
+                else:
+                    meta_dict[k] = [m[k]]
+        display.update(meta_dict)
 
         # Remove Notes
         table.pop('_notes')
@@ -632,6 +666,8 @@ class GlobalExperimentManager(object):
                 display_keys += ['status']
             if display_date:
                 display_keys += ['date']
+            if display_meta:
+                display_keys += meta_dict.keys()
             if display_messages and '_messages' in special_keys:
                 display_keys += encountered
                 display_keys += ['date']
@@ -890,7 +926,7 @@ class ExperimentManager(object):
         self.purpose = None
         self.notes = []
         self.type = None
-        self._specials = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version']
+        self._specials = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta']
         if not headless:
             self._config = GlobalExperimentManager()
         else:
@@ -926,6 +962,31 @@ class ExperimentManager(object):
         with open(os.path.join(experiment_path, 'params.yml'), 'w') as out:
             yaml = ruamel.yaml.YAML()
             yaml.dump(params, out)
+
+    def update_meta(self):
+        """Save a dictionary of parameters at ``{root}/{experiment_name}/params.yml``
+
+        Args:
+            params (dict): A dictionary of parameters to be saved. Can also be a CommentedMap from ruamel
+            experiment_name (str): The name of the experiment
+        """
+        defaults = self.load_defaults()
+        if '_meta' not in defaults:
+            defaults.insert(2, '_meta', get_meta())
+        else:
+            defaults['_meta'] = get_meta()
+        # experiment_path = os.path.join(self.root, experiment_name)
+        with open(os.path.join(self.root, 'defaults.yml'), 'w') as out:
+            yaml = ruamel.yaml.YAML()
+            yaml.dump(defaults, out)
+
+        for p in self.experiments:
+            params = self.load_params(p)
+            if '_meta' not in params:
+                params.insert(7, '_meta', get_meta())
+            else:
+                params['_meta'] = get_meta()
+            self.save_params(params, os.path.basename(p))
 
     def load_params(self, experiment_path, experiment_name=False):
         """Load parameters for an experiment. If ``experiment_name`` is True then experiment_path is assumed to be a
@@ -1173,23 +1234,26 @@ class ExperimentManager(object):
                     version = get_version(cls=cls)
             else:
                 version = None
+
             extra_params = {
                 '_root': self.root,
                 '_name': experiment_name,
                 '_status': 'registered',
-                '_created': datetime.datetime.now().strftime("%I:%M%p %B %d, %Y"),
+                '_created': datetime.datetime.now().strftime(DATE_FORMAT),
                 '_purpose': purpose,
                 '_messages': {},
-                '_version': version}
+                '_version': version,
+                '_meta': get_meta()}
 
             params = copy.deepcopy(defaults)
             # Remove optional parameters from defaults
-            for k in ['_created', '_version']:
+            for k in ['_created', '_version', '_meta']:
                 if k in params:
                     params.pop(k)
 
             # Add base parameters to params
-            helps = get_attribute_helps(Experiment)
+            # helps = get_attribute_helps(Experiment)
+            from xmen.experiment import Experiment
             for i, (k, v) in enumerate(extra_params.items()):
                 h = Experiment._Experiment__params[k][2]
                 params.insert(i, k, v, h)

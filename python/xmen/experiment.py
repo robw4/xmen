@@ -27,6 +27,7 @@ import argparse
 from typing import Optional, Dict, List, Any
 
 from xmen.utils import *
+from xmen.experiment_manager import GlobalExperimentManager
 
 pd.set_option('expand_frame_repr', False)
 
@@ -36,7 +37,7 @@ experiment_parser.add_argument('--update', type=str, default=None,
                                     'other flags and can be used in combination with --to_root, --to_defaults,'
                                     'and --register.', metavar='YAML_STRING')
 experiment_parser.add_argument('--execute', type=str, default=None, metavar='PARAMS',
-                               help='Execute the experiment from the given param_match.yml file.'
+                               help='Execute the experiment from the given params.yml file.'
                                     ' Cannot be called with update.')
 experiment_parser.add_argument('--to_root', type=str, default=None, metavar='DIR',
                                help='Generate a run script and defaults.yml file for interfacing with the experiment'
@@ -50,7 +51,7 @@ experiment_parser.add_argument('--debug', type=bool, default=None, help='Run exp
                                                                          'registered to a folder in /tmp')
 experiment_parser.add_argument('--name', action='store_true', help='Return the name of the experiment class')
 
-_SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_home']
+_SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta']
 
 
 class Experiment(object, metaclass=TypedMeta):
@@ -102,15 +103,15 @@ class Experiment(object, metaclass=TypedMeta):
       setting parameters directly (eg. ``self.a = 3``) before saving their state to a ``defaults.yml`` through the
       ``to_defaults()`` method call. They **cannot be executed**.
     * ``'registered'``: In order to be executed experiments must first be ``'registered'``. In doing so an experiment
-      object is linked with a unique experiment repository, its parameters fixed, and stored in a ``param_match.yml file``.
+      object is linked with a unique experiment repository, its parameters fixed, and stored in a ``params.yml file``.
        An experiment is `registered` either through the ``register()`` method call
-       or by loading from a previously created``param_match.yml`` file using the method call
+       or by loading from a previously created``params.yml`` file using the method call
       ``from_yml()``.
 
     Additionally the following statuses are used to communicate the state of an execution:
 
     * ``'running'``: Experiments are executed by the ``__call__`` method. Upon entering this method the experiment
-      status is changed to ``'running'`` (also updated in the ``param_match.yml`` file) before the ``run()`` method is
+      status is changed to ``'running'`` (also updated in the ``params.yml`` file) before the ``run()`` method is
       called.
     * ``'finished'``: If the run executes correctly then the experiment status will be updated to ``'finished'``
     * ``'error'``: If the run returns with an uncaught exception then the status of the experiment will be set to
@@ -131,15 +132,15 @@ class Experiment(object, metaclass=TypedMeta):
          exp.to_root('/path/to/root/dir')
 
     * *Loading experiments configured with the experiment manager*: Each experiment can also be loaded from a
-      ``param_match.yml`` file generated through the method call ``from_yml()``. In doing
+      ``params.yml`` file generated through the method call ``from_yml()``. In doing
       so an experiments status is updated to ``'registered'``::
 
          exp = AnExperiment()
-         exp.from_params_yml('/path/to/param_match.yml')    # The status is updated to 'registered'
+         exp.from_params_yml('/path/to/params.yml')    # The status is updated to 'registered'
          exp()                                         # Execute the experiment
 
     * *Communicating with the experiment manager*: Registered experiment objects are also able to save their dynamic
-      state in their ``param_match.yml`` file by adding to the ``messages`` dictionary. This allows ``Experiment`` objects
+      state in their ``params.yml`` file by adding to the ``messages`` dictionary. This allows ``Experiment`` objects
       to communicate with the experiment manager through shared storage. This is achieved through the ``send_message``
       method call::
 
@@ -157,7 +158,7 @@ class Experiment(object, metaclass=TypedMeta):
     * *Version Control*: As code evolves parameters are added or depreciated and their defaults changed. Config
       files generated for a past experiment are no longer valid for the current version. When ``git`` is available
       each ``defaults.yml`` has appended to it the git commit and local repo it was generated from. Similarly, this
-      process is repeated each time an experiment is created (either adding to the existing param_match.yml file or
+      process is repeated each time an experiment is created (either adding to the existing params.yml file or
       creating a new one). This helps the user keep track of experiments versions automatically.
 
     **Command Line Interface**
@@ -187,7 +188,7 @@ class Experiment(object, metaclass=TypedMeta):
        path/to/an_experiment.py -h
 
     """
-    __params = {}
+    __params = {}   # Used to store parameters registered with Experiment
 
     def __init__(self, name=None, root=None, purpose=''):
         """Initialise the experiment object. If name and root are not None then the experiment is initialised in
@@ -202,6 +203,7 @@ class Experiment(object, metaclass=TypedMeta):
             self._purpose: Optional[str] = None   # @p A description of the experiment purpose
             self._messages: Dict[Any, Any] = {}   # @p Messages left by the experiment
             self._version: Optional[Dict[Any, Any]] = None   # @p Experiment version information. See `get_version`
+            self._meta: Optional[Dict] = None    # @p The global configuration for the experiment manager
             self._specials: List[str] = _SPECIALS
             self._helps: Optional[Dict] = None
         else:
@@ -282,7 +284,7 @@ class Experiment(object, metaclass=TypedMeta):
         raise AttributeError('Property version cannot be set.')
 
     def register_param(self, k, default, type=None, help=None):
-        self._params.update(k, (default, type, help))
+        self._Experiment_params.update(k, (default, type, help))
 
     def param_keys(self):
         return self._Experiment__params.keys()
@@ -294,13 +296,18 @@ class Experiment(object, metaclass=TypedMeta):
     def update_version(self):
         self._version = get_version(cls=self.__class__)
 
+    def update_meta(self):
+        self._meta = get_meta()
+
     def to_defaults(self, defaults_dir):
         """Create a ``defaults.yml`` file from experiment object.
          Any base class inheriting from Experiment can create a default file as::
 
             MyExperiment().to_yaml('/dir/to/defaults/root')
+
         """
         self.update_version()
+        self.update_meta()
         if not os.path.exists(defaults_dir):
             os.makedirs(defaults_dir)
 
@@ -311,7 +318,7 @@ class Experiment(object, metaclass=TypedMeta):
             self._to_yaml(defaults_dir)
 
     def _to_yaml(self, defaults_dir=None):
-        """Save experiment to either a defaults.yml file or a param_match.yml file depending on its status"""
+        """Save experiment to either a defaults.yml file or a params.yml file depending on its status"""
         self.update_version()
         params = {k: v for k, v in self.__dict__.items() if k in self.param_keys() or k in self._specials}
         params = {k: v for k, v in params.items() if '_' + k not in self.__dict__}
@@ -329,7 +336,7 @@ class Experiment(object, metaclass=TypedMeta):
         if self._status == 'default':
             path = os.path.join(os.path.join(defaults_dir, 'defaults.yml'))
         else:
-            path = os.path.join(self._root, self._name, 'param_match.yml')
+            path = os.path.join(self._root, self._name, 'params.yml')
 
         # Convert to yaml
         yaml = ruamel.yaml.YAML()
@@ -337,9 +344,9 @@ class Experiment(object, metaclass=TypedMeta):
             yaml.dump(defaults, file)
 
     def from_yml(self, path):
-        """Load state from either a ``param_match.yml`` or ``defaults.yml`` file (inferred from the filename).
+        """Load state from either a ``params.yml`` or ``defaults.yml`` file (inferred from the filename).
         The status of the experiment will be equal to ``'default'`` if ``'defaults.yml'``
-        file else ``'registered'`` if ``param_match.yml`` file."""
+        file else ``'registered'`` if ``params.yml`` file."""
         yaml = ruamel.yaml.YAML()
         with open(path, 'r') as file:
             params = yaml.load(file)
@@ -354,27 +361,28 @@ class Experiment(object, metaclass=TypedMeta):
         (eg. ``{name}_0``) until a unique name is found in ``root``. If ``force==False`` a ``ValueError`` will be raised.
 
         Raises:
-            ValueError: if ``{root}/{name}`` already contains a ``param_match.yml`` file
+            ValueError: if ``{root}/{name}`` already contains a ``params.yml`` file
         """
         folder = os.path.join(root, name)
-        if os.path.exists(os.path.join(folder, 'param_match.yml')):
+        if os.path.exists(os.path.join(folder, 'params.yml')):
             i = 0
             if force:
                 while i < same_names:
-                    if not os.path.exists(os.path.join(folder + '_' + str(i), 'param_match.yml')):
+                    if not os.path.exists(os.path.join(folder + '_' + str(i), 'params.yml')):
                         folder += '_' + str(i)
                         name += '_' + str(i)
                         break
                     i += 1
             elif i == same_names or not force:
-                raise ValueError(f'Experiment folder {os.path.join(root, name)} already contains a param_match.yml file. '
-                                 f'An Exeperiment cannot be created in an already existing experiment folder')
+                raise ValueError(f'Experiment folder {os.path.join(root, name)} already contains a params.yml file. '
+                                 f'An Experiment cannot be created in an already existing experiment folder')
 
         # Make the folder if it does not exist
         if not os.path.isdir(folder):
             os.makedirs(folder)
 
         self.update_version()  # Get new version information
+        self.update_meta()   # Get the newest meta information
         self._root = root
         self._name = name
         self._purpose = purpose
@@ -390,6 +398,7 @@ class Experiment(object, metaclass=TypedMeta):
         """
         # get_git is deliberately called outside to_defaults as git information is also added to script.sh
         self.update_version()
+        self.update_meta()
         sh = ['#!/bin/bash']
         sh += [f'# File generated on the {datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")}']
         if 'git' in self._version:
@@ -430,7 +439,7 @@ class Experiment(object, metaclass=TypedMeta):
 
         """
         if args.update is not None and args.execute is not None:
-            print('ERROR: parameters cannot be updated when executing an experiment from a param_match.yml')
+            print('ERROR: parameters cannot be updated when executing an experiment from a params.yml')
             exit()
         sum_check = sum([args.register is not None, args.to_defaults is not None, args.to_root is not None])
         if sum_check > 1:
@@ -491,8 +500,8 @@ class Experiment(object, metaclass=TypedMeta):
         """Attributes can only be changed when the status of the experiment is default"""
         # specials = ['name', 'root', 'status', 'created', 'purpose', 'messages', 'version']
         if '_status' in self.__dict__:
-            if key in self.param_keys() and not self._status in ['default', 'detached'] and key not in self._specials:
-                raise AttributeError('Parameters can only be changed when status = "default" or "detecahed"')
+            if key in self.param_keys() and self._status not in ['default', 'detached'] and key not in self._specials:
+                raise AttributeError('Parameters can only be changed when status = "default" or "detached"')
         self.__dict__.update({key: value})
 
     def __enter__(self):
@@ -506,7 +515,7 @@ class Experiment(object, metaclass=TypedMeta):
             self._update_status('error')
 
     def __call__(self, *args, **kwargs):
-        """Used to run experiment. Upon entering the experimetn status is updated to ``'running`` before ``args`` and
+        """Used to run experiment. Upon entering the experiment status is updated to ``'running`` before ``args`` and
         ``kwargs`` are passed to ``run()``. If ``run()`` is successful the experiment ``status`` is updated to
         ``'finished'`` else it will be given ``status='error'``.
 
@@ -519,8 +528,8 @@ class Experiment(object, metaclass=TypedMeta):
     def run(self, *args, **kwargs):
         raise NotImplementedError('Derived classes must implement the run method in order to be called')
 
-    def leave_message(self, message_dict):
-        """Add a message to the param_match.yml file.
+    def message(self, message_dict):
+        """Add a message to the params.yml file.
 
         Args:
             message_dict (dict): A dictionary of messages. Keys are interpreted as subjects and values interpreted as
@@ -531,11 +540,11 @@ class Experiment(object, metaclass=TypedMeta):
             self._messages.update(message_dict)
             self._to_yaml()
         else:
-            raise ValueError('An experiment must be created to leave a message')
+            raise ValueError('An experiment must be registered to leave a message')
 
     def __repr__(self):
         """Provides a useful help message for the experiment"""
-        # param_match = {k: v for k, v in self.__dict__.items() if k[0] != '_'}
+        # params = {k: v for k, v in self.__dict__.items() if k[0] != '_'}
         helps = self.get_attributes_help()
         # base_keys = ['root', 'name', 'status', 'created', 'purpose', 'messages', 'version']
         base_params = {k[1:]: v for k, v in self.__dict__.items() if k in self._specials}
