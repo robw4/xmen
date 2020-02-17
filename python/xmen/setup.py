@@ -52,7 +52,7 @@ from setuptools import setup
 setup(
     name='xmen',
     version='0.1',
-    description='xmen experiment management libraries for fast reproducible experimentation',
+    description='Experiment management libraries for fast, reproducible, remote and local experimentation',
     author='Rob Weston',
     author_email='robw@robots.ox.ac.uk',
     packages=[''])

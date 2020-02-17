@@ -18,16 +18,16 @@
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import os
 import datetime
-import ruamel.yaml
-from ruamel.yaml.comments import CommentedMap
-import pandas as pd
-import collections
 import argparse
 from typing import Optional, Dict, List, Any
 
-from xmen.utils import *
-from xmen.experiment_manager import GlobalExperimentManager
+import ruamel.yaml
+from ruamel.yaml.comments import CommentedMap
+import pandas as pd
+
+from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recursive_print_lines, TypedMeta
 
 pd.set_option('expand_frame_repr', False)
 
@@ -51,7 +51,7 @@ experiment_parser.add_argument('--debug', type=bool, default=None, help='Run exp
                                                                          'registered to a folder in /tmp')
 experiment_parser.add_argument('--name', action='store_true', help='Return the name of the experiment class')
 
-_SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta']
+_SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta', '_origin']
 
 
 class Experiment(object, metaclass=TypedMeta):
@@ -204,6 +204,7 @@ class Experiment(object, metaclass=TypedMeta):
             self._messages: Dict[Any, Any] = {}   # @p Messages left by the experiment
             self._version: Optional[Dict[Any, Any]] = None   # @p Experiment version information. See `get_version`
             self._meta: Optional[Dict] = None    # @p The global configuration for the experiment manager
+            self._origin: Optional[str] = None   # @p The path the experiment was initially registered at
             self._specials: List[str] = _SPECIALS
             self._helps: Optional[Dict] = None
         else:
@@ -328,7 +329,7 @@ class Experiment(object, metaclass=TypedMeta):
         defaults = CommentedMap()
         for i, (k, v) in enumerate(params.items()):
             if self._status == 'default':
-                if k in ['_root', '_name', '_status', '_purpose', '_messages']:
+                if k in ['_root', '_name', '_status', '_purpose', '_messages', '_origin']:
                     continue
             comment = helps[k].split(':')[1] if helps[k] is not None else None
             defaults.insert(i, k, v, comment=comment)
@@ -351,8 +352,8 @@ class Experiment(object, metaclass=TypedMeta):
         with open(path, 'r') as file:
             params = yaml.load(file)
         params = {k: commented_to_py(v) for k, v in params.items() if k in self.__dict__}
-        self.__dict__.update(params)
         # Update created date
+        self.__dict__.update(params)
         self._created = datetime.datetime.now().strftime(DATE_FORMAT)
 
     def register(self, root, name, purpose='', force=True, same_names=100):

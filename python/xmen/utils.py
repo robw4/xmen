@@ -23,6 +23,7 @@ import inspect
 import git
 from ruamel.yaml.comments import CommentedSeq, CommentedMap
 import collections
+import uuid
 import socket
 import getpass
 
@@ -52,7 +53,7 @@ def recursive_print_lines(dic, helps=None, start=''):
 
 def get_meta():
     """Get Meta information for the system"""
-    return {'host': socket.getfqdn(), 'user': getpass.getuser(), 'home': os.path.expanduser("~")}
+    return {'mac': hex(uuid.getnode()), 'host': socket.getfqdn(), 'user': getpass.getuser(), 'home': os.path.expanduser("~")}
 
 
 def get_attribute_helps(cls):

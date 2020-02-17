@@ -19,691 +19,29 @@ experiment managers command line interface"""
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
-
 import sys
+import os
 from shutil import copyfile, rmtree
 import datetime
-import ruamel.yaml
-import pandas as pd
 import subprocess
 import glob
-import fnmatch
 import time
 import importlib.util
-import argparse
 import copy
-import re
-import textwrap
-from copy import deepcopy
-from xmen.utils import *
-import socket
-import getpass
 
-def _init(args):
-    experiment_manager = ExperimentManager(args.root)
-    experiment_manager.initialise(defaults=args.defaults, script=args.script, purpose=args.purpose, name=args.name)
+import ruamel.yaml
+import pandas as pd
 
+from xmen.utils import get_meta, get_version, DATE_FORMAT
+import xmen.config
 
-def _register(args):
-    experiment_manager = ExperimentManager(args.root)
-    experiment_manager.register(args.updates, args.purpose, args.header)
-
-
-def _reset(args):
-    experiment_manager = ExperimentManager(args.root)
-    experiment_manager.reset(args.experiments)
-
-
-def _records(args):
-    global_exp_manager = GlobalExperimentManager()
-    results, special_keys = global_exp_manager.find(
-        mode='set', pattern=args.pattern, param_match=args.param_match, types_match=args.type_match)
-    records = global_exp_manager.find_to_records(results, display_git=args.display_git)
-    print(records)
-
-
-def _list(args):
-    # pd.set_option('expand_frame_repr', True)
-    pd.set_option('display.max_colwidth', args.max_width)
-    pd.set_option('display.max_rows', args.max_rows)
-
-    if len(args.pattern) > 1:
-        print(f'ERROR: Only one pattern may be passed but got {args.pattern}')
-    pattern = args.pattern[0]
-    if pattern == '':
-        pattern = os.path.join(os.getcwd() + '*')
-    global_exp_manager = GlobalExperimentManager()
-
-    if args.list:
-        results = global_exp_manager.find(
-            mode='set', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
-            load_defaults=True)
-        notes = []
-        for i, (r, e, p, n, d, t) in enumerate(
-                zip(*[results[j] for j in ('_root', '_experiments', '_purpose', '_notes', '_created', '_type')])):
-            k = 5
-            i = str(i)
-            note = ' ' * (k // 2 - len(str(i))) + str(i) + ' ' * (k // 2 - 1) + r + '\n' + ' ' * k
-            if len(e) > 0:
-                note += ('\n' + ' ' * k).join(['|- ' + ee[len(r) + 1:] for ee in e]) + '\n' + ' ' * k
-            note += 'Purpose: ' + p + '\n' + ' ' * k
-            note += 'Created: ' + d + '\n' + ' ' * k
-            note += 'Type: ' + str(t)
-            if len(n) > 0:
-                note += '\n' + ' ' * k + 'Notes: ' + '\n' + ' ' * (k + 2)
-                note += ('\n' + ' ' * (k + 2)).join(
-                    ['\n'.join(textwrap.wrap(nn, width=1000, subsequent_indent=' ' * (k + 3))) for i, nn in
-                     enumerate(n)])
-            notes += [note]
-        print('\n'.join(notes))
-    else:
-        results = global_exp_manager.find(
-            mode='all', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
-            load_defaults=args.load_defaults)
-        data_frame, root = global_exp_manager.find_to_dataframe(
-            results,
-            verbose=args.verbose,
-            display_git=args.display_git,
-            display_purpose=args.display_purpose,
-            display_date=args.display_date,
-            display_messages=args.display_messages,
-            display_meta=args.display_meta,
-            display_status=args.display_status)
-        if data_frame.empty:
-            print(f'No experiments found which match glob pattern {pattern}. With parameter filter = {args.param_match} '
-                  f'and type filter = {args.type_match}.')
-        else:
-            print(data_frame)
-            print(f'\nRoots relative to: {root}')
-
-
-def _run(args):
-    experiment_manager = ExperimentManager(args.root)
-    experiment_manager.run(args.experiments, *args.append)
-
-
-def _unlink(args):
-    experiment_manager = ExperimentManager(args.root)
-    experiment_manager.unlink(args.experiments)
-
-
-def _relink(args):
-    experiment_manager = ExperimentManager(args.root)
-    experiment_manager.relink(args.experiments)
-
-
-def _clean(args):
-    experiment_manager = ExperimentManager(args.root)
-    experiment_manager.clean()
-
-
-def _note(args):
-    experiment_manager = ExperimentManager(args.root)
-    experiment_manager.note(args.message, args.delete)
-
-
-def _rm(args):
-    experiment_manager = ExperimentManager(args.root)
-    experiment_manager.rm()
-
-
-def _config(args):
-    with GlobalExperimentManager() as config:
-        if args.disable_prompt is not None:
-            config.prompt_for_message = False
-        elif args.enable_prompt is not None:
-            config.prompt_for_message = True
-        if args.add is not None:
-            config.add_class(args.add)
-        if args.add_path is not None:
-            if args.add_path not in config.python_paths:
-                config.python_paths.append(os.path.abspath(args.add_path))
-        if args.update_meta is not None:
-            config.update_meta()
-            # config.meta.update({args.update_meta[0]: args.update_meta[1]})
-
-        if args.header is not None:
-            if os.path.exists(args.header):
-                config.header = open(args.header, 'r').read()
-            else:
-                config.header = args.header
-        if args.remove is not None:
-            if args.remove in config.python_paths:
-                config.python_paths.remove(args.remove)
-            if args.remove in config.python_experiments:
-                config.python_experiments.pop(args.remove)
-        if args.list is not None:
-            print(config)
-        if args.clean is not None:
-            config.clean()
-
-
-parser = argparse.ArgumentParser(prog='xmen',
-                                 description='A helper module for the quick setup and management of experiments')
-subparsers = parser.add_subparsers()
-
-# Config
-config_parser = subparsers.add_parser('config')
-config_parser.add_argument('--disable_prompt', action='store_false',
-                           help='Turn purpose prompting off', default=None)
-config_parser.add_argument('--clean', action='store_false',
-                           help='Remove experiments that have been corrupted from the global configuration.',
-                           default=None)
-config_parser.add_argument('--enable_prompt', action='store_false',
-                           help='Turn purpose prompting on', default=None)
-config_parser.add_argument('--add_path', type=str, default=None, help='Add pythonpath to the global config')
-config_parser.add_argument('--add', default=None, metavar='PATH',
-                            help='Add an Experiment api python script (it must already be on PYTHONPATH)')
-config_parser.add_argument('--update_meta', default=None, action='store_true',
-                           help='Update meta information in each experiment (both defaults.yml and params.yml). '
-                                'WARNING: Overwrites information in the params.yml or defaults.yml')
-
-config_parser.add_argument('-r', '--remove', default=None, help='Remove a python path or experiment (passed by Name) '
-                                                                'from the config.')
-config_parser.add_argument('-H', '--header', type=str, help='Update the default header used when generating experiments'
-                                                            ' to HEADER (a .txt file)')
-config_parser.add_argument('--list', default=None, help='Display the current configuration', action='store_false')
-config_parser.set_defaults(func=_config)
-
-
-# Note parser
-note_parser = subparsers.add_parser('note')
-note_parser.add_argument('message', help='Add note to experiment set')
-note_parser.add_argument('-r', '--root', metavar='DIR', default='',
-                         help='Path to the root experiment folder. If None then the current work directory will be '
-                              'used')
-note_parser.add_argument('-d', '--delete', default='', action='store_true',
-                         help='Delete the note corresponding to message.')
-note_parser.set_defaults(func=_note)
-
-# Init
-init_parser = subparsers.add_parser('init', help='Initialise an experiment set.')
-init_parser.add_argument('-d', '--defaults', metavar='PATH', default='',
-                         help='Path to defaults.yml file. If None then a defaults.yml will be looked for in the current'
-                              'work directory.')
-init_parser.add_argument('-s', '--script', metavar='PATH', default='',
-                         help="Path to a script.sh file. If None a script.sh will be searched for in the current "
-                              "work directory.")
-init_parser.add_argument('-r', '--root', metavar='DIR', default='',
-                         help='Path to the root experiment folder. If None then the current work directory will be '
-                              'used')
-init_parser.add_argument('-n', '--name', metavar='NAME', default=None,
-                         help='A name of a python experiment registered with the global configuration.')
-init_parser.add_argument('--purpose', metavar='PURPOSE', default='',
-                         help='A string giving the purpose of the experiment set (only used if message prompting is disabled).')
-init_parser.set_defaults(func=_init)
-
-# Register
-register_parser = subparsers.add_parser('register', help='Register a set of experiments.')
-register_parser.add_argument('updates', metavar='YAML_STR',
-                             help='Defaults to update to register experiments passes as a yaml dict. The special character'
-                                  '"|" is interpreted as an or operator. all combinations of parameters appearing '
-                                  'either side of "|" will be registered.')
-register_parser.add_argument('-helps', '--header', metavar='PATH', help='A header file to prepend to each run script', default=None)
-register_parser.add_argument('-p', '--purpose', metavar='STR', help='A string giving the purpose of the experiment.')
-register_parser.add_argument('-r', '--root', metavar='DIR', default='',
-                             help='Path to the root experiment folder. If None then the current work directory will be '
-                                  'used')
-register_parser.set_defaults(func=_register)
-
-# List
-list_parser = subparsers.add_parser('list', help='List (all) experiments to screen')
-list_parser.add_argument('pattern', type=str, help='List experiments which match pattern.', default=[''], nargs='*')
-list_parser.add_argument('-p', '--param_match', type=str, default=None, nargs='*',
-                         help="List only experiments with certain parameter conditions of the form reg, reg==val or "
-                              "val1==reg==val2. Here reg is a regex matching a set of parameters. "
-                              "==, <, >, !=, >=, <=  are all supported with meaning defined as in python. Eg. "
-                              "a.*==cat and 1.0<a.*<=2.0 will return any experiment that has parameters that match "
-                              "a.* provided that each match satisfies the condition.")
-list_parser.add_argument('-n', '--type_match', type=str, default=None, nargs='*',
-                         help="List only experiments with this type (class).")
-list_parser.add_argument('-v', '--verbose', action='store_true', default=None,
-                         help="Display all information for each experiment")
-list_parser.add_argument('-d', '--display_date', action='store_true', default=None,
-                         help="Display created date for each experiment")
-list_parser.add_argument('-g', '--display_git', action='store_true', default=None,
-                         help="Display git commit for each experiment")
-list_parser.add_argument('-P', '--display_purpose', action='store_true', default=None,
-                         help="Display purpose for each experiment")
-list_parser.add_argument('-s', '--display_status', action='store_true', default=None,
-                         help="Display status for each experiment")
-list_parser.add_argument('-m', '--display_messages', action='store_true', default=None,
-                         help="Display messages for each experiment")
-list_parser.add_argument('-M', '--display_meta', action='store_true', default=None,
-                         help="Display messages for each experiment")
-list_parser.add_argument('-l', '--list', action='store_true', default=None,
-                         help="Display as list and not a table")
-list_parser.add_argument('--load_defaults', action='store_true', default=None,
-                         help='Infer parameters from defaults.yml and overides instead of params.yml. Potentially '
-                              'faster but no messages are available.')
-list_parser.add_argument('--max_width', default=60, help='The maximum width of an individual collumn. '
-                                                           'If None then will print for ever', type=int)
-list_parser.add_argument('--max_rows', default=None, help='Display tables with this number of rows.', type=int)
-
-list_parser.set_defaults(func=_list)
-
-# Run
-run_parser = subparsers.add_parser('run', help='Run experiments matching glob in experiment set that have not yet'
-                                               'been run.')
-run_parser.add_argument('experiments', metavar='NAMES', help='A unix glob giving the experiments to be run in the set')
-run_parser.add_argument('append', metavar='FLAG', nargs=argparse.REMAINDER,
-                        help='A set of run command options to prepend to the run.sh for each experiment '
-                             '(eg. "sh", "srun", "sbatch", "docker" etc.)')
-run_parser.add_argument('-r', '--root', metavar='DIR', default='',
-                        help='Path to the root experiment folder. If None then the current work directory will be '
-                              'used')
-run_parser.set_defaults(func=_run)
-
-# Reset
-status_parser = subparsers.add_parser('reset', help='Reset an experiment to registered status')
-status_parser.add_argument('experiments', metavar='NAME', help='A unix glob giving the experiments whos status '
-                                                               'should be updated (relative to experiment manager root)')
-status_parser.add_argument('-r', '--root', metavar='DIR', default='',
-                           help='Path to the root experiment folder. If None then the current work directory will be '
-                                'used')
-status_parser.set_defaults(func=_reset)
-
-# Clean
-clean_parser = subparsers.add_parser('clean', help='(DESTRUCTIVE) Remove unlinked experiments')
-clean_parser.add_argument('-r', '--root', metavar='DIR', default='',
-                          help='Path to the root experiment folder. If None then the current work directory will be '
-                               'used')
-clean_parser.set_defaults(func=_clean)
-
-# Removes
-remove_parser = subparsers.add_parser('rm', help='(DESTRUCTIVE) Remove an experiment set.')
-remove_parser.add_argument('root', metavar='ROOT_DIR', help='Path to the root experiment folder to be removed.')
-remove_parser.set_defaults(func=_rm)
-
-
-# Unlink
-unlink_parser = subparsers.add_parser('unlink', help='Unlink experiments from experiment set')
-unlink_parser.add_argument('experiments', metavar='NAMES', help='A unix glob giving the experiments to be unlinked')
-unlink_parser.add_argument('-r', '--root', metavar='DIR', default='',
-                           help='Path to the root experiment folder. If None then the current work directory will be '
-                                'used')
-unlink_parser.set_defaults(func=_unlink)
-
-# Relink
-relink_parser = subparsers.add_parser('relink', help='Relink experiments to experiment set')
-relink_parser.add_argument('experiments', metavar='NAMES', help='A unix glob giving the experiments to be relinked '
-                                                                '(relative to experiment manager root)')
-relink_parser.add_argument('-r', '--root', metavar='DIR', default='',
-                           help='Path to the root experiment folder. If None then the current work directory will be '
-                                'used')
-relink_parser.set_defaults(func=_relink)
-
-
-class NoMatchException(Exception):
-    def __init__(self, path):
-        """Experiment at ``path`` does not contain a match"""
-        super(NoMatchException, self).__init__()
-        self.path = path
-
-
-class GlobalExperimentManager(object):
-    """A helper class used to manage global configuration of the Experiment Manager"""
-    def __init__(self):
-        self.python_experiments = {}   # A dictionary of paths to python modules compatible with the experiment api
-        self.python_paths = []         # A list of python paths needed to run each module
-        self.prompt_for_message = True
-        self.experiments = {}          # A list of all experiments registered with an Experiment Manager
-        self.meta = get_meta()
-        self._dir = os.path.join(os.getenv('HOME'), '.xmen')
-
-        if not os.path.isdir(self._dir):
-            os.makedirs(self._dir)
-            self._to_yml()
-        else:
-            self._from_yml()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._to_yml()
-
-    def _to_yml(self):
-        """Save the current config to an ``config.yaml``"""
-        params = {k: v for k, v in self.__dict__.items() if k[0] != '_'}
-        with open(os.path.join(self._dir, 'config.yml'), 'w') as file:
-            ruamel.yaml.dump(params, file, Dumper=ruamel.yaml.RoundTripDumper)
-
-    def _from_yml(self):
-        """Load the experiment config from a ``config.yml`` file"""
-        with open(os.path.join(self._dir, 'config.yml'), 'r') as file:
-            params = ruamel.yaml.load(file, ruamel.yaml.RoundTripLoader)
-            to_yml = False
-            for k, v in params.items():
-                if k == 'experiments' and len(v) != 0 and type(v) is not CommentedMap:
-                    experiments = {}
-                    to_yml = True
-                    for vv in v:
-                        em = ExperimentManager(root=vv, headless=True)
-                        experiments[em.root] = {
-                            'created': em.created, 'type': em.type, 'purpose': em.purpose, 'notes': em.notes}
-                    self.__dict__[k] = experiments
-                else:
-                    self.__dict__[k] = v
-            if 'meta' not in params:
-                to_yml = True
-        if to_yml:
-            self._to_yml()
-
-    def update_meta(self):
-        for p in self.experiments:
-            em = ExperimentManager(p)
-            em.update_meta()
-
-    def clean(self):
-        """Iteratively search through experiment sets and remove any that no longer exist.
-
-        Note:
-            This is performed by checking that experiment folder is a valid set using
-            using ``ExperimentManager(p).check_initialised()``
-
-        """
-        corrupted = []
-        for p in self.experiments:
-            try:
-                em = ExperimentManager(p)
-                em.check_initialised()
-            except:
-                corrupted.append(p)
-        if len(corrupted) != 0:
-            print('The following experiments were removed from the global configuration... ')
-            for c in corrupted:
-                self.experiments.pop(c)
-                print('  - ' + c)
+class ExperimentNotFoundException(Exception):
+    def __init__(self, root, name):
+        self.root = root
+        self.name = name
 
     def __repr__(self):
-        """The current configuration as a string"""
-        string = f'Prompt for Message: {self.prompt_for_message}\n'
-        string += '\n'
-        string += f'Python Path:\n'
-        for p in self.python_paths:
-            string += f'  - {p}\n'
-        string += '\n'
-        string += 'Python Experiments:\n'
-        for k, v in self.python_experiments.items():
-           string += f'  - {k}: {v}\n'
-        string += '\n'
-        string += 'Header:\n'
-        string += self.header + '\n'
-        string += '\n'
-        string += 'Meta:\n'
-        for k, m in self.meta.items():
-            string += f'  - {k}: {m}\n'
-        string += '\n'
-        string += 'Experiments:\n'
-        for k, e in self.experiments.items():
-            e = dict(e)
-            string += f'  - {e["created"]}: {k}\n'
-
-        return string
-
-    def find(self, mode='all', pattern="*", param_match=None, types_match=None, load_defaults=False, missing_entry=''):
-        """Search through all experiments in the globally filtering by experiment location, parameters, and type.
-
-        Args:
-            mode (str): If 'all' then all experiments for each set will be concatenated and summarised individually
-                whilst if 'set' then experiments will be summarised and searched for based on the default parameters.
-            pattern (str): A unix glob pattern of experiments to consider
-            param_match (list): A list of strings providing a condition to filter experiments by their parameters.
-                Compatible string formats are "regex", "regex op val" or "val1 op1 regex op2 val2" where op is in
-                ``[<=,==,>=,<,>,!=]``. If just a regex is supplied then only experiments with parameters matching the
-                regex will be returned. If an op is supplied then only experiments with all parameters which match the
-                regex and satisfy the condition will be returned.
-            types_match (list): A list of types of experiments to search for
-            load_defaults (bool): If True then ``defaults.yml`` files will be loaded and the parameters of each
-                experiment inferred from the overides defined in the ``experiment.yml`` file for each experiment set.
-                This is potentially faster (less io) but means that the messages for each experiment will not be
-                returned.
-            missing_entry: Assign this parameter to missing values (see notes).
-
-        Returns:
-            matches (dict): A dict with possible keys ``['_root', '_purpose', '_type', '_notes',  '_name', '_created',
-                '_version', '_status', '_messages', '_experiments', *param_keys]`` where  ``param_keys`` correspond to
-                any parameters that satisfy the conditions in param_match. The keys
-                ``['_root', '_purpose', '_type', '_notes', '_created']`` will always be present,
-                ``['_name', '_version']`` will be added if ``load_defaults==True`` and ``['_name', '_version',
-                '_status', '_messages]`` if ``load_defaults==False``. If [mode == 'set'] then
-                the key  '_experiments' will also be added (giving a list of paths to the experiments in each set).
-                The created dates in this case correspond to the date the set was created
-                (given in defaults.yml).
-            special_keys (dict): A list of keys starting with '_' present in the dictionary.
-
-        Note:
-            Due to the use of regex and conditions it is possible for parameters to match in one experiment which are
-                not present in another. In this case missing parameters are given a value equal to ``missing_string``.
-        """
-        def _comparison(*args):
-            arg = ''.join(args)
-            try:
-               out = eval(arg)
-            except:
-                out = False
-            return out
-
-        # Will use same pattern to search for  parameters and messages
-        # All special parameters are recorded
-        # From experiment.yml
-        table = {'_root': [], '_purpose': [], '_type': [], '_notes': [], '_meta': []}
-        # Additional
-        if load_defaults:
-            table.update({'_name': [], '_created': [], '_version': []})
-        else:
-            table.update({'_name': [], '_created': [], '_status': [], '_messages': [], '_version': []})
-        if mode != 'all':
-            table.update({'_experiments': []})
-
-        # Filter experiment by name
-        experiments = fnmatch.filter(self.experiments.keys(), pattern)
-        encountered = []
-        for root in experiments:
-            try:
-                em = ExperimentManager(root)
-                if load_defaults:
-                    defaults = em.load_defaults()
-                if types_match is not None:
-                    if em.type not in types_match:
-                        raise NoMatchException(root)
-
-                paths = em.experiments if mode == 'all' else [em.defaults]
-                for i, path in enumerate(paths):
-                    if mode == 'all':
-                        if not load_defaults:
-                            params = em.load_params(path)
-                            if params is None:
-                                print(path)
-                        else:
-                            params = deepcopy(defaults)
-                            params.update(em.overides[i])
-                    else:
-                        params = em.load_defaults()
-
-                    # Find experiments who's parameters match all conditions
-                    if param_match is not None:
-                        extracted = {}
-                        # Search through al param matches
-                        for m in param_match:
-                            # Condition from param string
-                            splits = re.split(r'(<=|==|>=|<|>|!=)', m.replace(' ', ''))
-                            if len(splits) == 1:
-                                reg = splits[0]
-                                valid = lambda x: True
-                            elif len(splits) == 3:
-                                reg, op, y = splits
-                                valid = lambda x: _comparison(str(x), op, y)
-                            elif len(splits) == 5:
-                                y1, op1, reg, op2, y2 = splits
-                                valid = lambda x: _comparison(y1, op1, str(x), op2, y2)
-                            else:
-                                if len(splits) > 5:
-                                    print('ERROR: Only strings of the form (3.0 | cat) < param <= (4.0 | dog) can be set but'
-                                          'got match_keys')
-                                    exit()
-
-                            # Keep keys if match or special (_...)
-                            keys = [k for k in params if re.match(reg, k) is not None]
-                            if len(keys) == 0:
-                                raise NoMatchException(root)
-
-                            keys += [k for k in params if k.startswith('_')]
-                            for key in keys:
-                                if valid(params[key]):
-                                    extracted[key] = params[key]
-                                else:
-                                    raise NoMatchException(root)
-
-                        if len(extracted) == 0:
-                            raise NoMatchException(root)
-                        else:
-                            # If we get here add parameters to experiments (extracted must have at least one element)
-                            # Infer current length of table (same length for every entry)
-                            table_length = max([len(v) for v in table.values()])
-                            if any([len(next(iter(table.values()))) != len(v) for v in table.values()]):
-                                raise RuntimeError('This should not happen')
-
-                            for k, v in extracted.items():
-                                if k not in ['_root', '_purpose']:
-                                    if k not in table:
-                                        encountered += [k]
-                                        table[k] = [missing_entry] * table_length + [v]
-                                    else:
-                                        table[k] += [v]
-
-                            if '_meta' not in extracted:
-                                table['_meta'] += [get_meta()]
-                            for k in encountered:
-                                if k not in extracted:
-                                    table[k] += [missing_entry]
-                    else:
-                        for k, v in params.items():
-                            if k.startswith('_') and k not in ['_root', '_purpose']:
-                                if k not in table:
-                                    table[k] = [v]
-                                else:
-                                    table[k] += [v]
-                        if '_meta' not in params:
-                            table['_meta'] += [get_meta()]
-
-                    # Add data to table from experiment.yml
-                    if load_defaults:
-                        table['_name'] += [path.replace(em.root, '')[1:]]
-                    if mode != 'all':
-                        table['_experiments'] += [em.experiments]
-
-                    table['_root'] += [em.root]
-                    table['_purpose'] += [em.purpose]
-                    table['_type'] += [em.type]
-                    table['_notes'] += [em.notes]
-            except NoMatchException as m:
-                continue
-
-        if mode != 'all':
-            table.pop('_name')
-        return table
-
-    def find_to_dataframe(self, table, verbose=True, display_git=None,
-                          display_purpose=None, display_date=None, display_messages=None, display_status=None,
-                          display_meta=None):
-        """Convert the output of the `find` method to a formatted data frame configured by args. If verbose then all
-        entries will be displayed (independent of the other args)"""
-
-        special_keys = [k for k in table if k.startswith('_')]
-        display = {
-            'root': table.pop('_root')}
-
-        if '_name' in special_keys:
-            display['name'] = table.pop('_name')
-        display.update({
-            'created': table.pop('_created'),
-            'type': table.pop('_type'),
-            'purpose': table.pop('_purpose')})
-
-        meta = table.pop('_meta')
-        meta_dict = {}
-        for m in meta:
-            for k, v in m.items():
-                if k in meta_dict:
-                    meta_dict[k] += [m[k]]
-                else:
-                    meta_dict[k] = [m[k]]
-        display.update(meta_dict)
-
-        # Remove Notes
-        table.pop('_notes')
-
-        if '_status' in special_keys:
-            display['status'] = table.pop('_status')
-        # Add version information to table
-        versions = table.pop('_version')
-        display['commit'] = [version.get('git', {}).get('commit', None) for version in versions]
-
-        # Add messages to table
-        encountered = []
-        if '_messages' in special_keys:
-            messages = table.pop('_messages')  # List of dict
-            message_dict = {}
-            for i, m in enumerate(messages):
-                for k, v in m.items():
-                    if k not in message_dict:
-                        message_dict[k] = [''] * i + [v]
-                    else:
-                        message_dict[k] += [v]
-                for k in message_dict:
-                    if k not in m:
-                        message_dict[k] += ['']
-            display.update(message_dict)
-        if verbose:
-            display_keys = list(display.keys())
-        else:
-            display_keys = [v for v in ('root', 'name') if v in display]
-            if display_git:
-                display_keys += ['commit']
-            if display_status:
-                display_keys += ['status']
-            if display_date:
-                display_keys += ['date']
-            if display_meta:
-                display_keys += meta_dict.keys()
-            if display_messages and '_messages' in special_keys:
-                display_keys += encountered
-                display_keys += ['date']
-            if display_purpose:
-                display_keys += ['purpose']
-
-        display_keys += list(table.keys())
-        # Add other params
-        display.update(table)
-        df = pd.DataFrame(display)
-        # Shorten roots
-        roots = [v["root"] for v in df.transpose().to_dict().values()]
-        prefix = os.path.dirname(os.path.commonprefix(roots))
-        if prefix != '/':
-            roots = [r[len(prefix) + 1:] for r in roots]
-        df.update({'root': roots})
-        # Finally filter
-        df = df.filter(items=display_keys)
-        return df, prefix
-
-    def add_class(self, path):
-        path = os.path.abspath(path)
-        for p in self.python_paths:
-            if p not in sys.path:
-                sys.path.append(p)
-        sys_paths = [p for p in sys.path if p in path]
-        if len(sys_paths) == 0:
-            print('ERROR: The module has not been added to the PYTHONPATH. Please add!')
-        else:
-            try:
-                name = subprocess.check_output(['python', path, '--name'])
-            except subprocess.CalledProcessError:
-                exit()
-            self.python_experiments.update({name.decode("utf-8").replace('\n', ''): path})
-            self._to_yml()
-
+        return f"The experiment {self.name} was not found under root {self.root}."
 
 class ExperimentManager(object):
     """A helper class with wrapped command line interface used to manage a set of experiments. It is compatible both
@@ -928,7 +266,7 @@ class ExperimentManager(object):
         self.type = None
         self._specials = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta']
         if not headless:
-            self._config = GlobalExperimentManager()
+            self._config = xmen.config.GlobalExperimentManager()
         else:
             self._config = None
 
@@ -975,6 +313,8 @@ class ExperimentManager(object):
             defaults.insert(2, '_meta', get_meta())
         else:
             defaults['_meta'] = get_meta()
+        if '_home' in defaults:
+            defaults.pop('_home')
         # experiment_path = os.path.join(self.root, experiment_name)
         with open(os.path.join(self.root, 'defaults.yml'), 'w') as out:
             yaml = ruamel.yaml.YAML()
@@ -986,6 +326,10 @@ class ExperimentManager(object):
                 params.insert(7, '_meta', get_meta())
             else:
                 params['_meta'] = get_meta()
+            if '_home' in params:
+                params.pop('_home')
+            if '_origin' not in params:
+                params.insert(8, '_origin', params['_root'])
             self.save_params(params, os.path.basename(p))
 
     def load_params(self, experiment_path, experiment_name=False):
@@ -1132,6 +476,79 @@ class ExperimentManager(object):
         with self._config:
             self._config.experiments[self.root]['notes'] = self.notes
         self._to_yml()
+
+    def replant(self, root):
+        # Relink experiments under root
+        if self.root != root:
+            for i, p in enumerate(self.experiments):
+                new_exp_path = os.path.join(root, os.path.basename(p))
+                if not os.path.exists(new_exp_path):
+                    raise ExperimentNotFoundException(root, os.path.basename(p))
+                else:
+                    self.experiments[i] = new_exp_path
+
+        # Change the location of defaults and script.sh in experiment.yml
+        self.defaults = self.defaults.replace(self.root, root)
+        if not os.path.exists(self.defaults):
+            raise FileNotFoundError(f'No defaults.yml file found in {root}')
+        self.script = self.script.replace(self.root, root)
+        if not os.path.exists(self.defaults):
+            raise FileNotFoundError(f'No script.sh file found in {root}')
+
+        # Update global config
+        with self._config as config:
+            entry = self._config.experiments.pop(self.root, None)
+            if entry is not None:
+                config.experiments[root] = entry
+            else:  # We will need to do a bit more work
+                # The experiment did not exist in the global configuration
+                config.experiments[root] = {
+                    "created": self.created, "type": self.type, "purpose": self.purpose, "notes": self.notes}
+
+        # Update params.yml file of each experiment
+        self.root = root
+        for i, path in enumerate(self.experiments):
+            params = self.load_params(path)
+            params["_root"] = root
+            self.save_params(params, os.path.basename(path))
+
+
+        self._to_yml()
+
+    def move(self, dest):
+        """Move the current experiment set from one location to another."""
+        dest = os.path.abspath(dest)
+        if not os.path.exists(dest):
+            os.makedirs(dest)
+
+        # Do the move
+        os.renames(self.root, dest)
+        # self.root = dest
+        self.replant(dest)
+        #
+        # # Update params.yml file
+        # for i, path in enumerate(self.experiments):
+        #     params = self.load_params(path)
+        #     params["_root"] = dest
+        #     self.save_params(params, os.path.basename(path))
+        #     self.experiments[i] = path.replace(self.root, dest)
+        #
+        # # Change location of defaults.yml and script.sh
+        # self.defaults = self.defaults.replace(self.root, dest)
+        # self.script = self.script.replace(self.root, dest)
+        #
+        # # Update global config
+        # with self._config as config:
+        #     entry = self._config.experiments.pop(self.root, None)
+        #     if entry is not None:
+        #         config.experiments[dest] = self._config.experiments.pop(self.root)
+        #     else:  # We will need to do a bit more work
+        #         print('More work needed')
+        #
+        # # Do the move
+        # os.renames(self.root, dest)
+        # self.root = dest
+        # self._to_yml()
 
     def register(self, string_params, purpose, header=None, shell='/bin/bash'):
         """Register a set of experiments with the experiment manager.
@@ -1417,6 +834,3 @@ class ExperimentManager(object):
         self._to_yml()
 
 
-if __name__ == "__main__":
-    args = parser.parse_args()
-    args.func(args)
