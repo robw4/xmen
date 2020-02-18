@@ -45,10 +45,9 @@ def _reset(args):
 def _list(args):
     pd.set_option('display.max_colwidth', args.max_width)
     pd.set_option('display.max_rows', args.max_rows)
-
     if len(args.pattern) > 1:
         print(f'ERROR: Only one pattern may be passed but got {args.pattern}')
-    pattern = args.pattern[0]
+    pattern = os.path.abspath(os.path.expanduser(args.pattern[0]))
     if pattern == '':
         pattern = os.path.join(os.getcwd() + '*')
     global_exp_manager = GlobalExperimentManager()
