@@ -26,12 +26,14 @@ from typing import Optional, Dict, List, Any
 import ruamel.yaml
 from ruamel.yaml.comments import CommentedMap
 import pandas as pd
+from argparse import RawTextHelpFormatter
 
 from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recursive_print_lines, TypedMeta
 
 pd.set_option('expand_frame_repr', False)
 
-experiment_parser = argparse.ArgumentParser(description='Run the Experiment command line interface')
+experiment_parser = argparse.ArgumentParser(description='Run the Experiment command line interface',
+                                            formatter_class=RawTextHelpFormatter)
 experiment_parser.add_argument('--update', type=str, default=None,
                                help='Update the parameters given by a yaml string. Note this will be called before'
                                     'other flags and can be used in combination with --to_root, --to_defaults,'
@@ -432,7 +434,7 @@ class Experiment(object, metaclass=TypedMeta):
             ...
 
             if __name__ == '__main__':
-                args = exp_parser.parse_args()
+                args = exp_parser.parser()
                 exp = AnExperiment()   # Initialise
                 exp.main(args)
 
@@ -452,7 +454,6 @@ class Experiment(object, metaclass=TypedMeta):
         if args.debug is not None and args.execute is not None:
             print(f'ERROR: Only one of debug and execute can be set')
             exit()
-
         if args.update is not None:
             overrides = ruamel.yaml.load(args.update, Loader=ruamel.yaml.Loader)
             print(f'Updating parameters {overrides}')
@@ -542,6 +543,13 @@ class Experiment(object, metaclass=TypedMeta):
             self._to_yaml()
         else:
             raise ValueError('An experiment must be registered to leave a message')
+
+    def parse_args(self):
+        short, params = self.__init__.__doc__.split('Parameters:')
+        epilog = 'Parameters:' + params
+        experiment_parser.description = short
+        experiment_parser.epilog = epilog
+        return experiment_parser.parse_args()
 
     def __repr__(self):
         """Provides a useful help message for the experiment"""
