@@ -4,7 +4,7 @@ Author: Rob Weston
 Email: robw@robots.ox.ac.uk
 > Xmen is currently in the beta phase and needs testing. Please give it a go and let me know if there are any issues/ feature requests
 
-The E`x`peri`men`t repo is designed to facilitate fast, reproducible and platform agnostic experimentation from both within python and the shell. Highlights:
+The E`x`peri`men`t management suite is designed to facilitate fast, reproducible and platform agnostic experimentation from both within python and the shell. Highlights:
 
 - Minimal overhead
 - Lightweight
