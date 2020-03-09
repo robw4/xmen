@@ -408,7 +408,7 @@ class ExperimentManager(object):
             for p in self._config.python_paths:
                 if p not in sys.path:
                     sys.path.append(p)
-            subprocess.call(['python', self._config.python_experiments[name], '--to_root', self.root])
+            subprocess.call(['python3', self._config.python_experiments[name], '--to_root', self.root])
             self.script = os.path.join(self.root, 'script.sh')
             self.defaults = os.path.join(self.root, 'defaults.yml')
             self.type = name
