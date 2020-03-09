@@ -396,7 +396,7 @@ class GlobalExperimentManager(object):
             print('ERROR: The module has not been added to the PYTHONPATH. Please add!')
         else:
             try:
-                name = subprocess.check_output(['python', path, '--name'])
+                name = subprocess.check_output(['python3', path, '--name'])
             except subprocess.CalledProcessError:
                 exit()
             self.python_experiments.update({name.decode("utf-8").replace('\n', ''): path})

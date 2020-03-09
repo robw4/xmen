@@ -416,7 +416,7 @@ class Experiment(object, metaclass=TypedMeta):
         if len(possible_roots) > 0:
             root = possible_roots[0]
             sh += ['export PYTHONPATH="${PYTHONPATH}:' + f'{root}"']
-        sh += ['python ' + self._version['module'] + ' --execute ${1}']
+        sh += ['python3 ' + self._version['module'] + ' --execute ${1}']
         print('\n'.join(sh))
 
         if not os.path.exists(root_dir):
