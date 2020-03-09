@@ -16,12 +16,13 @@ The E`x`peri`men`t management suite is designed to facilitate fast, reproducible
 - Language agnostic
 
 ## Setup
-The recommended setup is to use a conda environment. If you do not have conda install you can install as:
+> The recommended setup is to use a conda environment. If you do not have conda install you can install as:
+> 
+>```bash
+> wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+> bash Miniconda3-latest-Linux-x86_64.sh
+> ```
 
-```bash
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh
-```
 
 ```bash
 # Clone
