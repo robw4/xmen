@@ -43,6 +43,8 @@ def _reset(args):
 
 
 def _list(args):
+    pd.set_option('display.width', 1000)
+    pd.set_option('display.max_columns', 1000)
     pd.set_option('display.max_colwidth', args.max_width)
     pd.set_option('display.max_rows', args.max_rows)
     if len(args.pattern) > 1:
@@ -91,7 +93,10 @@ def _list(args):
             print(f'No experiments found which match glob pattern {pattern}. With parameter filter = {args.param_match} '
                   f'and type filter = {args.type_match}.')
         else:
-            print(data_frame)
+            if args.csv:
+                print(data_frame.to_csv())
+            else:
+                print(data_frame)
             print(f'\nRoots relative to: {root}')
 
 
@@ -287,6 +292,8 @@ list_parser.add_argument('--load_defaults', action='store_true', default=None,
 list_parser.add_argument('--max_width', default=60, help='The maximum width of an individual collumn. '
                                                            'If None then will print for ever', type=int)
 list_parser.add_argument('--max_rows', default=None, help='Display tables with this number of rows.', type=int)
+
+list_parser.add_argument('--csv', action='store_true', help='Display the table as csv.', default=None)
 
 list_parser.set_defaults(func=_list)
 

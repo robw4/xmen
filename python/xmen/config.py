@@ -367,7 +367,7 @@ class GlobalExperimentManager(object):
             if display_meta:
                 display_keys += list(meta_dict.keys()) + ['origin']
             if display_messages and '_messages' in special_keys:
-                display_keys += encountered
+                display_keys += list(message_dict.keys())
                 display_keys += ['date']
             if display_purpose:
                 display_keys += ['purpose']

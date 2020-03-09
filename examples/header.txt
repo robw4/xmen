@@ -1,0 +1,19 @@
+#SBATCH --nodes=1
+#SBATCH --job-name=single_job
+#SBATCH --time=1-00:00:00
+#SBATCH --gres=gpu:rtx:1
+#SBATCH --partition=htc-nova
+#SBATCH --cpus-per-task=2
+#SBATCH --mail-user=robw@robots.ox.ac.uk
+#SBATCH --mail-type=ALL
+#SBATCH --account=engs-a2i
+# Author: Rob Weston
+# Email: robw@robots.ox.ac.uk
+
+# Lets activate an environment
+conda active xmen
+
+
+# Maybe we want to set some environement variables
+PATH1="..."
+PATH2="..."
