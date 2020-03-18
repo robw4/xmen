@@ -22,6 +22,7 @@ import os
 import datetime
 import argparse
 from typing import Optional, Dict, List, Any
+import signal
 
 import ruamel.yaml
 from ruamel.yaml.comments import CommentedMap
@@ -49,11 +50,15 @@ experiment_parser.add_argument('--to_defaults', type=str, default=None, metavar=
 experiment_parser.add_argument('--register', type=str, nargs=2, default=None, metavar=('ROOT', 'NAME'),
                                help='Register an experiment at root (1st positional) name (2nd'
                                     'positional)')
-experiment_parser.add_argument('--debug', type=bool, default=None, help='Run experiment in debug mode. Experiment is '
-                                                                         'registered to a folder in /tmp')
+experiment_parser.add_argument('--debug', type=bool, action='save_true', default=None,
+                               help='Run experiment in debug mode. Experiment is registered to a folder in /tmp')
 experiment_parser.add_argument('--name', action='store_true', help='Return the name of the experiment class')
 
 _SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta', '_origin']
+
+
+class TimeoutException(Exception):
+    pass
 
 
 class Experiment(object, metaclass=TypedMeta):
@@ -513,6 +518,8 @@ class Experiment(object, metaclass=TypedMeta):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is None:
             self._update_status('finished')
+        elif exc_type is TimeoutException:
+            self._update_status('timeout')
         else:
             self._update_status('error')
 
@@ -522,6 +529,11 @@ class Experiment(object, metaclass=TypedMeta):
         ``'finished'`` else it will be given ``status='error'``.
 
         Both *args and **kwargs are passed to self.run. """
+
+        def _handler(signum, handler):
+            raise TimeoutException()
+        signal.signal(signal.SIGUSR1, _handler)
+
         if self._status == 'default':
             raise ValueError('An experiment in default status must be registered before it can be executed')
         with self:
