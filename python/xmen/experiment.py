@@ -50,7 +50,7 @@ experiment_parser.add_argument('--to_defaults', type=str, default=None, metavar=
 experiment_parser.add_argument('--register', type=str, nargs=2, default=None, metavar=('ROOT', 'NAME'),
                                help='Register an experiment at root (1st positional) name (2nd'
                                     'positional)')
-experiment_parser.add_argument('--debug', type=bool, action='store_true', default=None,
+experiment_parser.add_argument('--debug', action='store_true', default=None,
                                help='Run experiment in debug mode. Experiment is registered to a folder in /tmp')
 experiment_parser.add_argument('--name', action='store_true', help='Return the name of the experiment class')
 
