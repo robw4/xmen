@@ -29,7 +29,7 @@ from ruamel.yaml.comments import CommentedMap
 import pandas as pd
 from argparse import RawTextHelpFormatter
 
-from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recursive_print_lines, TypedMeta
+from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recursive_print_lines, TypedMeta, MultiOut
 
 pd.set_option('expand_frame_repr', False)
 
@@ -52,7 +52,10 @@ experiment_parser.add_argument('--register', type=str, nargs=2, default=None, me
                                     'positional)')
 experiment_parser.add_argument('--debug', action='store_true', default=None,
                                help='Run experiment in debug mode. Experiment is registered to a folder in /tmp')
+experiment_parser.add_argument('--to_txt', default=None,
+                               help='Also log stdout and stderr to an out.txt file. Enabled by default')
 experiment_parser.add_argument('--name', action='store_true', help='Return the name of the experiment class')
+
 
 _SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta', '_origin']
 
@@ -356,6 +359,7 @@ class Experiment(object, metaclass=TypedMeta):
         The status of the experiment will be equal to ``'default'`` if ``'defaults.yml'``
         file else ``'registered'`` if ``params.yml`` file."""
         yaml = ruamel.yaml.YAML()
+
         with open(path, 'r') as file:
             params = yaml.load(file)
         params = {k: commented_to_py(v) for k, v in params.items() if k in self.__dict__}
@@ -463,7 +467,6 @@ class Experiment(object, metaclass=TypedMeta):
             overrides = ruamel.yaml.load(args.update, Loader=ruamel.yaml.Loader)
             print(f'Updating parameters {overrides}')
             self.update(overrides)
-
         if args.to_defaults is not None:
             self.to_defaults(args.to_defaults)
         if args.to_root is not None:
@@ -473,10 +476,17 @@ class Experiment(object, metaclass=TypedMeta):
 
         if args.debug is not None:
             self.register(root='/tmp', name='test')
+            if args.to_txt is None or args.to_txt:
+                sys.stdout = MultiOut(sys.__stdout__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
+                sys.stderr = MultiOut(sys.__stderr__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
             print(self.directory)
             self.__call__()
 
         if args.execute is not None:
+            if args.to_txt is None or args.to_txt:
+                sys.stdout = MultiOut(sys.__stdout__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
+                sys.stderr = MultiOut(sys.__stderr__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
+
             self.from_yml(args.execute)
             self.__call__()
 
@@ -512,12 +522,17 @@ class Experiment(object, metaclass=TypedMeta):
         self.__dict__.update({key: value})
 
     def __enter__(self):
+        def _sigusr1_handler(signum, handler):
+            raise TimeoutException()
+        signal.signal(signal.SIGUSR1, _sigusr1_handler)
         self._update_status('running')
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is None:
             self._update_status('finished')
+        elif exc_type is KeyboardInterrupt:
+            self._update_status('stopped')
         elif exc_type is TimeoutException:
             self._update_status('timeout')
         else:
@@ -529,11 +544,6 @@ class Experiment(object, metaclass=TypedMeta):
         ``'finished'`` else it will be given ``status='error'``.
 
         Both *args and **kwargs are passed to self.run. """
-
-        def _handler(signum, handler):
-            raise TimeoutException()
-        signal.signal(signal.SIGUSR1, _handler)
-
         if self._status == 'default':
             raise ValueError('An experiment in default status must be registered before it can be executed')
         with self:
