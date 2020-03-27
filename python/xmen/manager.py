@@ -35,6 +35,7 @@ import pandas as pd
 from xmen.utils import get_meta, get_version, DATE_FORMAT
 import xmen.config
 
+
 class ExperimentNotFoundException(Exception):
     def __init__(self, root, name):
         self.root = root
@@ -42,6 +43,7 @@ class ExperimentNotFoundException(Exception):
 
     def __repr__(self):
         return f"The experiment {self.name} was not found under root {self.root}."
+
 
 class ExperimentManager(object):
     """A helper class with wrapped command line interface used to manage a set of experiments. It is compatible both

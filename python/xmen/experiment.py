@@ -483,11 +483,10 @@ class Experiment(object, metaclass=TypedMeta):
             self.__call__()
 
         if args.execute is not None:
+            self.from_yml(args.execute)
             if args.to_txt is None or args.to_txt:
                 sys.stdout = MultiOut(sys.__stdout__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
                 sys.stderr = MultiOut(sys.__stderr__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
-
-            self.from_yml(args.execute)
             self.__call__()
 
         if args.name is not None:
