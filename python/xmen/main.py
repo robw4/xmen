@@ -24,7 +24,7 @@ import textwrap
 import glob
 
 from xmen.config import GlobalExperimentManager
-from xmen.manager import ExperimentManager
+from xmen.manager import ExperimentManager, InvalidExperimentRoot
 
 
 def _init(args):
@@ -34,7 +34,7 @@ def _init(args):
 
 def _register(args):
     experiment_manager = ExperimentManager(args.root)
-    experiment_manager.register(args.updates, args.purpose, args.header)
+    experiment_manager.register(args.name, args.updates, args.purpose, args.header, repeats=args.repeats)
 
 
 def _reset(args):
@@ -248,15 +248,18 @@ init_parser.set_defaults(func=_init)
 
 # Register
 register_parser = subparsers.add_parser('register', help='Register a set of experiments.')
-register_parser.add_argument('updates', metavar='YAML_STR',
+register_parser.add_argument('-n', '--name', help='Name of the experiment', default=None)
+register_parser.add_argument('-u', '--updates', metavar='YAML_STR',
                              help='Defaults to update to register experiments passes as a yaml dict. The special character'
                                   '"|" is interpreted as an or operator. all combinations of parameters appearing '
-                                  'either side of "|" will be registered.')
-register_parser.add_argument('-helps', '--header', metavar='PATH', help='A header file to prepend to each run script', default=None)
+                                  'either side of "|" will be registered.', default=None)
+register_parser.add_argument('-H', '--header', metavar='PATH', help='A header file to prepend to each run script', default=None)
 register_parser.add_argument('-p', '--purpose', metavar='STR', help='A string giving the purpose of the experiment.')
 register_parser.add_argument('-r', '--root', metavar='DIR', default='',
                              help='Path to the root experiment folder. If None then the current work directory will be '
                                   'used')
+register_parser.add_argument('-x', '--repeats', metavar='DIR', default=1, type=int,
+                             help='Repeat experiment(s) this number of times')
 register_parser.set_defaults(func=_register)
 
 # List
@@ -352,7 +355,17 @@ relink_parser.add_argument('-e', '--experiments', metavar='NAMES',
                                 'root). If not passed then the experiment will be relinked globally.')
 relink_parser.set_defaults(func=_relink)
 
+
+def invalid_experiment_root_hook(exctype, value, traceback):
+    if exctype == InvalidExperimentRoot:
+        print("ERROR: The current repository is not a valid experiment root. Try init?")
+    else:
+        sys.__excepthook__(exctype, value, traceback)
+
+
 # Enable command line interface
 if __name__ == "__main__":
+    import sys
+    sys.excepthook = invalid_experiment_root_hook
     args = parser.parse_args()
     args.func(args)

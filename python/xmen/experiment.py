@@ -31,6 +31,8 @@ from argparse import RawTextHelpFormatter
 
 from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recursive_print_lines, TypedMeta, MultiOut
 
+from xmen.config import GlobalExperimentManager
+
 pd.set_option('expand_frame_repr', False)
 
 experiment_parser = argparse.ArgumentParser(description='Run the Experiment command line interface',
@@ -367,7 +369,8 @@ class Experiment(object, metaclass=TypedMeta):
         self.__dict__.update(params)
         self._created = datetime.datetime.now().strftime(DATE_FORMAT)
 
-    def register(self, root, name, purpose='', force=True, same_names=100):
+    def register(self, root, name, purpose='', force=True, same_names=100, generate_script=False,
+                 header=None):
         """Register an experiment to an experiment directory. Its status will be updated to ``registered``. If an
         experiment called ``name`` exists in ``root`` and ``force==True`` then name will be appended with an int
         (eg. ``{name}_0``) until a unique name is found in ``root``. If ``force==False`` a ``ValueError`` will be raised.
@@ -393,6 +396,12 @@ class Experiment(object, metaclass=TypedMeta):
         if not os.path.isdir(folder):
             os.makedirs(folder)
 
+        # Generate a script.sh in each folder that can be used to run the experiment
+        if generate_script:
+            script = self.get_run_script(type='individual')
+            with open(os.path.join(self.root, self.name, 'run.sh'), 'w') as f:
+                f.write(script)
+
         self.update_version()  # Get new version information
         self.update_meta()   # Get the newest meta information
         self._root = root
@@ -400,6 +409,26 @@ class Experiment(object, metaclass=TypedMeta):
         self._purpose = purpose
         self._status = 'registered'
         self._to_yaml()
+
+    def get_run_script(self, type='set', shell='/bin/bash'):
+        if type not in ['set', 'indiviual']:
+            raise NotImplementedError('Only types "set" and "individual" are currently supported.')
+        sh = [f'#!{shell}']
+        sh += [f'# File generated on the {datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")}']
+        if 'git' in self._version:
+            sh += [f'# GIT:']
+            sh += [f'# - repo {self._version["git"]["local"]}']
+            sh += [f'# - branch {self._version["git"]["branch"]}']
+            sh += [f'# - remote {self._version["git"]["remote"]}']
+            sh += [f'# - commit {self._version["git"]["commit"]}']
+            sh += ['']
+        possible_roots = sorted([p for p in sys.path if p in self._version['module']])
+        if len(possible_roots) > 0:
+            root = possible_roots[0]
+            sh += ['export PYTHONPATH="${PYTHONPATH}:' + f'{root}"']
+        sh += ['python3 ' + self._version['module'] + ' --execute ']
+        sh[-1] += '${1}' if type == 'set' else os.path.join(self.root, 'params.yml')
+        return '\n'.join(sh)
 
     def to_root(self, root_dir):
         """Generate a ``defaults.yml`` file and ``script.sh`` file in ``root_dir``.
@@ -411,27 +440,15 @@ class Experiment(object, metaclass=TypedMeta):
         # get_git is deliberately called outside to_defaults as git information is also added to script.sh
         self.update_version()
         self.update_meta()
-        sh = ['#!/bin/bash']
-        sh += [f'# File generated on the {datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")}']
-        if 'git' in self._version:
-            sh += [f'# GIT:']
-            sh += [f'# - repo {self._version["git"]["local"]}']
-            sh += [f'# - branch {self._version["git"]["branch"]}']
-            sh += [f'# - remote {self._version["git"]["remote"]}']
-            sh += [f'# - commit {self._version["git"]["commit"]}']
-            sh += ['']
 
-        possible_roots = sorted([p for p in sys.path if p in self._version['module']])
-        if len(possible_roots) > 0:
-            root = possible_roots[0]
-            sh += ['export PYTHONPATH="${PYTHONPATH}:' + f'{root}"']
-        sh += ['python3 ' + self._version['module'] + ' --execute ${1}']
-        print('\n'.join(sh))
+        print(self.get_run_script())
 
         if not os.path.exists(root_dir):
             os.makedirs(root_dir)
+
+        script = self.get_run_script()
         # Save to root directory
-        open(os.path.join(root_dir, 'script.sh'), 'w').write('\n'.join(sh))
+        open(os.path.join(root_dir, 'script.sh'), 'w').write(script)
         self.to_defaults(root_dir)
 
     def main(self, args):

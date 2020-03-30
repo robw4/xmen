@@ -44,6 +44,7 @@ class GlobalExperimentManager(object):
         self.prompt_for_message = True
         self.experiments = {}          # A list of all experiments registered with an Experiment Manager
         self.meta = get_meta()
+        self.header = ''
         self._dir = os.path.join(os.getenv('HOME'), '.xmen')
 
         if not os.path.isdir(self._dir):
