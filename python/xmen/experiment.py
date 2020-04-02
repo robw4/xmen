@@ -23,6 +23,7 @@ import datetime
 import argparse
 from typing import Optional, Dict, List, Any
 import signal
+import io
 
 import ruamel.yaml
 from ruamel.yaml.comments import CommentedMap
@@ -353,6 +354,11 @@ class Experiment(object, metaclass=TypedMeta):
 
         # Convert to yaml
         yaml = ruamel.yaml.YAML()
+        try:
+            yaml.dump(defaults, io.StringIO())
+        except yaml.representer.RepresenterError as m:
+            raise RuntimeError(f'Invalid yaml encountered with error {m}')
+
         with open(path, 'w') as file:
             yaml.dump(defaults, file)
 
