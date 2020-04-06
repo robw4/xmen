@@ -53,7 +53,7 @@ experiment_parser.add_argument('--to_defaults', type=str, default=None, metavar=
 experiment_parser.add_argument('--register', type=str, nargs=2, default=None, metavar=('ROOT', 'NAME'),
                                help='Register an experiment at root (1st positional) name (2nd'
                                     'positional)')
-experiment_parser.add_argument('--debug', action='store_true', default=None,
+experiment_parser.add_argument('--debug', default=None, const='/tmp/test', nargs="?",
                                help='Run experiment in debug mode. Experiment is registered to a folder in /tmp')
 experiment_parser.add_argument('--to_txt', default=None,
                                help='Also log stdout and stderr to an out.txt file. Enabled by default')
@@ -362,6 +362,10 @@ class Experiment(object, metaclass=TypedMeta):
         with open(path, 'w') as file:
             yaml.dump(defaults, file)
 
+    def debug(self):
+        """Inherited classes may overload debug. Used to define a set of setup for minimum example flow"""
+        return self
+
     def from_yml(self, path):
         """Load state from either a ``params.yml`` or ``defaults.yml`` file (inferred from the filename).
         The status of the experiment will be equal to ``'default'`` if ``'defaults.yml'``
@@ -496,9 +500,9 @@ class Experiment(object, metaclass=TypedMeta):
             self.to_root(args.to_root)
         if args.register is not None:
             self.register(args.register[0], args.register[1])
-
         if args.debug is not None:
-            self.register(root='/tmp', name='test')
+            self.debug()
+            self.register(*os.path.split(args.debug))
             if args.to_txt is None or args.to_txt:
                 sys.stdout = MultiOut(sys.__stdout__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
                 sys.stderr = MultiOut(sys.__stderr__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
