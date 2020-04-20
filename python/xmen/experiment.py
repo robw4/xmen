@@ -490,6 +490,10 @@ class Experiment(object, metaclass=TypedMeta):
         if args.debug is not None and args.execute is not None:
             print(f'ERROR: Only one of debug and execute can be set')
             exit()
+        if args.debug is not None:
+            if hasattr(self, 'debug_defaults'):
+                print(f'Updating debug parameters {self.debug_defaults}')
+                self.update(self.debug_defaults)
         if args.update is not None:
             overrides = ruamel.yaml.load(args.update, Loader=ruamel.yaml.Loader)
             print(f'Updating parameters {overrides}')
@@ -501,7 +505,6 @@ class Experiment(object, metaclass=TypedMeta):
         if args.register is not None:
             self.register(args.register[0], args.register[1])
         if args.debug is not None:
-            self.debug()
             self.register(*os.path.split(args.debug))
             if args.to_txt is None or args.to_txt:
                 sys.stdout = MultiOut(sys.__stdout__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
@@ -562,7 +565,8 @@ class Experiment(object, metaclass=TypedMeta):
         elif exc_type is TimeoutException:
             self._update_status('timeout')
         else:
-            self._update_status('error')
+            if self.status not in ['timeout', 'stopped']:
+                self._update_status('error')
 
     def __call__(self, *args, **kwargs):
         """Used to run experiment. Upon entering the experiment status is updated to ``'running`` before ``args`` and
