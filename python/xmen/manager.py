@@ -21,16 +21,9 @@ experiment managers command line interface"""
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
 import sys
 import os
-from shutil import copyfile, rmtree
 import datetime
-import subprocess
-import glob
 import time
-import importlib.util
-import copy
-
-import ruamel.yaml
-import pandas as pd
+import glob
 
 from xmen.utils import get_meta, get_version, DATE_FORMAT
 import xmen.config
@@ -298,6 +291,7 @@ class ExperimentManager(object):
 
     def load_defaults(self):
         """Load the ``defaults.yml`` file into a dictionary"""
+        import ruamel.yaml
         with open(os.path.join(self.root, 'defaults.yml'), 'r') as file:
             defaults = ruamel.yaml.load(file, ruamel.yaml.RoundTripLoader)
         return defaults
@@ -309,6 +303,7 @@ class ExperimentManager(object):
             params (dict): A dictionary of parameters to be saved. Can also be a CommentedMap from ruamel
             experiment_name (str): The name of the experiment
         """
+        import ruamel.yaml
         experiment_path = os.path.join(self.root, experiment_name)
         with open(os.path.join(experiment_path, 'params.yml'), 'w') as out:
             yaml = ruamel.yaml.YAML()
@@ -321,6 +316,7 @@ class ExperimentManager(object):
             params (dict): A dictionary of parameters to be saved. Can also be a CommentedMap from ruamel
             experiment_name (str): The name of the experiment
         """
+        import ruamel.yaml
         defaults = self.load_defaults()
         if '_meta' not in defaults:
             defaults.insert(2, '_meta', get_meta())
@@ -329,6 +325,7 @@ class ExperimentManager(object):
         if '_home' in defaults:
             defaults.pop('_home')
         # experiment_path = os.path.join(self.root, experiment_name)
+
         with open(os.path.join(self.root, 'defaults.yml'), 'w') as out:
             yaml = ruamel.yaml.YAML()
             yaml.dump(defaults, out)
@@ -348,6 +345,7 @@ class ExperimentManager(object):
     def load_params(self, experiment_path, experiment_name=False):
         """Load parameters for an experiment. If ``experiment_name`` is True then experiment_path is assumed to be a
         path to the folder of the experiment else it is assumed to be a path to the ``params.yml`` file."""
+        import ruamel.yaml
         if experiment_name:
             experiment_path = os.path.join(self.root, experiment_path)
         with open(os.path.join(experiment_path, 'params.yml'), 'r') as params_yml:
@@ -356,12 +354,14 @@ class ExperimentManager(object):
 
     def _to_yml(self):
         """Save the current experiment manager to an ``experiment.yaml``"""
+        import ruamel.yaml
         params = {k: v for k, v in self.__dict__.items() if k[0] != '_' or k in self._specials}
         with open(os.path.join(self.root, 'experiment.yml'), 'w') as file:
             ruamel.yaml.dump(params, file, Dumper=ruamel.yaml.RoundTripDumper)
 
     def _from_yml(self):
         """Load an experiment manager from an ``experiment.yml`` file"""
+        import ruamel.yaml
         with open(os.path.join(self.root, 'experiment.yml'), 'r') as file:
             params = ruamel.yaml.load(file, ruamel.yaml.RoundTripLoader)
             self.root = params['root']
@@ -386,6 +386,7 @@ class ExperimentManager(object):
             script (str): A path to a ``script.sh``. If ``""`` then a script.sh file is searched for in the current work
                 directory.
         """
+        from shutil import copyfile
         print(name)
         if name is None:
             # Load defaults
@@ -421,6 +422,7 @@ class ExperimentManager(object):
             for p in self._config.python_paths:
                 if p not in sys.path:
                     sys.path.append(p)
+            import subprocess
             subprocess.call(['python3', self._config.python_experiments[name], '--to_root', self.root])
             self.script = os.path.join(self.root, 'script.sh')
             self.defaults = os.path.join(self.root, 'defaults.yml')
@@ -454,6 +456,7 @@ class ExperimentManager(object):
         """Take as input a dictionary and convert the dictionary to a list of keys and a list of list of values
         len(values) = number of parameters specified whilst len(values[i]) = len(keys).
         """
+        import ruamel.yaml
         values = [[]]  # List of lists. Each inner list is of length keys
         keys = []
 
@@ -599,6 +602,8 @@ class ExperimentManager(object):
             given the value null the type of any overrides in this case will be inferred from the yaml string.
         """
         # TODO: This function is currently able to register or arguments only at the first level
+        import ruamel.yaml
+        import importlib.util
         self.check_initialised()
         defaults = self.load_defaults()
 
@@ -688,7 +693,8 @@ class ExperimentManager(object):
                     '_version': version,
                     '_meta': get_meta()}
 
-                params = copy.deepcopy(defaults)
+                from copy import deepcopy
+                params = deepcopy(defaults)
                 # Remove optional parameters from defaults
                 for k in ['_created', '_version', '_meta']:
                     if k in params:
@@ -734,6 +740,7 @@ class ExperimentManager(object):
     def list(self):
         """List all experiments currently created with the experiment manager."""
         self.check_initialised()
+        import pandas as pd
 
         if self.purpose is not None:
             print('Purpose: ' + self.purpose)
@@ -791,6 +798,7 @@ class ExperimentManager(object):
 
     def clean(self):
         """Remove directories no longer linked to the experiment manager"""
+        from shutil import rmtree
         self.check_initialised()
         subdirs = [x[0] for x in os.walk(self.root) if x[0] != self.root and x[0] not in self.experiments]
         for d in subdirs:
@@ -798,6 +806,7 @@ class ExperimentManager(object):
             rmtree(d)
 
     def rm(self):
+        from shutil import rmtree
         self.check_initialised()
         if self._config.prompt_for_message:
             inp = input(f'This command will remove the whole experiment folder {self.root}. '
@@ -813,6 +822,7 @@ class ExperimentManager(object):
 
     def run(self, pattern, *args):
         """Run all experiments that match the global pattern using the run command given by args."""
+        import subprocess
         experiments = [p for p in glob.glob(os.path.join(self.root, pattern)) if p in self.experiments]
         for p in experiments:
             P = self.load_params(p)

@@ -25,16 +25,8 @@ from typing import Optional, Dict, List, Any
 import signal
 import io
 
-import ruamel.yaml
-from ruamel.yaml.comments import CommentedMap
-import pandas as pd
 from argparse import RawTextHelpFormatter
-
 from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recursive_print_lines, TypedMeta, MultiOut
-
-from xmen.config import GlobalExperimentManager
-
-pd.set_option('expand_frame_repr', False)
 
 experiment_parser = argparse.ArgumentParser(description='Run the Experiment command line interface',
                                             formatter_class=RawTextHelpFormatter)
@@ -333,6 +325,9 @@ class Experiment(object, metaclass=TypedMeta):
 
     def _to_yaml(self, defaults_dir=None):
         """Save experiment to either a defaults.yml file or a params.yml file depending on its status"""
+        import ruamel.yaml
+        from ruamel.yaml.comments import CommentedMap
+
         self.update_version()
         params = {k: v for k, v in self.__dict__.items() if k in self.param_keys() or k in self._specials}
         params = {k: v for k, v in params.items() if '_' + k not in self.__dict__}
@@ -370,6 +365,8 @@ class Experiment(object, metaclass=TypedMeta):
         """Load state from either a ``params.yml`` or ``defaults.yml`` file (inferred from the filename).
         The status of the experiment will be equal to ``'default'`` if ``'defaults.yml'``
         file else ``'registered'`` if ``params.yml`` file."""
+        import ruamel.yaml
+
         yaml = ruamel.yaml.YAML()
 
         with open(path, 'r') as file:
@@ -495,6 +492,7 @@ class Experiment(object, metaclass=TypedMeta):
                 print(f'Updating debug parameters {self.debug_defaults}')
                 self.update(self.debug_defaults)
         if args.update is not None:
+            import ruamel.yaml
             overrides = ruamel.yaml.load(args.update, Loader=ruamel.yaml.Loader)
             print(f'Updating parameters {overrides}')
             self.update(overrides)
@@ -582,22 +580,66 @@ class Experiment(object, metaclass=TypedMeta):
     def run(self, *args, **kwargs):
         raise NotImplementedError('Derived classes must implement the run method in order to be called')
 
-    def message(self, message_dict):
+    def message(self, messages, keep='latest', leader=None):
         """Add a message to the params.yml file.
 
         Args:
-            message_dict (dict): A dictionary of messages. Keys are interpreted as subjects and values interpreted as
+            messages (dict): A dictionary of messages. Keys are interpreted as subjects and values interpreted as
                 messages. If the ``defaults.yml`` already contains subject then the message for subject will be
                 updated.
+            keep (str): which message to keep in the case of collision. One of ['latest', 'min', 'max']
+            leader (str): If not None then all messages will be saved if the keep condition is met for the leader key.
+
+        Note:
+            Only messages of type float, int and string are supported. Any other message will be converted to type float
+            (if possible) then string thereafter.
+
         """
         if self._status != 'default':
-            self._messages.update(message_dict)
+            # Add leader to messages group
+            if leader is not None:
+                best_leader = self.compare(leader, messages[leader], keep)[0]
+            else:
+                best_leader = False
+
+            for k, v in messages.items():
+                best_current, v = self.compare(k, v, keep)
+                best = best_leader if leader is not None else best_current
+                # Convert type
+                if not isinstance(v, (str, float, int)):
+                    try:
+                        v = float(v)
+                    except (ValueError, TypeError):
+                        v = str(v)
+                        pass
+                # Update message
+                if best:
+                    self._messages.update({k: v})
             self._to_yaml()
         else:
             raise ValueError('An experiment must be registered to leave a message')
 
+    @staticmethod
+    def convert_type(v):
+        if not isinstance(v, (str, float, int)):
+            try:
+                v = float(v)
+            except (ValueError, TypeError):
+                v = str(v)
+                pass
+        return v
+
+    def compare(self, k, v, keep='latest'):
+        assert keep in ['max', 'min', 'latest']
+        cur = self.messages.get(k, None)
+        if cur is not None and keep in ['max', 'min']:
+            out = {'max': max, 'min': min}[keep](v, cur)
+            return out == v, out
+        else:
+            return True, v
+
     def parse_args(self):
-        short, params = self.__init__.__doc__.split('Parameters:')
+        short, params = self.__doc__.split('Parameters:')
         epilog = 'Parameters:' + params
         experiment_parser.description = short
         experiment_parser.epilog = epilog

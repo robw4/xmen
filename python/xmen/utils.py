@@ -20,17 +20,12 @@ and the Experiment classes."""
 
 import os
 import inspect
-import git
-from ruamel.yaml.comments import CommentedSeq, CommentedMap
-import collections
-import uuid
-import socket
-import getpass
-
 DATE_FORMAT = "%Y-%m-%d-%H-%M-%S"
 
 
 def recursive_print_lines(dic, helps=None, start=''):
+    import collections
+    from ruamel.yaml.comments import CommentedMap
     lines = []
     dic = commented_to_py(dic)
     for k, v in dic.items():
@@ -50,6 +45,7 @@ def recursive_print_lines(dic, helps=None, start=''):
                 lines += [f'{start}{k}: {v}']
     return lines
 
+
 class MultiOut(object):
     def __init__(self, *args):
         self.handles = args
@@ -65,6 +61,9 @@ class MultiOut(object):
 
 def get_meta():
     """Get Meta information for the system"""
+    import uuid
+    import socket
+    import getpass
     return {'mac': hex(uuid.getnode()), 'host': socket.getfqdn(), 'user': getpass.getuser(), 'home': os.path.expanduser("~")}
 
 
@@ -215,13 +214,14 @@ class TypedMeta(type):
                 helps += [new_line]
 
         # Update class __doc__ strings documentation
-        if cls.__init__.__doc__ is None:
-            cls.__init__.__doc__ = ''
-        cls.__init__.__doc__ += '\n'.join(['', '', 'Parameters:'] + helps)
+       # if cls.__init__.__doc__ is None:
+       #     cls.__init__.__doc__ = ''
+      #  cls.__init__.__doc__ += '\n'.join(
+       #     ['', '', 'Parameters:'] + [cls._Experiment__params[k][-1] for k in cls._Experiment__params])
         # Add to __class__.__doc__
         if cls.__doc__ is None:
             cls.__doc__ = ""
-        cls.__doc__ += '\n'.join(['', '', f'Parameters:'] + helps)
+        cls.__doc__ += '\n'.join(['', '', f'Parameters:'] + [cls._Experiment__params[k][-1] for k in cls._Experiment__params])
 
 
 
@@ -283,6 +283,7 @@ def get_git(path):
             uncommited changes in the current repository. Otherwise true
     """
     # Get the directory path which trigerred the call to get_git
+    import git
     try:
         git_repo = git.Repo(path, search_parent_directories=True)
     except:    # If something goes wrong we just assume that git is not available TODO(robw): Is there a better way?
@@ -334,6 +335,7 @@ def get_version(*, path=None, cls=None):
 
 
 def commented_to_py(x):
+    from ruamel.yaml.comments import CommentedSeq, CommentedMap
     if type(x) is CommentedMap:
         return {k: commented_to_py(v) for k, v in x.items()}
     if type(x) is CommentedSeq:

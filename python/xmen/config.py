@@ -17,15 +17,8 @@
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
-import re
-import ruamel.yaml
-import subprocess
-from ruamel.yaml.comments import CommentedMap
-import fnmatch
-from copy import deepcopy
-import pandas as pd
-import xmen.manager
 
+import xmen.manager
 from xmen.utils import get_meta
 
 
@@ -61,6 +54,7 @@ class GlobalExperimentManager(object):
 
     def _to_yml(self):
         """Save the current config to an ``config.yaml``"""
+        import ruamel.yaml
         params = {k: v for k, v in self.__dict__.items() if k[0] != '_'}
         with open(os.path.join(self._dir, 'config.yml'), 'w') as file:
             ruamel.yaml.dump(params, file, Dumper=ruamel.yaml.RoundTripDumper)
@@ -68,6 +62,8 @@ class GlobalExperimentManager(object):
     def _from_yml(self):
         """Load the experiment config from a ``config.yml`` file"""
         with open(os.path.join(self._dir, 'config.yml'), 'r') as file:
+            import ruamel.yaml
+            from ruamel.yaml.comments import CommentedMap
             params = ruamel.yaml.load(file, ruamel.yaml.RoundTripLoader)
             to_yml = False
             for k, v in params.items():
@@ -173,6 +169,8 @@ class GlobalExperimentManager(object):
             Due to the use of regex and conditions it is possible for parameters to match in one experiment which are
                 not present in another. In this case missing parameters are given a value equal to ``missing_string``.
         """
+        import fnmatch
+        import re
         def _comparison(*args):
             arg = ''.join(args)
             try:
@@ -213,6 +211,7 @@ class GlobalExperimentManager(object):
                             if params is None:
                                 print(path)
                         else:
+                            from copy import deepcopy
                             params = deepcopy(defaults)
                             params.update(em.overides[i])
                     else:
@@ -306,7 +305,7 @@ class GlobalExperimentManager(object):
                           display_meta=None):
         """Convert the output of the `find` method to a formatted data frame configured by args. If verbose then all
         entries will be displayed (independent of the other args)"""
-
+        import pandas as pd
         special_keys = [k for k in table if k.startswith('_')]
         display = {
             'root': table.pop('_root')}
@@ -388,6 +387,7 @@ class GlobalExperimentManager(object):
         return df, prefix
 
     def add_class(self, path):
+        import subprocess
         path = os.path.abspath(path)
         for p in self.python_paths:
             if p not in sys.path:

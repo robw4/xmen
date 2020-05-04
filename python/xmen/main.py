@@ -17,8 +17,6 @@
 #  You should have received a copy of the GNU General Public License
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-import pandas as pd
-
 import argparse
 import textwrap
 import glob
@@ -43,6 +41,7 @@ def _reset(args):
 
 
 def _list(args):
+    import pandas as pd
     pd.set_option('display.width', 1000)
     pd.set_option('display.max_columns', 1000)
     pd.set_option('display.max_colwidth', args.max_width)
