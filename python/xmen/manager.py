@@ -285,10 +285,6 @@ class ExperimentManager(object):
         if not all_exist:
             raise InvalidExperimentRoot(self.root)
 
-            print('The current work directory is not a valid experiment folder. It is either missing one of'
-                             '"script.sh", "experiment.yml" or "defaults.yml" or the experiment.yml file is not valid')
-            exit()
-
     def load_defaults(self):
         """Load the ``defaults.yml`` file into a dictionary"""
         import ruamel.yaml
@@ -418,12 +414,27 @@ class ExperimentManager(object):
                 print(f'Python Experiment {name} has not been registered with the global configuration. Aborting!')
                 return
 
-            # Add experiments to python path if they are not there already
             for p in self._config.python_paths:
-                if p not in sys.path:
-                    sys.path.append(p)
-            import subprocess
-            subprocess.call(['python3', self._config.python_experiments[name], '--to_root', self.root])
+                if self._config.python_experiments[name].startswith(p):
+                    # Inserted right at the start (will be the first one searched in)
+                    sys.path.insert(0, p)
+
+            import importlib.util
+            spec = importlib.util.spec_from_file_location('current', self._config.python_experiments[name])
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+
+            import inspect
+            from xmen.experiment import Experiment
+            # Experiment is assumed to be the last object that is a subclass of experiment and is defined in the
+            # module.
+            exp = [obj for name, obj in inspect.getmembers(module, inspect.isclass) if obj.__module__ == 'current'
+                   and issubclass(obj, Experiment)]
+            print(f'Found experiment(s) {exp} and using {exp[-1]}')
+
+            # Generate root experiment
+            exp[-1]().to_root(self.root)
+
             self.script = os.path.join(self.root, 'script.sh')
             self.defaults = os.path.join(self.root, 'defaults.yml')
             self.type = name
@@ -601,7 +612,7 @@ class ExperimentManager(object):
             None value. If None (null yaml) is passed as a value it will not be cast. If a default.yml entry is
             given the value null the type of any overrides in this case will be inferred from the yaml string.
         """
-        # TODO: This function is currently able to register or arguments only at the first level
+        # TODO: This function is currently able to register only arguments only at the first level
         import ruamel.yaml
         import importlib.util
         self.check_initialised()
