@@ -20,6 +20,7 @@ and the Experiment classes."""
 
 import os
 import inspect
+import logging
 DATE_FORMAT = "%Y-%m-%d-%H-%M-%S"
 
 
@@ -35,7 +36,8 @@ def recursive_print_lines(dic, helps=None, start=''):
         elif v is not None:
             h = ''
             if helps is not None:
-                if helps[k] is not None:
+                h = helps.get(k, None)
+                if h is not None:
                     h = helps[k].split(":")[1].strip()
                 else:
                     h = ''
@@ -287,7 +289,7 @@ def get_git(path):
     try:
         git_repo = git.Repo(path, search_parent_directories=True)
     except:    # If something goes wrong we just assume that git is not available TODO(robw): Is there a better way?
-        print(f'Could not load git repo for path {path}')
+        logging.info(f'Could not load git repo for path {path}')
         return {}
     info = {
         'local': git_repo.git.rev_parse("--show-toplevel"),

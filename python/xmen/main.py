@@ -282,8 +282,8 @@ list_parser.add_argument('-P', '--display_purpose', action='store_true', default
                          help="Display purpose for each experiment")
 list_parser.add_argument('-s', '--display_status', action='store_true', default=None,
                          help="Display status for each experiment")
-list_parser.add_argument('-m', '--display_messages', action='store_true', default=None,
-                         help="Display messages for each experiment")
+list_parser.add_argument('-m', '--display_messages', default=None, const='e|s|wall|end|next|.*step|.*load', type=str,
+                         help="Display messages for each experiment", nargs='?')
 list_parser.add_argument('-M', '--display_meta', action='store_true', default=None,
                          help="Display messages for each experiment")
 list_parser.add_argument('-l', '--list', action='store_true', default=None,

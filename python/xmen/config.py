@@ -17,6 +17,7 @@
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
+import re
 
 import xmen.manager
 from xmen.utils import get_meta
@@ -366,8 +367,10 @@ class GlobalExperimentManager(object):
                 display_keys += ['date']
             if display_meta:
                 display_keys += list(meta_dict.keys()) + ['origin']
-            if display_messages and '_messages' in special_keys:
-                display_keys += list(message_dict.keys())
+            if (isinstance(display_messages, str) or display_messages) and '_messages' in special_keys:
+                display_keys += [k for k in message_dict.keys() if re.match(display_messages if isinstance(
+                    display_messages, str) else '.*', k)]
+                    # list(message_dict.keys())
                 display_keys += ['date']
             if display_purpose:
                 display_keys += ['purpose']
