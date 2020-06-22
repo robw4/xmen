@@ -334,8 +334,10 @@ class ExperimentManager(object):
                 params['_meta'] = get_meta()
             if '_home' in params:
                 params.pop('_home')
-            if '_origin' not in params:
-                params.insert(8, '_origin', params['_root'])
+            if '_origin' in params:
+                params.pop('_origin')
+            # if '_origin' not in params:
+            #     params.insert(8, '_origin', params['_root'])
             self.save_params(params, os.path.basename(p))
 
     def load_params(self, experiment_path, experiment_name=False):

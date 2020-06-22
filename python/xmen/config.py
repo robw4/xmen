@@ -319,7 +319,7 @@ class GlobalExperimentManager(object):
             'purpose': table.pop('_purpose')})
 
         if '_origin' in special_keys:
-            display['origin'] = table.pop('_origin')
+            table.pop('_origin')
 
         meta = table.pop('_meta')
         meta_dict = {}

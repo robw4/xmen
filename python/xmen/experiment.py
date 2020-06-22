@@ -52,7 +52,7 @@ experiment_parser.add_argument('--to_txt', default=None,
 experiment_parser.add_argument('--name', action='store_true', help='Return the name of the experiment class')
 
 
-_SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta', '_origin']
+_SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta']
 
 
 class TimeoutException(Exception):
@@ -209,7 +209,7 @@ class Experiment(object, metaclass=TypedMeta):
             self._messages: Dict[Any, Any] = {}   # @p Messages left by the experiment
             self._version: Optional[Dict[Any, Any]] = None   # @p Experiment version information. See `get_version`
             self._meta: Optional[Dict] = None    # @p The global configuration for the experiment manager
-            self._origin: Optional[str] = None   # @p The path the experiment was initially registered at
+            # self._origin: Optional[str] = None   # @p The path the experiment was initially registered at
             self._specials: List[str] = _SPECIALS
             self._helps: Optional[Dict] = None
         else:
