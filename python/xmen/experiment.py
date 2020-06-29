@@ -28,6 +28,7 @@ import io
 from argparse import RawTextHelpFormatter
 from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recursive_print_lines, TypedMeta, MultiOut
 
+
 experiment_parser = argparse.ArgumentParser(description='Run the Experiment command line interface',
                                             formatter_class=RawTextHelpFormatter)
 experiment_parser.add_argument('--update', type=str, default=None,
@@ -36,7 +37,7 @@ experiment_parser.add_argument('--update', type=str, default=None,
                                     'and --register.', metavar='YAML_STRING')
 experiment_parser.add_argument('--execute', type=str, default=None, metavar='PARAMS',
                                help='Execute the experiment from the given params.yml file.'
-                                    ' Cannot be called with update.')
+                                    ' Cannot be called with update.', nargs='?', const=True)
 experiment_parser.add_argument('--to_root', type=str, default=None, metavar='DIR',
                                help='Generate a run script and defaults.yml file for interfacing with the experiment'
                                     ' manager. If the directory does not exist then it is first created.')
@@ -195,7 +196,7 @@ class Experiment(object, metaclass=TypedMeta):
     """
     __params = {}   # Used to store parameters registered with Experiment
 
-    def __init__(self, name=None, root=None, purpose=''):
+    def __init__(self, name=None, root=None, purpose='', **kwargs):
         """Initialise the experiment object. If name and root are not None then the experiment is initialised in
         default mode else it is created at '{root}/{name}'.
         """
@@ -216,6 +217,9 @@ class Experiment(object, metaclass=TypedMeta):
             raise ValueError("Either both or neither of name and root can be set")
         if name is not None:
             self.register(name, root, purpose)
+
+        # Update kwargs
+        self.update(kwargs)
 
     @property
     def root(self):
@@ -289,13 +293,7 @@ class Experiment(object, metaclass=TypedMeta):
     def version(self, value):
         raise AttributeError('Property version cannot be set.')
 
-    def register_param(self, k, default, type=None, help=None):
-        self._Experiment_params.update(k, (default, type, help))
-
-    def param_keys(self):
-        return self._Experiment__params.keys()
-
-    def get_attributes_help(self):
+    def get_param_helps(self):
         """Get help for all attributes in class (including inherited and private)."""
         return {k: v[-1].strip() for k, v in self._Experiment__params.items()}
 
@@ -331,7 +329,7 @@ class Experiment(object, metaclass=TypedMeta):
         self.update_version()
         params = {k: v for k, v in self.__dict__.items() if k in self.param_keys() or k in self._specials}
         params = {k: v for k, v in params.items() if '_' + k not in self.__dict__}
-        helps = self.get_attributes_help()
+        helps = self.get_param_helps()
 
         # Add definition module to experiment object
         defaults = CommentedMap()
@@ -358,7 +356,7 @@ class Experiment(object, metaclass=TypedMeta):
             yaml.dump(defaults, file)
 
     def debug(self):
-        """Inherited classes may overload debug. Used to define a set of setup for minimum example flow"""
+        """Inherited classes may overload debug. Used to define a set of setup for minimum example"""
         return self
 
     def from_yml(self, path):
@@ -458,63 +456,32 @@ class Experiment(object, metaclass=TypedMeta):
         open(os.path.join(root_dir, 'script.sh'), 'w').write(script)
         self.to_defaults(root_dir)
 
-    def main(self, args):
-        """A main loop used to expose the command line interface. In order to expose the command line
-        interface within a module definition the lines::
-
-            import experiment_parser as exp_parser
-
-            ...
+    def main(self, args=None):
+        """Take the command line args and execute the experiment (see ``parse_args`` for more
+         information). In order to expose the command line interface::
 
             if __name__ == '__main__':
-                args = exp_parser.parser()
-                exp = AnExperiment()   # Initialise
+                exp = AnExperiment().main()
+
+        Note that for backwards compatibility it is also possible to pass ``args`` as an argument to ``main``.
+        This allows the experiment to be run from the commandline as::
+
+            if __name__ == '__main__':
+                exp = AnExperiment()
+                args = exp.parse_args()
                 exp.main(args)
-
-        should be added to the module script (where ``AnExperiment`` inherits from ``Experiment``).
-
         """
-        if args.update is not None and args.execute is not None:
-            print('ERROR: parameters cannot be updated when executing an experiment from a params.yml')
-            exit()
-        sum_check = sum([args.register is not None, args.to_defaults is not None, args.to_root is not None])
-        if sum_check > 1:
-            print(f'ERROR: Only one of register, to_defaults and root can be set but {sum_check} were set')
-            exit()
-        elif (sum_check == 1) == (args.execute is not None or args.debug is not None or args.name):  # exclusive or
-            print('ERROR: Either one of --register, --to_defaults and --to_root must be passed or --execute, --debug'
-                  'and --name must be passed.')
-        if args.debug is not None and args.execute is not None:
-            print(f'ERROR: Only one of debug and execute can be set')
-            exit()
-        if args.debug is not None:
-            if hasattr(self, 'debug_defaults'):
-                print(f'Updating debug parameters {self.debug_defaults}')
-                self.update(self.debug_defaults)
-        if args.update is not None:
-            import ruamel.yaml
-            overrides = ruamel.yaml.load(args.update, Loader=ruamel.yaml.Loader)
-            print(f'Updating parameters {overrides}')
-            self.update(overrides)
-        if args.to_defaults is not None:
-            self.to_defaults(args.to_defaults)
-        if args.to_root is not None:
-            self.to_root(args.to_root)
-        if args.register is not None:
-            self.register(args.register[0], args.register[1])
+        if args is None:
+            args = self.parse_args()
+
         if args.debug is not None:
             self.register(*os.path.split(args.debug))
-            if args.to_txt is None or args.to_txt:
-                sys.stdout = MultiOut(sys.__stdout__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
-                sys.stderr = MultiOut(sys.__stderr__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
             print(self.directory)
             self.__call__()
 
         if args.execute is not None:
-            self.from_yml(args.execute)
-            if args.to_txt is None or args.to_txt:
-                sys.stdout = MultiOut(sys.__stdout__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
-                sys.stderr = MultiOut(sys.__stderr__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
+            if isinstance(args.execute, str):
+                self.from_yml(args.execute)
             self.__call__()
 
         if args.name is not None:
@@ -639,21 +606,73 @@ class Experiment(object, metaclass=TypedMeta):
             return True, v
 
     def parse_args(self):
+        """Configure the experiment instance from the command line arguments.
+
+        """
         short, params = self.__doc__.split('Parameters:')
         epilog = 'Parameters:' + params
         experiment_parser.description = short
         experiment_parser.epilog = epilog
-        return experiment_parser.parse_args()
+        n = len(experiment_parser.prog) + 8
+        experiment_parser.usage = experiment_parser.prog + '\n'.join(
+            [' ' * 1 + '[--update PARAMS] --to_defaults | --to_root [--to_txt]',
+             ' ' * n + '[--update PARAMS] --register ROOT NAME [--execute] [--to_txt]',
+             ' ' * n + ' --execute PATH_TO_PARAMS',
+             ' ',
+             'PARAMS is a yaml dictionary eg --params "{a: [1, 2], b: {x: 1., y: 2.}, c: , d: True}".',
+             'Note that None is given by the null string. For a list of valid parameters see ',
+             'Parameters below.'])
+        args = experiment_parser.parse_args()
+
+        if isinstance(args.execute, str):
+            assert all(getattr(args, k) is None for k in ('update', 'register', 'to_defaults', 'to_root')), \
+             "If execute is a path then none of ('update', 'register', 'to_defaults', 'to_root') can be set"
+
+        assert sum(
+            getattr(args, k) is not None for k in ('to_defaults', 'to_root', 'execute')) == 1 or sum(
+            getattr(args, k) is not None for k in ('to_defaults', 'to_root', 'register')) == 1, \
+            "Exactly one of to_defaults, to_root and register or execute can be set"
+
+        assert sum(getattr(args, k) is not None for k in ('execute', 'debug')) != 2, \
+            'A maximum of one of execute and debug can be set at the same time'
+
+        if args.debug is not None:
+            # Update debug parameters
+            if hasattr(self, 'debug_defaults'):
+                print(f'Updating debug parameters {self.debug_defaults}')
+                self.update(self.debug_defaults)
+        if args.update is not None:
+            # Update passed parameters
+            import ruamel.yaml
+            overrides = ruamel.yaml.load(args.update, Loader=ruamel.yaml.Loader)
+            print(f'Updating parameters {overrides}')
+            self.update(overrides)
+
+        # Generate experiment repo (one of three types)
+        if args.to_defaults is not None:
+            print(f'Generating default parameters at {args.to_defaults}')
+            self.to_defaults(args.to_defaults)
+        if args.to_root is not None:
+            print(f'Generating experiment root at {args.to_root}')
+            self.to_root(args.to_root)
+        if args.register is not None:
+            print(f'Registering experiment at {args.register[0]}/{args.register[1]}(...)')
+            self.register(args.register[0], args.register[1])
+
+        if args.register is not None and args.to_txt:
+            sys.stdout = MultiOut(sys.__stdout__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
+            sys.stderr = MultiOut(sys.__stderr__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
+
+        return args
 
     def __repr__(self):
         """Provides a useful help message for the experiment"""
         # params = {k: v for k, v in self.__dict__.items() if k[0] != '_'}
-        helps = self.get_attributes_help()
-        # base_keys = ['root', 'name', 'status', 'created', 'purpose', 'messages', 'version']
+        helps = self.get_param_helps()
         base_params = {k[1:]: v for k, v in self.__dict__.items() if k in self._specials}
-        params = {k: v for k, v in self.__dict__.items() if k[0] != '_' and k not in self._specials}
+        params = {k: getattr(self, k) for k in helps if not k.startswith('_')}
         lines = recursive_print_lines(base_params)
         lines += ['parameters:']
-        lines += ['  ' + l for l in recursive_print_lines(params, helps)]
+        lines += ['  ' + f'{k}: {v}' for k, v in params.items()]
         return '\n'.join(lines)
 

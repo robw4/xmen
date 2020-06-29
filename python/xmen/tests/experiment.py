@@ -21,6 +21,10 @@ import time
 
 
 class AnExperiment(Experiment):
+    from typing import Tuple
+    x: Tuple[float, float] = (3., 2.)  # @p Parameters can be defined cleanly as class atrributes
+    y: float = 5  # @p This parameter will have this
+
     def __init__(self):
         """A basic python experiment demonstrating the features of the xmen api."""
         super(AnExperiment, self).__init__()

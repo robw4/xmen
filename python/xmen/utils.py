@@ -174,15 +174,18 @@ class TypedMeta(type):
     """
     def __init__(cls, name, bases, attr_dict):
         super(TypedMeta, cls).__init__(name, bases, attr_dict)
+
         code = inspect.getsource(cls.__init__)
 
         # indent = len(code.split('with RegisterParams(self):')[0].splitlines()[-1]) + 4
         # param_blocks = code.split('with RegisterParams(self):')[1:]
         helps = []
 
-        # for param_block in param_blocks:
-            # indent = len(register_line) - len(register_line.lstrip(' '))
-        lines = code.splitlines()
+        lines = [l.strip() for l in inspect.getsource(cls).splitlines()]
+        candidates = [c for c, p in cls.__dict__.items() if not isinstance(p, property) and not c.startswith('_')]
+        lines = [''.join(['self.', l]) for l in lines if any(l.startswith(c) for c in candidates)]
+        lines += code.splitlines()
+
         for l in lines:
             # if l.startswith(indent * ' ' + 'self.')  and 'self._' not in l:
             # All parameters will have a comment
@@ -215,6 +218,7 @@ class TypedMeta(type):
                 cls._Experiment__params.update({attr.strip(' '): (default, ty, comment, new_line)})
                 helps += [new_line]
 
+        # Inpspect class definition
         # Update class __doc__ strings documentation
        # if cls.__init__.__doc__ is None:
        #     cls.__init__.__doc__ = ''
@@ -223,7 +227,7 @@ class TypedMeta(type):
         # Add to __class__.__doc__
         if cls.__doc__ is None:
             cls.__doc__ = ""
-        cls.__doc__ += '\n'.join(['', '', f'Parameters:'] + [cls._Experiment__params[k][-1] for k in cls._Experiment__params])
+        cls.__doc__ += '\n'.join(['', '', f'Parameters:'] + [cls._Experiment__params[k][-1] for k in cls._Experiment__params if not k.startswith('_')])
 
 
 
@@ -274,6 +278,7 @@ class TypedMeta(type):
     # docs = '\n'.join(new_lines)
     # x.__doc__ = x.__doc__ + docs
     # return x
+
 def get_git(path):
     """Get git information for the given path.
 
@@ -336,11 +341,26 @@ def get_version(*, path=None, cls=None):
     return version
 
 
-def commented_to_py(x):
+def commented_to_py(x, seq=tuple):
     from ruamel.yaml.comments import CommentedSeq, CommentedMap
     if type(x) is CommentedMap:
         return {k: commented_to_py(v) for k, v in x.items()}
     if type(x) is CommentedSeq:
-        return [commented_to_py(v) for v in x]
+        return seq(commented_to_py(v) for v in x)
     else:
         return x
+
+
+if __name__ == '__main__':
+    from xmen.experiment import Experiment
+
+    class TestExperiment(Experiment):
+        n_epochs: int = 10  #@p Some help
+        n_steps: int = 1    #@p Some other help
+        nn_c0: int = 8      #@p Another piece of help
+
+    exp = TestExperiment()
+    print(exp)
+
+
+
