@@ -507,6 +507,9 @@ class Experiment(object, metaclass=TypedMeta):
         else:
             raise ValueError('Parameters of a created experiment cannot be updated.')
 
+    def param_keys(self):
+        return self._Experiment__params.keys()
+
     def __setattr__(self, key, value):
         """Attributes can only be changed when the status of the experiment is default"""
         # specials = ['name', 'root', 'status', 'created', 'purpose', 'messages', 'version']
