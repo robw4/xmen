@@ -194,32 +194,37 @@ class Experiment(object, metaclass=TypedMeta):
        path/to/an_experiment.py -h
 
     """
-    __params = {}   # Used to store parameters registered with Experiment
+    _params = {}  # Used to store parameters registered by the MetaClass
 
-    def __init__(self, name=None, root=None, purpose='', **kwargs):
+    def __init__(self, name=None, root=None, purpose='', copy=True, **kwargs, ):
         """Initialise the experiment object. If name and root are not None then the experiment is initialised in
         default mode else it is created at '{root}/{name}'.
         """
+        if copy:
+            import copy
+            for k in [k for k in dir(self) if k in self._params]:
+                setattr(self, k, copy.deepcopy(getattr(self, k)))
+
         if (name is None) == (root is None):
             now_time = datetime.datetime.now().strftime(DATE_FORMAT)
-            self._root: Optional[str] = None  # @p The root directory of the experiment
-            self._name: Optional[str] = None  # @p The name of the experiment (under root)
-            self._status: str = 'default'     # @p One of ['default' | 'created' | 'running' | 'error' | 'finished']
-            self._created: str = now_time     # @p The date the experiment was created
-            self._purpose: Optional[str] = None   # @p A description of the experiment purpose
-            self._messages: Dict[Any, Any] = {}   # @p Messages left by the experiment
+            self._root: Optional[str] = None     # @p The root directory of the experiment
+            self._name: Optional[str] = None     # @p The name of the experiment (under root)
+            self._status: str = 'default'        # @p One of ['default' | 'created' | 'running' | 'error' | 'finished']
+            self._created: str = now_time        # @p The date the experiment was created
+            self._purpose: Optional[str] = None  # @p A description of the experiment purpose
+            self._messages: Dict[Any, Any] = {}  # @p Messages left by the experiment
             self._version: Optional[Dict[Any, Any]] = None   # @p Experiment version information. See `get_version`
             self._meta: Optional[Dict] = None    # @p The global configuration for the experiment manager
-            # self._origin: Optional[str] = None   # @p The path the experiment was initially registered at
+            # self._origin: Optional[str] = None    # @p The path the experiment was initially registered at
             self._specials: List[str] = _SPECIALS
             self._helps: Optional[Dict] = None
         else:
             raise ValueError("Either both or neither of name and root can be set")
-        if name is not None:
-            self.register(name, root, purpose)
 
         # Update kwargs
         self.update(kwargs)
+        if name is not None:
+            self.register(name, root, purpose)
 
     @property
     def root(self):
@@ -295,7 +300,7 @@ class Experiment(object, metaclass=TypedMeta):
 
     def get_param_helps(self):
         """Get help for all attributes in class (including inherited and private)."""
-        return {k: v[-1].strip() for k, v in self._Experiment__params.items()}
+        return {k: v[-1].strip() for k, v in self._params.items()}
 
     def update_version(self):
         self._version = get_version(cls=self.__class__)
@@ -327,7 +332,7 @@ class Experiment(object, metaclass=TypedMeta):
         from ruamel.yaml.comments import CommentedMap
 
         self.update_version()
-        params = {k: v for k, v in self.__dict__.items() if k in self.param_keys() or k in self._specials}
+        params = {k: getattr(self, k) for k in dir(self) if k in self.param_keys() or k in self._specials}
         params = {k: v for k, v in params.items() if '_' + k not in self.__dict__}
         helps = self.get_param_helps()
 
@@ -364,7 +369,6 @@ class Experiment(object, metaclass=TypedMeta):
         The status of the experiment will be equal to ``'default'`` if ``'defaults.yml'``
         file else ``'registered'`` if ``params.yml`` file."""
         import ruamel.yaml
-
         yaml = ruamel.yaml.YAML()
 
         with open(path, 'r') as file:
@@ -484,7 +488,7 @@ class Experiment(object, metaclass=TypedMeta):
                 self.from_yml(args.execute)
             self.__call__()
 
-        if args.name is not None:
+        if args.name:
             print(self.__class__.__name__)
 
     def _update_status(self, status):
@@ -508,7 +512,7 @@ class Experiment(object, metaclass=TypedMeta):
             raise ValueError('Parameters of a created experiment cannot be updated.')
 
     def param_keys(self):
-        return self._Experiment__params.keys()
+        return self._params.keys()
 
     def __setattr__(self, key, value):
         """Attributes can only be changed when the status of the experiment is default"""
@@ -622,9 +626,12 @@ class Experiment(object, metaclass=TypedMeta):
              ' ' * n + '[--update PARAMS] --register ROOT NAME [--execute] [--to_txt]',
              ' ' * n + ' --execute PATH_TO_PARAMS',
              ' ',
-             'PARAMS is a yaml dictionary eg --params "{a: [1, 2], b: {x: 1., y: 2.}, c: , d: True}".',
-             'Note that None is given by the null string. For a list of valid parameters see ',
-             'Parameters below.'])
+             'example:',
+             'python -m xmen.tests.experiment --update "{a: cat, x: [10., 20.], t: {100: x, 101: y}, h: }" \ ',
+             '                                --register /tmp/test/xmen command_line',
+             '',
+             'Note PARAMS is a yaml dictionary - None is given by the null string. '
+             'For a list of valid parameters see below'])
         args = experiment_parser.parse_args()
 
         if isinstance(args.execute, str):

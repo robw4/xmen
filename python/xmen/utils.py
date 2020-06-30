@@ -172,24 +172,35 @@ class TypedMeta(type):
 
     The doc string has automatically been updated.
     """
+    encountered = []
+
     def __init__(cls, name, bases, attr_dict):
         super(TypedMeta, cls).__init__(name, bases, attr_dict)
 
-        code = inspect.getsource(cls.__init__)
+        if '_params' not in dir(cls):
+            cls._params = {}
 
-        # indent = len(code.split('with RegisterParams(self):')[0].splitlines()[-1]) + 4
-        # param_blocks = code.split('with RegisterParams(self):')[1:]
         helps = []
-
-        lines = [l.strip() for l in inspect.getsource(cls).splitlines()]
+        cls_source = inspect.getsource(cls)
+        if cls.__doc__ is not None:
+            # Remove the doc string
+            cls_source = cls_source.replace(cls.__doc__, "")
+        lines = [l.strip() for l in cls_source.splitlines()]
         candidates = [c for c, p in cls.__dict__.items() if not isinstance(p, property) and not c.startswith('_')]
         lines = [''.join(['self.', l]) for l in lines if any(l.startswith(c) for c in candidates)]
-        lines += code.splitlines()
+
+        if cls.__init__.__module__ not in TypedMeta.encountered:
+            TypedMeta.encountered += [cls.__init__.__module__]
+            print(TypedMeta.encountered)
+            code = inspect.getsource(cls.__init__)
+            lines += code.splitlines()
+        else:
+            print(f'Already encountered {cls.__init__.__module__}')
 
         for l in lines:
             # if l.startswith(indent * ' ' + 'self.')  and 'self._' not in l:
             # All parameters will have a comment
-            if '#@p' in l.replace(' ', ''):
+            if not l.replace(' ', '').startswith('#') and '#@p' in l.replace(' ', ''):
                 l = l.strip()
                 default = l.split('=')[1].split('#')[0].strip() if '=' in l else None    # default always appears after = and before comment
                 comment = l.split('@p')[1].strip() if len(l.split('@p')) > 1 else None  # comment always appears after #@p
@@ -215,19 +226,15 @@ class TypedMeta(type):
                 if default is not None:
                     new_line += f' (default={default})'
                 # Log parametes
-                cls._Experiment__params.update({attr.strip(' '): (default, ty, comment, new_line)})
+                cls._params.update({attr.strip(' '): (default, ty, comment, new_line)})
                 helps += [new_line]
 
-        # Inpspect class definition
-        # Update class __doc__ strings documentation
-       # if cls.__init__.__doc__ is None:
-       #     cls.__init__.__doc__ = ''
-      #  cls.__init__.__doc__ += '\n'.join(
-       #     ['', '', 'Parameters:'] + [cls._Experiment__params[k][-1] for k in cls._Experiment__params])
         # Add to __class__.__doc__
         if cls.__doc__ is None:
             cls.__doc__ = ""
-        cls.__doc__ += '\n'.join(['', '', f'Parameters:'] + [cls._Experiment__params[k][-1] for k in cls._Experiment__params if not k.startswith('_')])
+
+        # Note this will always override new parameters as they are found.
+        cls.__doc__ += '\n'.join(['', '', f'Parameters:'] + [cls._params[k][-1] for k in cls._params if not k.startswith('_')])
 
 
 
