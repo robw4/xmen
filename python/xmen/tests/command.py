@@ -15,29 +15,18 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
+"""A script to test the command line interface:
+> python -m xmen.tests.command.py --update "{w: 10, h: 20}" --execute /tmp/initial
+Updating parameters {'w': 10, 'h': 20}
+The experiment state inside run is running
+python -m xmen.tests.command.py --update /tmp/initial/params.yml --execute /tmp/from-params
+python -m xmen.tests.command.py --execute /tmp/from-params/params.yml
+"""
 
-from xmen.experiment import Experiment
-from typing import Tuple
-
-
-class Monitor(Experiment):
-    x: Tuple[float, float] = (3., 2.)  # @p Parameters can be defined cleanly as class atrributes
-    y: float = 5                       # @p This parameter will also be available
-
+import sys
+# sys.path.append('/home/robw/xmen/python')
+# from xmen.tests.experiment import AnExperiment
+from xmen.tests.experiment import AnExperiment
 
 if __name__ == '__main__':
-    m = Monitor()
-    m.parse_args()
-
-    with m:
-
-
-
-        print('(3) ----------------------')
-        print(m)
-        print()
-        m.message(dict(sum=sum(m.x), max=max(m.x), min=min(m.x)))
-
-    print('(4) ----------------------')
-    print(m)
-    print()
+    AnExperiment().main()

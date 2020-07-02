@@ -68,6 +68,14 @@ class AnExperiment(BaseExperiment):
         with open(os.path.join(self.directory, 'logs.txt'), 'w') as f:
             f.write('This was written from a running experiment')
 
+    def debug(self):
+        self.a = 'In debug mode'
+        return self
+
+    @property
+    def B(self):
+        return self.b
+
 
 if __name__ == '__main__':
     # Documentation is automatically added to the class

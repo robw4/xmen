@@ -172,38 +172,61 @@ class TypedMeta(type):
 
     The doc string has automatically been updated.
     """
-    encountered = []
-
     def __init__(cls, name, bases, attr_dict):
         super(TypedMeta, cls).__init__(name, bases, attr_dict)
+        import copy
 
+        # Add _params attribute to cls if it does
+        # not already have one.
         if '_params' not in dir(cls):
             cls._params = {}
+        else:
+            # As each cls is inspected the parameters of each are
+            # added to the base class. If multiple objects inheret
+            # from the same base who's metaclass is TypedMeta then
+            # parameters from one subclass will be available to
+            # to another which is counter-intuitive.
+            # To avoid this parameters are deep copied down the hierarchy
+            # ensuring each class has a unique set of parameters.
+            cls._params = copy.deepcopy(cls._params)
 
+        # Inspect the cls body for parameter definitions
         helps = []
         cls_source = inspect.getsource(cls)
         if cls.__doc__ is not None:
             # Remove the doc string
             cls_source = cls_source.replace(cls.__doc__, "")
         lines = [l.strip() for l in cls_source.splitlines()]
-        candidates = [c for c, p in cls.__dict__.items() if not isinstance(p, property) and not c.startswith('_')]
+
+        # Note any attribute which is private will is not a
+        # valid parameter candidate.
+        candidates = [c for c, p in cls.__dict__.items() if
+                      not isinstance(p, property) and not c.startswith('_')]
+        # This allows both parameters in the class body and in the
+        # __init__ method to be trated the same.
         lines = [''.join(['self.', l]) for l in lines if any(l.startswith(c) for c in candidates)]
 
-        if cls.__init__.__module__ not in TypedMeta.encountered:
-            TypedMeta.encountered += [cls.__init__.__module__]
-            print(TypedMeta.encountered)
+        # Add parameters from the __init__ method.
+        # Note that in the case that an experiment inherits
+        # from another it does not need to define an __init__
+        # method. It is therefore a waste of effort to re-look
+        # up these parameters as all superclass __init__'s will
+        # already have been inspected. To avoid this check to
+        # see if the cls defines a new __init__. This is done
+        # by inspecting the cls.__dict__ attribute.
+        if '__init__' in cls.__dict__:
             code = inspect.getsource(cls.__init__)
             lines += code.splitlines()
-        else:
-            print(f'Already encountered {cls.__init__.__module__}')
 
         for l in lines:
             # if l.startswith(indent * ' ' + 'self.')  and 'self._' not in l:
             # All parameters will have a comment
             if not l.replace(' ', '').startswith('#') and '#@p' in l.replace(' ', ''):
                 l = l.strip()
-                default = l.split('=')[1].split('#')[0].strip() if '=' in l else None    # default always appears after = and before comment
-                comment = l.split('@p')[1].strip() if len(l.split('@p')) > 1 else None  # comment always appears after #@p
+                # default always appears after = and before comment
+                default = l.split('=')[1].split('#')[0].strip() if '=' in l else None
+                # comment always appears after #@p
+                comment = l.split('@p')[1].strip() if len(l.split('@p')) > 1 else None
                 if comment == '':
                     comment = None
                 # New line
@@ -229,62 +252,13 @@ class TypedMeta(type):
                 cls._params.update({attr.strip(' '): (default, ty, comment, new_line)})
                 helps += [new_line]
 
-        # Add to __class__.__doc__
         if cls.__doc__ is None:
             cls.__doc__ = ""
 
         # Note this will always override new parameters as they are found.
-        cls.__doc__ += '\n'.join(['', '', f'Parameters:'] + [cls._params[k][-1] for k in cls._params if not k.startswith('_')])
+        cls.__doc__ += '\n'.join(['', '', f'Parameters:'] + [
+            cls._params[k][-1] for k in cls._params if not k.startswith('_')])
 
-
-
-    # def __new__(mcs, name, bases, attr_dict):
-    #     x = super(TypedMeta, mcs).__new__(mcs, name, bases, attr_dict)
-    #     code = inspect.getsource(x)
-    #     if 'def' in code:
-    #         # Make searching space smaller
-    #         code = code.split('def')[0]
-    #
-    #     lines = code.splitlines()
-    #     new_lines = ['', '', 'Attributes:']
-    #     for a, t in x.__annotations__.items():
-    #         matches = [c for c in lines if a + ':' in c]
-    #         if len(matches) != 1:
-    #             raise ValueError("Syntax for typed experiment is not correct. Make sure that stirng patterns"
-    #                              "like '{attribute_name}:' do not appear in comments.")
-    #         definition, comment = matches[0].split('#') if '#' in matches[0] else (matches[0], None)
-    #         attr, type_default = definition.replace(" ", "").split(':')
-    #         ty, default = type_default.split('=') if '=' in type_default else (type_default, None)
-    #         new_line = f'    {attr} ({ty}):'
-    #         if comment is not None:
-    #             new_line += f' {comment.strip()}'
-    #         if default is not None:
-    #             new_line += f' (default={default})'
-    #         new_lines += [new_line]
-    #         lines.remove(matches[0])
-    #     docs = '\n'.join(new_lines)
-    #     x.__doc__ = x.__doc__ + docs
-    #     return x
-
-    #
-    # lines = code.split(name)[1].split('##')[1].splitlines()
-    # new_lines = ['', '', 'Attributes:']
-    # for l in lines:
-    #     if l == '' or l.isspace():
-    #         continue
-    #     # Get attribute and default types_match
-    #     definition, comment = l.split('#') if '#' in l else (l, None)
-    #     attr, type_default = definition.replace(" ", "").split(':')
-    #     ty, default = type_default.split('=') if '=' in l else (type_default, None)
-    #     new_line = f'    {attr} ({ty}):'
-    #     if comment is not None:
-    #         new_line += f' {comment.strip()}'
-    #     if default is not None:
-    #         new_line += f' (default={default})'
-    #     new_lines += [new_line]
-    # docs = '\n'.join(new_lines)
-    # x.__doc__ = x.__doc__ + docs
-    # return x
 
 def get_git(path):
     """Get git information for the given path.

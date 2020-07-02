@@ -25,7 +25,7 @@ import datetime
 import time
 import glob
 
-from xmen.utils import get_meta, get_version, DATE_FORMAT
+from xmen.utils import get_meta, get_version, DATE_FORMAT, get_git
 import xmen.config
 
 
@@ -428,9 +428,8 @@ class ExperimentManager(object):
 
             import inspect
             from xmen.experiment import Experiment
-            # Experiment is assumed to be the last object that is a subclass of experiment and is defined in the
-            # module.
-            exp = [obj for name, obj in inspect.getmembers(module, inspect.isclass) if obj.__module__ == 'current'
+            # Find Experiment object matching the name from the module the script was called in
+            exp = [obj for n, obj in inspect.getmembers(module, inspect.isclass) if n == name
                    and issubclass(obj, Experiment)]
             print(f'Found experiment(s) {exp} and using {exp[-1]}')
 
@@ -688,11 +687,10 @@ class ExperimentManager(object):
                         version = get_version(path=version['path'])
                     elif 'module' in version and 'class' in version:
                         # We want to get version form the original class if possible
-                        spec = importlib.util.spec_from_file_location("_em." + version['class'], version['module'])
-                        module = importlib.util.module_from_spec(spec)
-                        spec.loader.exec_module(module)
-                        cls = getattr(module, version['class'])
-                        version = get_version(cls=cls)
+                        version = {
+                            'module': defaults['_version']['module'],
+                            'class': defaults['_version']['class'],
+                            'git': get_git(path=defaults['_version']['module'])}
                 else:
                     version = None
 
@@ -717,7 +715,7 @@ class ExperimentManager(object):
                 # helps = get_attribute_helps(Experiment)
                 from xmen.experiment import Experiment
                 for i, (k, v) in enumerate(extra_params.items()):
-                    h = Experiment._Experiment__params[k][2]
+                    h = Experiment._params[k][2]
                     params.insert(i, k, v, h)
 
                 # Generate a script.sh in each folder that can be used to run the experiment

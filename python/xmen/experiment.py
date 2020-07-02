@@ -31,30 +31,31 @@ from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recu
 
 experiment_parser = argparse.ArgumentParser(description='Run the Experiment command line interface',
                                             formatter_class=RawTextHelpFormatter)
-experiment_parser.add_argument('--update', type=str, default=None,
+experiment_parser.add_argument('--update', '-u', type=str, default=None, nargs='+',
                                help='Update the parameters given by a yaml string. Note this will be called before'
                                     'other flags and can be used in combination with --to_root, --to_defaults,'
                                     'and --register.', metavar='YAML_STRING')
-experiment_parser.add_argument('--execute', type=str, default=None, metavar='PARAMS',
-                               help='Execute the experiment from the given params.yml file.'
-                                    ' Cannot be called with update.', nargs='?', const=True)
-experiment_parser.add_argument('--to_root', type=str, default=None, metavar='DIR',
+experiment_parser.add_argument('--execute', '-x', type=str, default=None,
+                               help='Execute the experiment from a given params.yml file.'
+                                    'or at the passed location.')
+experiment_parser.add_argument('--to_root', '-r', type=str, default=None,
                                help='Generate a run script and defaults.yml file for interfacing with the experiment'
                                     ' manager. If the directory does not exist then it is first created.')
-experiment_parser.add_argument('--to_defaults', type=str, default=None, metavar='DIR',
-                               help='Generate a defaults.yml file from the experiment defaults in the given directory')
-experiment_parser.add_argument('--register', type=str, nargs=2, default=None, metavar=('ROOT', 'NAME'),
-                               help='Register an experiment at root (1st positional) name (2nd'
-                                    'positional)')
-experiment_parser.add_argument('--debug', default=None, const='/tmp/test', nargs="?",
+# Optional extras
+experiment_parser.add_argument('--debug', '-d', default=None, action='store_true',
                                help='Run experiment in debug mode. Experiment is registered to a folder in /tmp')
-experiment_parser.add_argument('--to_txt', default=None,
+experiment_parser.add_argument('--to_txt', '-t', default=None, action='store_true',
                                help='Also log stdout and stderr to an out.txt file. Enabled by default')
+
+
 experiment_parser.add_argument('--name', action='store_true', help='Return the name of the experiment class')
 
 
 _SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta']
 
+
+class IncompatibleYmlException(Exception):
+    pass
 
 class TimeoutException(Exception):
     pass
@@ -364,16 +365,21 @@ class Experiment(object, metaclass=TypedMeta):
         """Inherited classes may overload debug. Used to define a set of setup for minimum example"""
         return self
 
-    def from_yml(self, path):
+    def from_yml(self, path, copy=False):
         """Load state from either a ``params.yml`` or ``defaults.yml`` file (inferred from the filename).
         The status of the experiment will be equal to ``'default'`` if ``'defaults.yml'``
         file else ``'registered'`` if ``params.yml`` file."""
         import ruamel.yaml
         yaml = ruamel.yaml.YAML()
-
-        with open(path, 'r') as file:
-            params = yaml.load(file)
+        try:
+            with open(path, 'r') as file:
+                params = yaml.load(file)
+        except:
+            raise IncompatibleYmlException
         params = {k: commented_to_py(v) for k, v in params.items() if k in self.__dict__}
+        if copy:
+            # Copy only parameter values themselves (and not specials)
+            params = {k: v for k, v in params.items() if not k.startswith('_')}
         # Update created date
         self.__dict__.update(params)
         self._created = datetime.datetime.now().strftime(DATE_FORMAT)
@@ -460,36 +466,6 @@ class Experiment(object, metaclass=TypedMeta):
         open(os.path.join(root_dir, 'script.sh'), 'w').write(script)
         self.to_defaults(root_dir)
 
-    def main(self, args=None):
-        """Take the command line args and execute the experiment (see ``parse_args`` for more
-         information). In order to expose the command line interface::
-
-            if __name__ == '__main__':
-                exp = AnExperiment().main()
-
-        Note that for backwards compatibility it is also possible to pass ``args`` as an argument to ``main``.
-        This allows the experiment to be run from the commandline as::
-
-            if __name__ == '__main__':
-                exp = AnExperiment()
-                args = exp.parse_args()
-                exp.main(args)
-        """
-        if args is None:
-            args = self.parse_args()
-
-        if args.debug is not None:
-            self.register(*os.path.split(args.debug))
-            print(self.directory)
-            self.__call__()
-
-        if args.execute is not None:
-            if isinstance(args.execute, str):
-                self.from_yml(args.execute)
-            self.__call__()
-
-        if args.name:
-            print(self.__class__.__name__)
 
     def _update_status(self, status):
         """Update the status of the experiment"""
@@ -614,17 +590,21 @@ class Experiment(object, metaclass=TypedMeta):
 
     def parse_args(self):
         """Configure the experiment instance from the command line arguments.
-
         """
+
+        # Configure help information from the class
+        # definition.
         short, params = self.__doc__.split('Parameters:')
         epilog = 'Parameters:' + params
         experiment_parser.description = short
         experiment_parser.epilog = epilog
         n = len(experiment_parser.prog) + 8
         experiment_parser.usage = experiment_parser.prog + '\n'.join(
-            [' ' * 1 + '[--update PARAMS] --to_defaults | --to_root [--to_txt]',
-             ' ' * n + '[--update PARAMS] --register ROOT NAME [--execute] [--to_txt]',
-             ' ' * n + ' --execute PATH_TO_PARAMS',
+            [' ' * 1 + '[--update [PARAMS_FILE] STR_YML] --to_root PATH',
+             ' ' * n + '[--update [PARAMS_FILE] STR_YML] --to_root PATH',
+             ' ' * n + '[--update [PARAMS_FILE] STR_YML] --execute DIR ',
+             ' ' * n + ' --execute PARAMS_FILE',
+             ' ' * n + ' --name'
              ' ',
              'example:',
              'python -m xmen.tests.experiment --update "{a: cat, x: [10., 20.], t: {100: x, 101: y}, h: }" \ ',
@@ -634,46 +614,88 @@ class Experiment(object, metaclass=TypedMeta):
              'For a list of valid parameters see below'])
         args = experiment_parser.parse_args()
 
-        if isinstance(args.execute, str):
-            assert all(getattr(args, k) is None for k in ('update', 'register', 'to_defaults', 'to_root')), \
-             "If execute is a path then none of ('update', 'register', 'to_defaults', 'to_root') can be set"
-
-        assert sum(
-            getattr(args, k) is not None for k in ('to_defaults', 'to_root', 'execute')) == 1 or sum(
-            getattr(args, k) is not None for k in ('to_defaults', 'to_root', 'register')) == 1, \
-            "Exactly one of to_defaults, to_root and register or execute can be set"
-
-        assert sum(getattr(args, k) is not None for k in ('execute', 'debug')) != 2, \
-            'A maximum of one of execute and debug can be set at the same time'
-
+        # Run the debug method if implemented and
+        # debug flag is passed.
         if args.debug is not None:
             # Update debug parameters
-            if hasattr(self, 'debug_defaults'):
-                print(f'Updating debug parameters {self.debug_defaults}')
-                self.update(self.debug_defaults)
+            print('Running as debug')
+            self.debug()
+        # Update the parameter values from either
+        # a parameter string or from a defaults.yml file.
         if args.update is not None:
-            # Update passed parameters
-            import ruamel.yaml
-            overrides = ruamel.yaml.load(args.update, Loader=ruamel.yaml.Loader)
-            print(f'Updating parameters {overrides}')
-            self.update(overrides)
+            for update in args.update:
+                # Case (1) update parameters from yaml string
+                try:
+                    self.from_yml(update, copy=True)
+                except IncompatibleYmlException:
+                    try:
+                        # Update passed parameters
+                        import ruamel.yaml
+                        overrides = ruamel.yaml.load(update, Loader=ruamel.yaml.Loader)
+                        print(f'Updating parameters {overrides}')
+                        self.update(overrides)
+                    except:
+                        print(f'ERROR: {update} is either not a valid yaml string or '
+                              f'is not a path to a defaults.yml or params.yml file')
+                        exit()
+        # Then execute the experiment
+        if args.execute is not None:
+            # (1) register experiment from pre-existing params.yml file
+            if os.path.isfile(args.execute):
+                try:
+                    self.from_yml(args.execute)
+                    if not self.status == 'registered':
+                        raise IncompatibleYmlException
+                except IncompatibleYmlException:
+                    print(f'ERROR: File {args.execute} is not a valid params.yml file')
+            # (2) register experiment to a repository
+            else:
+                name = os.path.basename(os.path.normpath(args.execute))
+                root = os.path.dirname(os.path.normpath(args.execute))
+                self.register(root, name)
+        return args
 
-        # Generate experiment repo (one of three types)
-        if args.to_defaults is not None:
-            print(f'Generating default parameters at {args.to_defaults}')
-            self.to_defaults(args.to_defaults)
+    def main(self, args=None):
+        """Take the command line args and execute the experiment (see ``parse_args`` for more
+         information). In order to expose the command line interface::
+
+            if __name__ == '__main__':
+                exp = AnExperiment().main()
+
+        Note that for backwards compatibility it is also possible to pass ``args`` as an argument to ``main``.
+        This allows the experiment to be run from the commandline as::
+
+            if __name__ == '__main__':
+                exp = AnExperiment()
+                args = exp.parse_args()
+                exp.main(args)
+        """
+        if args is None:
+            args = self.parse_args()
+
+        # Show the experiment Name
+        if args.name:
+            print(self.__class__.__name__)
+
+        # Generate experiment root
         if args.to_root is not None:
             print(f'Generating experiment root at {args.to_root}')
             self.to_root(args.to_root)
-        if args.register is not None:
-            print(f'Registering experiment at {args.register[0]}/{args.register[1]}(...)')
-            self.register(args.register[0], args.register[1])
 
-        if args.register is not None and args.to_txt:
-            sys.stdout = MultiOut(sys.__stdout__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
-            sys.stderr = MultiOut(sys.__stderr__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
-
-        return args
+        # Run the experiment
+        if args.execute is not None:
+            assert self.status == 'registered', 'Experiment must be registered before execution'
+            # Configure standard out to print to the registered directory as well as
+            # the original standard out
+            if args.to_txt:
+                sys.stdout = MultiOut(sys.__stdout__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
+                sys.stderr = MultiOut(sys.__stderr__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
+            # Execute experiment
+            try:
+                self.__call__()
+            except NotImplementedError:
+                print(f'WARNING: The --execute flag was passed but run is not implemented for {self.__class__}')
+                pass
 
     def __repr__(self):
         """Provides a useful help message for the experiment"""
