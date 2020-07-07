@@ -182,13 +182,58 @@ class TypedMeta(type):
             cls._params = {}
         else:
             # As each cls is inspected the parameters of each are
-            # added to the base class. If multiple objects inheret
+            # added to the base class. If multiple objects inherit
             # from the same base who's metaclass is TypedMeta then
             # parameters from one subclass will be available to
             # to another which is counter-intuitive.
             # To avoid this parameters are deep copied down the hierarchy
             # ensuring each class has a unique set of parameters.
             cls._params = copy.deepcopy(cls._params)
+            # Parameters are inherited following the python inheritance
+            # order. In order to make this work the inheritance of
+            # _params no longer is the same as the first _params in
+            # the method resolution order but will be a merge of
+            # all the parameters encountered in all superclasses with
+            # merging following the method resolution order instead
+            for sup in reversed(cls.mro()):
+                sup_params = getattr(sup, '_params', None)
+                if sup_params is not None and sup is not cls:
+                    cls._params = {**cls._params, **copy.deepcopy(sup_params)}
+            # It is possible for users to update the class attribute defaults
+            # and type in subclasses which is not currently reflected
+            # in the _param default values. To counter this
+            # the current default and type are updated dynamically from the current
+            # value of each in the current class.
+            pops = []
+            for k in cls._params:
+                try:
+                    val = getattr(cls, k)
+                    # Subclasses could override a parameter with a
+                    # new instance. In which cases they should be removed
+                    # from the parameters. These are added to pops and
+                    # removed after the loop
+                    if isinstance(val, property) or callable(val):
+                        pops.append(k)
+                        raise AttributeError
+                except AttributeError:
+                    continue
+                # Some work is needed to convert __annotations__
+                # into a nice printable string...
+                ty = cls.__annotations__.get(k, cls._params[k][1])
+                if not isinstance(ty, str):
+                    string = getattr(ty, '__name__', None)
+                    if string is not None:
+                        string = str(string).replace('.typing', '')
+                    ty = string
+                help = cls._params[k][2]
+                helpstring = f'    {k}{f" ({str(ty)})" if ty is not None else ""}: {help} (default={val})'
+                # Update parameters
+                cls._params[k] = (val, ty, help, helpstring, cls._params[k][-1])
+
+            # Remove parameters that have since been
+            # overridden
+            for p in pops:
+                cls._params.pop(p)
 
         # Inspect the cls body for parameter definitions
         helps = []
@@ -198,12 +243,12 @@ class TypedMeta(type):
             cls_source = cls_source.replace(cls.__doc__, "")
         lines = [l.strip() for l in cls_source.splitlines()]
 
-        # Note any attribute which is private will is not a
+        # Note any attribute which is private is not a
         # valid parameter candidate.
         candidates = [c for c, p in cls.__dict__.items() if
                       not isinstance(p, property) and not c.startswith('_')]
         # This allows both parameters in the class body and in the
-        # __init__ method to be trated the same.
+        # __init__ method to be treated the same.
         lines = [''.join(['self.', l]) for l in lines if any(l.startswith(c) for c in candidates)]
 
         # Add parameters from the __init__ method.
@@ -211,7 +256,7 @@ class TypedMeta(type):
         # from another it does not need to define an __init__
         # method. It is therefore a waste of effort to re-look
         # up these parameters as all superclass __init__'s will
-        # already have been inspected. To avoid this check to
+        # already have been inspected. To avoid this we check to
         # see if the cls defines a new __init__. This is done
         # by inspecting the cls.__dict__ attribute.
         if '__init__' in cls.__dict__:
@@ -239,25 +284,35 @@ class TypedMeta(type):
                 else:   # self.a (already stripped)
                     attr = l.replace('self.', '').strip()
                 # Generate attribute lines
-                new_line = f'    {attr}'
+                help_string = f'    {attr}'
                 if ty is not None:
-                    new_line += f' ({ty}):'
+                    help_string += f' ({ty}):'
                 else:
-                    new_line += ':'
+                    help_string += ':'
                 if comment is not None:
-                    new_line += f' {comment.strip()}'
+                    help_string += f' {comment.strip()}'
                 if default is not None:
-                    new_line += f' (default={default})'
-                # Log parametes
-                cls._params.update({attr.strip(' '): (default, ty, comment, new_line)})
-                helps += [new_line]
+                    help_string += f' (default={default})'
+                # Log parameters
+                cls._params.update({attr.strip(' '): (default, ty, comment, help_string, cls.__name__)})
+                helps += [help_string]
 
         if cls.__doc__ is None:
             cls.__doc__ = ""
 
         # Note this will always override new parameters as they are found.
-        cls.__doc__ += '\n'.join(['', '', f'Parameters:'] + [
-            cls._params[k][-1] for k in cls._params if not k.startswith('_')])
+        lines = []
+        for sup in reversed(cls.mro()):
+            l = len(lines)
+            for n, (_, _, _, h, c) in cls._params.items():
+                if c == sup.__name__ and not n.startswith('_'):
+                    lines += [' ' + h]
+            if len(lines) - l > 0:
+                lines.insert(l, '    ' + sup.__name__)
+
+        if len(lines) > 0:
+            cls.__doc__ += '\n\nParameters:\n'
+            cls.__doc__ += '\n'.join(lines)
 
 
 def get_git(path):
@@ -310,7 +365,7 @@ def get_version(*, path=None, cls=None):
 
     if cls is not None:
         # Note: inspecting cls.__init__ is compatible with ipython whilst inspecting cls directly is not
-        module = os.path.realpath(inspect.getfile(cls.__init__))
+        module = os.path.realpath(inspect.getfile(cls))
         path = os.path.dirname(module)
         version = {'module': module, 'class': cls.__name__}
     else:
@@ -336,9 +391,9 @@ if __name__ == '__main__':
     from xmen.experiment import Experiment
 
     class TestExperiment(Experiment):
-        n_epochs: int = 10  #@p Some help
-        n_steps: int = 1    #@p Some other help
-        nn_c0: int = 8      #@p Another piece of help
+        n_epochs: int = 10   # @p Some help
+        n_steps: int = 1  # @p Some other help
+        nn_c0: int = 8  # @p Another piece of help
 
     exp = TestExperiment()
     print(exp)

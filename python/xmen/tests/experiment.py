@@ -42,18 +42,27 @@ class BaseExperiment(Experiment):
         self.c: int = 5    # This is not a parameter
 
 
+class AnotherExperiment(BaseExperiment):
+    m: str = 'Another value'  # @p Multiple inheritance example
+    p: str = 'A parameter only in Another Experiment '  # @p
+
+
 class AnExperiment(BaseExperiment):
                     #     |
                     # Experiments can inherit from other experiments
                     # parameters are inherited too
-    """An experiment testing the xmen experiment API. This will
+    """An experiment testing the xmen experiment API. The __docstring__ will
     appear in both the docstring of the class __and__ as the prolog in the
     command line interface."""
 
     # Feel free to define more parameters
-    x: List[float] = [3., 2.]    # @p Parameters can be defined cleanly as class attributes
-    y: float = 5                 # @p This parameter will have this
-    a: str = 'g'                 # @p parameters can be redefined - a will be overridden
+    x: List[float] = [3., 2.]  # @p Parameters can be defined cleanly as class attributes
+    y: float = 5  # @p This parameter will have this
+    # Parameters can be overridden
+    a: float = 0.5  # a's default and type will be changed. Its help will be overridden
+    b: int = 17  # @p b's help will be changed
+
+    m: str = 'Defined in AnExperiment'  # @p m is defined in AnExperiment
 
     def run(self):
         # Experiment execution is defined in the run method
@@ -73,8 +82,9 @@ class AnExperiment(BaseExperiment):
         return self
 
     @property
-    def B(self):
-        return self.b
+    def h(self):
+        return 'h has been overloaded as propery and will no longer' \
+               'considered as a parameter'
 
 
 if __name__ == '__main__':
@@ -106,6 +116,17 @@ if __name__ == '__main__':
     # If this is not desired (or neccessary) initialise
     # use exp = AnExperiment(copy=False)
 
+    # Experiments can inheret from multiple classes:
+    class MultiParentsExperiment(AnotherExperiment, AnExperiment):
+        pass
+    print('\nMultiple Inheritance')
+    print('----------------------')
+    print(MultiParentsExperiment())
+    print('\n Parameters defaults, helps and values are '
+          'inherited according to python method resolution order '
+          '(i.e left to right). Note that m has the value '
+          'defined in Another Experiment')
+
     print('\nRegistering')
     print('-------------')
     # Before being run an experiment needs to be registered
@@ -121,7 +142,6 @@ if __name__ == '__main__':
     except AttributeError:
         print('Parameters can no longer be changed!', end='\n')
         pass
-
 
     # An experiment can be run either by...
     # (1) calling it

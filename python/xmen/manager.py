@@ -421,20 +421,28 @@ class ExperimentManager(object):
                     # Inserted right at the start (will be the first one searched in)
                     sys.path.insert(0, p)
 
-            import importlib.util
-            spec = importlib.util.spec_from_file_location('current', self._config.python_experiments[name])
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
+            for p in self._config.python_paths:
+                if self._config.python_experiments[name].startswith(p):
+                    # Find the module name from the relative path of the
+                    # module
+                    module = '.'.join(self._config.python_experiments[name].replace(p, '').split('/'))
+                    if module.startswith('.'):
+                        module = module[1:]
+                    if module.endswith('.py'):
+                        module = module[:-3]
+                    import importlib.util
+                    mod = importlib.import_module(module)
 
-            import inspect
-            from xmen.experiment import Experiment
-            # Find Experiment object matching the name from the module the script was called in
-            exp = [obj for n, obj in inspect.getmembers(module, inspect.isclass) if n == name
-                   and issubclass(obj, Experiment)]
-            print(f'Found experiment(s) {exp} and using {exp[-1]}')
-
-            # Generate root experiment
-            exp[-1]().to_root(self.root)
+                    # Get experiment from module
+                    Exp = getattr(mod, name)
+                    Exp().to_root(self.root)
+                    break
+            else:
+                print('ERROR: Could not find experiment on current PYTHONPATH. Either add the relevant module '
+                      'to the global config using xmen config --add PATH or generate a root directly from the '
+                      'experiment definition using /path/to/exp.py --to_root ROOT and initialise an experiment using'
+                      'xmen init ROOT')
+                exit()
 
             self.script = os.path.join(self.root, 'script.sh')
             self.defaults = os.path.join(self.root, 'defaults.yml')
@@ -723,7 +731,7 @@ class ExperimentManager(object):
                     header_str = open(header).read()
                 else:
                     header_str = self._config.header
-                script = f'#!{shell}\n{header_str}\n{shell} {os.path.join(self.script)} {os.path.join(experiment_path, "params.yml")}'
+                script = f'#!{shell}\n{header_str}\n{os.path.join(self.script)} {os.path.join(experiment_path, "params.yml")}'
                 with open(os.path.join(self.root, experiment_name, 'run.sh'), 'w') as f:
                     f.write(script)
 

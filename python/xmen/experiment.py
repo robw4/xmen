@@ -29,8 +29,7 @@ from argparse import RawTextHelpFormatter
 from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recursive_print_lines, TypedMeta, MultiOut
 
 
-experiment_parser = argparse.ArgumentParser(description='Run the Experiment command line interface',
-                                            formatter_class=RawTextHelpFormatter)
+experiment_parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 experiment_parser.add_argument('--update', '-u', type=str, default=None, nargs='+',
                                help='Update the parameters given by a yaml string. Note this will be called before'
                                     'other flags and can be used in combination with --to_root, --to_defaults,'
@@ -301,7 +300,7 @@ class Experiment(object, metaclass=TypedMeta):
 
     def get_param_helps(self):
         """Get help for all attributes in class (including inherited and private)."""
-        return {k: v[-1].strip() for k, v in self._params.items()}
+        return {k: v[3].strip() for k, v in self._params.items()}
 
     def update_version(self):
         self._version = get_version(cls=self.__class__)
@@ -425,24 +424,44 @@ class Experiment(object, metaclass=TypedMeta):
         self._status = 'registered'
         self._to_yaml()
 
-    def get_run_script(self, type='set', shell='/bin/bash'):
-        if type not in ['set', 'indiviual']:
-            raise NotImplementedError('Only types "set" and "individual" are currently supported.')
+    def get_run_script(self, type='set', shell='/usr/bin/env python3', comment='#'):
+        assert type in ['set', 'indiviual'], 'Only types "set" and "individual" are currently supported.'
         sh = [f'#!{shell}']
+        self.update_version()
         sh += [f'# File generated on the {datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")}']
         if 'git' in self._version:
-            sh += [f'# GIT:']
-            sh += [f'# - repo {self._version["git"]["local"]}']
-            sh += [f'# - branch {self._version["git"]["branch"]}']
-            sh += [f'# - remote {self._version["git"]["remote"]}']
-            sh += [f'# - commit {self._version["git"]["commit"]}']
+            sh += [f'{comment} GIT:']
+            sh += [f'{comment} - repo {self._version["git"]["local"]}']
+            sh += [f'{comment} - branch {self._version["git"]["branch"]}']
+            sh += [f'{comment} - remote {self._version["git"]["remote"]}']
+            sh += [f'{comment} - commit {self._version["git"]["commit"]}']
             sh += ['']
         possible_roots = sorted([p for p in sys.path if p in self._version['module']])
+        root = None
         if len(possible_roots) > 0:
             root = possible_roots[0]
-            sh += ['export PYTHONPATH="${PYTHONPATH}:' + f'{root}"']
-        sh += ['python3 ' + self._version['module'] + ' --execute ']
-        sh[-1] += '${1}' if type == 'set' else os.path.join(self.root, 'params.yml')
+
+        if 'python' in shell:
+            sh += ['import sys']
+            sh += ['import importlib']
+            if root is not None:
+                sh += [f'sys.path.append("{root}")']
+            sh += ['import logging']
+            sh += ['logger = logging.getLogger()']
+            sh += ['logger.setLevel(logging.INFO)']
+            sh += ['']
+            sh += [f'module = importlib.import_module("{self.__class__.__module__}")']
+            sh += [f'X = getattr(module, "{self.__class__.__name__}")']
+            sh += [f'x = X()']
+            sh += [f'x.from_yml(sys.argv[1])']
+            sh += [f'print(x, end="\\n")']
+            sh += [f'x.stdout_to_txt()']
+            sh += ['# Finally run the experiment']
+            sh += [f'x()']
+        else:
+            sh = [f'#!{shell}']
+            sh += ['python3 ' + self._version['module'] + ' --execute ']
+            sh[-1] += '${1}' if type == 'set' else os.path.join(self.root, 'params.yml')
         return '\n'.join(sh)
 
     def to_root(self, root_dir):
@@ -452,6 +471,7 @@ class Experiment(object, metaclass=TypedMeta):
             root_dir (str): A path to the root directory in which to generate a script.sh and defaults.yml to
                 run the experiment.
         """
+        import stat
         # get_git is deliberately called outside to_defaults as git information is also added to script.sh
         self.update_version()
         self.update_meta()
@@ -463,9 +483,12 @@ class Experiment(object, metaclass=TypedMeta):
 
         script = self.get_run_script()
         # Save to root directory
-        open(os.path.join(root_dir, 'script.sh'), 'w').write(script)
-        self.to_defaults(root_dir)
+        path = os.path.join(root_dir, 'script.sh')
+        open(path, 'w').write(script)
+        st = os.stat(path)
+        os.chmod(path, st.st_mode | stat.S_IEXEC)
 
+        self.to_defaults(root_dir)
 
     def _update_status(self, status):
         """Update the status of the experiment"""
@@ -594,24 +617,22 @@ class Experiment(object, metaclass=TypedMeta):
 
         # Configure help information from the class
         # definition.
-        short, params = self.__doc__.split('Parameters:')
-        epilog = 'Parameters:' + params
-        experiment_parser.description = short
-        experiment_parser.epilog = epilog
+
         n = len(experiment_parser.prog) + 8
         experiment_parser.usage = experiment_parser.prog + '\n'.join(
             [' ' * 1 + '[--update [PARAMS_FILE] STR_YML] --to_root PATH',
-             ' ' * n + '[--update [PARAMS_FILE] STR_YML] --to_root PATH',
              ' ' * n + '[--update [PARAMS_FILE] STR_YML] --execute DIR ',
-             ' ' * n + ' --execute PARAMS_FILE',
-             ' ' * n + ' --name'
-             ' ',
-             'example:',
-             'python -m xmen.tests.experiment --update "{a: cat, x: [10., 20.], t: {100: x, 101: y}, h: }" \ ',
-             '                                --register /tmp/test/xmen command_line',
-             '',
-             'Note PARAMS is a yaml dictionary - None is given by the null string. '
-             'For a list of valid parameters see below'])
+             ' ' * n + '--execute PARAMS_FILE',
+             ' ' * n + '--name'
+                       ' '])
+        experiment_parser.epilog = self.__doc__
+
+        ['example:',
+         'python -m xmen.tests.experiment --update "{a: cat, x: [10., 20.], t: {100: x, 101: y}, h: }" \ ',
+         '                                --execute /tmp/test/xmen/command_line',
+         '',
+         'Note STR_YML is a yaml dictionary - None is given by the null string. '
+         'For a list of valid parameters see below']
         args = experiment_parser.parse_args()
 
         # Run the debug method if implemented and
@@ -688,14 +709,19 @@ class Experiment(object, metaclass=TypedMeta):
             # Configure standard out to print to the registered directory as well as
             # the original standard out
             if args.to_txt:
-                sys.stdout = MultiOut(sys.__stdout__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
-                sys.stderr = MultiOut(sys.__stderr__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
+                self.stdout_to_txt()
             # Execute experiment
             try:
+                print(self)
                 self.__call__()
             except NotImplementedError:
                 print(f'WARNING: The --execute flag was passed but run is not implemented for {self.__class__}')
                 pass
+
+    def stdout_to_txt(self):
+        """Configure stdout to also log to a text file in the experiment directory"""
+        sys.stdout = MultiOut(sys.__stdout__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
+        sys.stderr = MultiOut(sys.__stderr__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
 
     def __repr__(self):
         """Provides a useful help message for the experiment"""
