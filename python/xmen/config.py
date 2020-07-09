@@ -389,19 +389,24 @@ class GlobalExperimentManager(object):
         df = df.filter(items=display_keys)
         return df, prefix
 
-    def add_class(self, path):
-        import subprocess
-        path = os.path.abspath(path)
-        for p in self.python_paths:
-            if p not in sys.path:
-                sys.path.append(p)
-        sys_paths = [p for p in sys.path if p in path]
-        if len(sys_paths) == 0:
-            print('ERROR: The module has not been added to the PYTHONPATH. Please add!')
-        else:
-            try:
-                name = subprocess.check_output(['python3', path, '--name'])
-            except subprocess.CalledProcessError:
-                exit()
-            self.python_experiments.update({name.decode("utf-8").replace('\n', ''): path})
-            self._to_yml()
+    def add_class(self, module, name):
+        import importlib.util
+        import stat
+        mod = importlib.import_module(module)
+
+        # Get experiment from module
+        X = getattr(mod, name)
+        x = X()
+        script = x.get_run_script()
+
+        # Make executable run script
+        path = os.path.join(self._dir, 'experiments')
+        if not os.path.exists(path):
+            os.makedirs(path)
+        path = os.path.join(path, '.'.join([module, name]))
+        # Note old experiments will be written over
+        open(path, 'w').write(script)
+        st = os.stat(path)
+        os.chmod(path, st.st_mode | stat.S_IEXEC)
+        self.python_experiments.update({name: path})
+        self._to_yml()

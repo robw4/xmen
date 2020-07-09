@@ -452,19 +452,20 @@ class Experiment(object, metaclass=TypedMeta):
             sh += ['']
             sh += [f'module = importlib.import_module("{self.__class__.__module__}")']
             sh += [f'X = getattr(module, "{self.__class__.__name__}")']
-            sh += [f'x = X()']
-            sh += [f'x.from_yml(sys.argv[1])']
-            sh += [f'print(x, end="\\n")']
-            sh += [f'x.stdout_to_txt()']
-            sh += ['# Finally run the experiment']
-            sh += [f'x()']
+            sh += ['X().main()']
+            # sh += [f'x = X()']
+            # sh += [f'x.from_yml(sys.argv[1])']
+            # sh += [f'print(x, end="\\n")']
+            # sh += [f'x.stdout_to_txt()']
+            # sh += ['# Finally run the experiment']
+            # sh += [f'x()']
         else:
             sh = [f'#!{shell}']
             sh += ['python3 ' + self._version['module'] + ' --execute ']
             sh[-1] += '${1}' if type == 'set' else os.path.join(self.root, 'params.yml')
         return '\n'.join(sh)
 
-    def to_root(self, root_dir):
+    def to_root(self, root_dir, shell='/bin/bash'):
         """Generate a ``defaults.yml`` file and ``script.sh`` file in ``root_dir``.
 
         Args:
@@ -482,11 +483,15 @@ class Experiment(object, metaclass=TypedMeta):
             os.makedirs(root_dir)
 
         script = self.get_run_script()
+
         # Save to root directory
-        path = os.path.join(root_dir, 'script.sh')
+        path = os.path.join(root_dir, f'{self.__class__.__module__}.{self.__class__.__name__}')
         open(path, 'w').write(script)
         st = os.stat(path)
         os.chmod(path, st.st_mode | stat.S_IEXEC)
+
+        open(os.path.join(root_dir, 'script.sh'), 'w').write(
+            f'#!{shell}\n{path} --execute ${{1}}')
 
         self.to_defaults(root_dir)
 

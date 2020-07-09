@@ -40,6 +40,22 @@ def _reset(args):
     experiment_manager.reset(args.experiments)
 
 
+def _py(args):
+    import subprocess
+
+    global_exp_manager = GlobalExperimentManager()
+
+    if args.list is not None:
+        for k, v in global_exp_manager.python_experiments.items():
+            print(f'{k}: {v}')
+    else:
+        if args.name[0] not in global_exp_manager.python_experiments:
+            print(f'No experiments found matching {args.name[0]}')
+            exit()
+        args = [global_exp_manager.python_experiments[args.name[0]]] + args.flags
+        subprocess.call(args)
+
+
 def _list(args):
     import pandas as pd
     pd.set_option('display.width', 1000)
@@ -161,7 +177,7 @@ def _config(args):
         elif args.enable_prompt is not None:
             config.prompt_for_message = True
         if args.add is not None:
-            config.add_class(args.add)
+            config.add_class(*args.add)
         if args.add_path is not None:
             if args.add_path not in config.python_paths:
                 config.python_paths.append(os.path.abspath(args.add_path))
@@ -178,7 +194,9 @@ def _config(args):
             if args.remove in config.python_paths:
                 config.python_paths.remove(args.remove)
             if args.remove in config.python_experiments:
-                config.python_experiments.pop(args.remove)
+                path = config.python_experiments.pop(args.remove)
+                if '.xmen' in path:
+                    os.remove(path)
         if args.list is not None:
             print(config)
         if args.clean is not None:
@@ -188,6 +206,13 @@ def _config(args):
 parser = argparse.ArgumentParser(prog='xmen',
                                  description='A helper module for the quick setup and management of experiments')
 subparsers = parser.add_subparsers()
+
+# Py
+py_parser = subparsers.add_parser('py')
+py_parser.add_argument('name', help='The name of the experiment to run', nargs='*', default=None)
+py_parser.add_argument('--list', '-l', action='store_true', default=None, help='List available python experiments')
+py_parser.add_argument('flags', help='Python flags (pass --help for more info)', nargs=argparse.REMAINDER, default=[])
+py_parser.set_defaults(func=_py)
 
 # Config
 config_parser = subparsers.add_parser('config')
@@ -199,8 +224,8 @@ config_parser.add_argument('--clean', action='store_false',
 config_parser.add_argument('--enable_prompt', action='store_false',
                            help='Turn purpose prompting on', default=None)
 config_parser.add_argument('--add_path', type=str, default=None, help='Add pythonpath to the global config')
-config_parser.add_argument('--add', default=None, metavar='PATH',
-                            help='Add an Experiment api python script (it must already be on PYTHONPATH)')
+config_parser.add_argument('--add', default=None, metavar='MODULE NAME',
+                            help='Add an Experiment api python script (it must already be on PYTHONPATH)', nargs=2)
 config_parser.add_argument('--update_meta', default=None, action='store_true',
                            help='Update meta information in each experiment (both defaults.yml and params.yml). '
                                 'WARNING: Overwrites information in the params.yml or defaults.yml')
