@@ -20,6 +20,14 @@ git clone ssh://git@mrgbuild.robots.ox.ac.uk:7999/~robw/xmen.git ~/xmen
 pip install ~/xmen/python
 ```
 
+## The Experiment Class
+```python
+from xmen import Experiment
+
+
+```
+
+
 ## Command line
 __Python Interface__
 ```bash
@@ -41,16 +49,16 @@ xmen config --list  # list the current configuration
 
 __Initialise an Experiment Set__
 ```bash
-xmen init -n MnistGan  # from a python experiment in the current dirctory
-xmen init -n MnistGan -r mnist_gann # at folder relative to cwd
+xmen init -n MnistCGan  # from a python experiment in the current dirctory
+xmen init -n MnistCGan -r mnist_gann # at folder relative to cwd
 xmen init -s /path/to/script.sh -d /path/to/defaults.yml  # from a script and defaults 
 ```
 
 __Register__
 ```bash
 xmen register -u "{lr: 1e-2 | 1e-3, epochs: 10}" # experiments from parameter combinations
-xmen register -u "{lr: 1e-2} -x 10  # register 10 experiments with the same configiration
-xmen register [-u "{lr: 1e-2}] -n test # register an experiment named test
+xmen register -u "{lr: 1e-2}" -x 10  # register 10 experiments with the same configiration
+xmen register [-u "{lr: 1e-2}" ] -n test # register an experiment named test
 ```
 
 __Run__
