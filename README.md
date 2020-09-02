@@ -20,13 +20,6 @@ git clone ssh://git@mrgbuild.robots.ox.ac.uk:7999/~robw/xmen.git ~/xmen
 pip install ~/xmen/python
 ```
 
-## The Experiment Class
-```python
-from xmen import Experiment
-
-
-```
-
 
 ## Command line
 __Python Interface__
