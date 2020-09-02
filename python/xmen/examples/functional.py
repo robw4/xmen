@@ -1,3 +1,4 @@
+"""Functional experiment example"""
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -53,6 +54,12 @@ def get_datasets(cy, cz, b, ngpus, ncpus, ns, data_root, hw, **kwargs):
             zip(y.unsqueeze(0), z.unsqueeze(0)))}  # Turn into batches
 
 
+def to_target(y):
+    Y = torch.zeros([X.cy])
+    Y[y] = 1.
+    return Y.reshape([X.cy, 1, 1])
+
+
 class MnistCGan(Experiment):
     b: int = 128  # @p the batch size per gpu
     hw0: Tuple[int, int] = (4, 4)  # @p the height and width of the image
@@ -62,9 +69,9 @@ class MnistCGan(Experiment):
     cy: int = 10  # @p the dimensionality of the conditioning vector
     cf: int = 512  # @p the number of features after the first conv in the discriminator
     cz: int = 100  # @p the dimensionality of the noise vector
-    ncpus: int = 0  # @p the number of threads to use for data loading
+    ncpus: int = 8  # @p the number of threads to use for data loading
     ngpus: int = 1  # @p the number of gpus to run the model on
-    epochs: int = 100  # @p no. of epochs to train for
+    epochs: int = 20  # @p no. of epochs to train for
     gan: str = 'lsgan'  # @p the gan type to use (one of ['vanilla', 'lsgan'])
     lr: float = 0.0002  # @p learning rate
     betas: Tuple[float, float] = (0.5, 0.999)  # @p The beta parameters for the
@@ -84,13 +91,10 @@ class MnistCGan(Experiment):
     def device(self): return 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
-def to_target(y):
-    Y = torch.zeros([X.cy])
-    Y[y] = 1.
-    return Y.reshape([X.cy, 1, 1])
-
-
 if __name__ == '__main__':
+    import logging
+    logger = logging.getLogger()
+    logger.setLevel('INFO')
     from xmen.torch.monitor import Monitor, TensorboardLogger
     from xmen.examples.models import weights_init, set_requires_grad, GeneratorNet, DiscriminatorNet
     from torch.distributions import Normal
@@ -122,7 +126,8 @@ if __name__ == '__main__':
             log=X.log, sca=X.sca, img=X.img,
             time=('@20s', '@1e'),
             img_fn=lambda x: x[:min(X.nimg, x.shape[0])],
-            hooks=[TensorboardLogger('image', '_xi_$@1e', nrow=X.ns)])
+            hooks=[TensorboardLogger('image', '_xi_$@1e', nrow=10)])
+
         for _ in m(range(X.epochs)):
             # (1) train
             for x, y in m(datasets['train']):

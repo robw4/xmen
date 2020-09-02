@@ -822,10 +822,26 @@ class ExperimentManager(object):
         """Remove directories no longer linked to the experiment manager"""
         from shutil import rmtree
         self.check_initialised()
-        subdirs = [x[0] for x in os.walk(self.root) if x[0] != self.root and x[0] not in self.experiments]
-        for d in subdirs:
-            print(d)
-            rmtree(d)
+        subdirs = [p for p in os.listdir(self.root) if os.path.isdir(p) and
+                   os.path.exists(os.path.join(p, 'params.yml')) and
+                   not any(e.endswith(p) for e in self.experiments)]
+        if subdirs:
+            if self._config.prompt_for_message:
+                print('The following experiments were found for deletion:')
+                for p in subdirs:
+                    print(p)
+                inp = input(f'Do you wish to continue? [y | n]: ')
+                if inp != 'y':
+                    print('Aborting!')
+                    return
+            for d in subdirs:
+                if os.path.exists(os.path.join(d, 'params.yml')):
+                    rmtree(d)
+                print('The following experiments were deleted:')
+                for p in subdirs:
+                    print(p)
+        else:
+            print('no folders found for deletion')
 
     def rm(self):
         from shutil import rmtree
@@ -839,7 +855,6 @@ class ExperimentManager(object):
         with self._config:
             self._config.experiments.pop(self.root)
             rmtree(self.root)
-
             print(f'Removed {self.root}')
 
     def run(self, pattern, *args):

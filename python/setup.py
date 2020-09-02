@@ -25,5 +25,11 @@ setup(
     description='Experiment management libraries for fast, reproducible, remote and local experimentation',
     author='Rob Weston',
     author_email='robw@robots.ox.ac.uk',
-    scripts=['xmen/main.py'],
+    entry_points={
+        'console_scripts': ['xmen=xmen.main:main']},
+    # scripts=['xmen/main.py'],
+    install_requires=[
+            'ruamel.yaml>=0.16.10',
+            'pandas>=1.1.1',
+            'GitPython>=3.1.7'],
     packages=setuptools.find_packages())
