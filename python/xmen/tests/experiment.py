@@ -88,7 +88,7 @@ class AnExperiment(BaseExperiment):
 
 
 if __name__ == '__main__':
-    # Documentation is automatically added to the class
+    # documentation is automatically added to the class
     help(AnExperiment)
 
     # to run an experiment first we initialise it

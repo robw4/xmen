@@ -35,7 +35,7 @@ experiment_parser.add_argument('--update', '-u', type=str, default=None, nargs='
                                     'other flags and can be used in combination with --to_root, --to_defaults,'
                                     'and --register.', metavar='YAML_STRING')
 experiment_parser.add_argument('--execute', '-x', type=str, default=None,
-                               help='Execute the experiment from a given params.yml file.'
+                               help='Execute the experiment from a given params.yml file '
                                     'or at the passed location.')
 experiment_parser.add_argument('--to_root', '-r', type=str, default=None,
                                help='Generate a run script and defaults.yml file for interfacing with the experiment'
@@ -51,7 +51,6 @@ experiment_parser.add_argument('--name', action='store_true', help='Return the n
 
 
 _SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta']
-
 
 class IncompatibleYmlException(Exception):
     pass
@@ -530,6 +529,7 @@ class Experiment(object, metaclass=TypedMeta):
         def _sigusr1_handler(signum, handler):
             raise TimeoutException()
         signal.signal(signal.SIGUSR1, _sigusr1_handler)
+
         self._update_status('running')
         return self
 
