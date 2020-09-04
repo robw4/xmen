@@ -1,0 +1,589 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>API &mdash; xmen 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/jquery.fancybox.min.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/glpi.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="xmen 0.1 documentation" href="index.html"/>
+        <link rel="prev" title="Examples" href="example.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> xmen
+          
+
+          
+          </a>
+
+          
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">xmen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-experiment-class">The Experiment Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-experimentmanager-class">The ExperimentManager Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-xmen.utils">Utils</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">xmen</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+      
+        <a href="example.html" class="btn btn-neutral" title="Examples" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="api">
+<h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="the-experiment-class">
+<h2>The Experiment Class<a class="headerlink" href="#the-experiment-class" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="xmen.experiment.Experiment">
+<em class="property">class </em><code class="sig-prename descclassname">xmen.experiment.</code><code class="sig-name descname">Experiment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">purpose</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">copy</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class from which all other experiments derive. Experiments are defined by:</p>
+<ol class="arabic simple">
+<li><p><em>Parameters</em>: class attributes declared with the special parameter <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">&#64;p</span></code> in a comment after the definition.</p></li>
+<li><p><em>Execution</em>: defined by overloading the <code class="docutils literal notranslate"><span class="pre">run()</span></code> method</p></li>
+</ol>
+<p>For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AnExperiment</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
+     <span class="sd">&#39;&#39;&#39; Doc strings should be used to document the purpose of the experiment&#39;&#39;&#39;</span>
+    <span class="c1"># experiment parameters are defined as class attributes with an @p tag in there comment</span>
+    <span class="n">a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span>   <span class="c1"># @p a parameter</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;World!&#39;</span>  <span class="c1"># @p another parameter</span>
+
+    <span class="c1"># experiment execution code is defined in the experiments run method</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{self.a}</span><span class="s1"> </span><span class="si">{self.b}</span><span class="s1">)</span>
+</pre></div>
+</div>
+<p>Create a new experiment object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root</strong> (<em>str</em>) – If not None then the experiment will be registered to a folder <code class="docutils literal notranslate"><span class="pre">{root}\{name}</span></code></p></li>
+<li><p><strong>name</strong> (<em>str</em>) – If not None then the experiment will be registered to a folder <code class="docutils literal notranslate"><span class="pre">{root}\{name}</span></code></p></li>
+<li><p><strong>purpose</strong> (<em>str</em>) – An optional string giving the purpose of the experiment.</p></li>
+<li><p><strong>copy</strong> (<em>bool</em>) – If True then parameters are deep copied to the object instance from the class definition.
+Mutable attributes will no longer be shared.</p></li>
+<li><p><strong>**kwargs</strong> – Override parameter defaults.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.directory">
+<em class="property">property </em><code class="sig-name descname">directory</code><a class="headerlink" href="#xmen.experiment.Experiment.directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>The directory assigned to the experiment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.root">
+<em class="property">property </em><code class="sig-name descname">root</code><a class="headerlink" href="#xmen.experiment.Experiment.root" title="Permalink to this definition">¶</a></dt>
+<dd><p>The root directory to which the experiment belongs</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#xmen.experiment.Experiment.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the current experiment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.status">
+<em class="property">property </em><code class="sig-name descname">status</code><a class="headerlink" href="#xmen.experiment.Experiment.status" title="Permalink to this definition">¶</a></dt>
+<dd><p>The status of the experiment. One of <code class="docutils literal notranslate"><span class="pre">'default'</span></code>, <code class="docutils literal notranslate"><span class="pre">'registered'</span></code>, <code class="docutils literal notranslate"><span class="pre">'running'</span></code>, <code class="docutils literal notranslate"><span class="pre">'finished'</span></code> or
+<code class="docutils literal notranslate"><span class="pre">'error'</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.created">
+<em class="property">property </em><code class="sig-name descname">created</code><a class="headerlink" href="#xmen.experiment.Experiment.created" title="Permalink to this definition">¶</a></dt>
+<dd><p>The date the experiment parameters were last updated.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.purpose">
+<em class="property">property </em><code class="sig-name descname">purpose</code><a class="headerlink" href="#xmen.experiment.Experiment.purpose" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string giving a purpose message for the experiment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.messages">
+<em class="property">property </em><code class="sig-name descname">messages</code><a class="headerlink" href="#xmen.experiment.Experiment.messages" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary of messages logged by the experimet.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.version">
+<em class="property">property </em><code class="sig-name descname">version</code><a class="headerlink" href="#xmen.experiment.Experiment.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary giving the version information for the experiment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.get_param_helps">
+<code class="sig-name descname">get_param_helps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.get_param_helps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get help for all attributes in class (including inherited and private).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.to_defaults">
+<code class="sig-name descname">to_defaults</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">defaults_dir</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.to_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file from experiment object.
+Any base class inheriting from Experiment can create a default file as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MyExperiment</span><span class="p">()</span><span class="o">.</span><span class="n">to_yaml</span><span class="p">(</span><span class="s1">&#39;/dir/to/defaults/root&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.debug">
+<code class="sig-name descname">debug</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inherited classes may overload debug. Used to define a set of setup for minimum example</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.from_yml">
+<code class="sig-name descname">from_yml</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">copy</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.from_yml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load state from either a <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> or <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file (inferred from the filename).
+The status of the experiment will be updated to <code class="docutils literal notranslate"><span class="pre">'default'</span></code> if <code class="docutils literal notranslate"><span class="pre">'defaults.yml'</span></code>
+file else <code class="docutils literal notranslate"><span class="pre">'registered'</span></code> if <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.register">
+<code class="sig-name descname">register</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">purpose</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">force</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">same_names</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">generate_script</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">header</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register an experiment to an experiment directory. Its status will be updated to <code class="docutils literal notranslate"><span class="pre">registered</span></code>. If an
+experiment called <code class="docutils literal notranslate"><span class="pre">name</span></code> exists in <code class="docutils literal notranslate"><span class="pre">root</span></code> and <code class="docutils literal notranslate"><span class="pre">force==True</span></code> then name will be appended with an int
+(eg. <code class="docutils literal notranslate"><span class="pre">{name}_0</span></code>) until a unique name is found in <code class="docutils literal notranslate"><span class="pre">root</span></code>. If <code class="docutils literal notranslate"><span class="pre">force==False</span></code> a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if <code class="docutils literal notranslate"><span class="pre">{root}/{name}</span></code> already contains a <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.to_root">
+<code class="sig-name descname">to_root</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root_dir</span></em>, <em class="sig-param"><span class="n">shell</span><span class="o">=</span><span class="default_value">'/bin/bash'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.to_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file and <code class="docutils literal notranslate"><span class="pre">script.sh</span></code> file in <code class="docutils literal notranslate"><span class="pre">root_dir</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>root_dir</strong> (<em>str</em>) – A path to the root directory in which to generate a script.sh and defaults.yml to
+run the experiment.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the parameters with a given dictionary</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.message">
+<code class="sig-name descname">message</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">messages</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">'latest'</span></em>, <em class="sig-param"><span class="n">leader</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a message to the experiment (and an experiments params.yml file).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>messages</strong> (<em>dict</em>) – A dictionary of messages. Keys are interpreted as subjects and values interpreted as
+messages. If the <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> already contains subject then the message for subject will be
+updated.</p></li>
+<li><p><strong>keep</strong> (<em>str</em>) – which message to keep in the case of collision. One of [‘latest’, ‘min’, ‘max’]</p></li>
+<li><p><strong>leader</strong> (<em>str</em>) – If not None then all messages will be saved if the keep condition is met for the leader key.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only messages of type float, int and string are supported. Any other message will be converted to type float
+(if possible) then string thereafter.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.parse_args">
+<code class="sig-name descname">parse_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.parse_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure the experiment instance from the command line arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.main">
+<code class="sig-name descname">main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.main" title="Permalink to this definition">¶</a></dt>
+<dd><dl>
+<dt>Take the command line args and execute the experiment (see <code class="docutils literal notranslate"><span class="pre">parse_args</span></code> for more</dt><dd><p>information). In order to expose the command line interface:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>Note that for backwards compatibility it is also possible to pass <code class="docutils literal notranslate"><span class="pre">args</span></code> as an argument to <code class="docutils literal notranslate"><span class="pre">main</span></code>.
+This allows the experiment to be run from the commandline as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.stdout_to_txt">
+<code class="sig-name descname">stdout_to_txt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.stdout_to_txt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure stdout to also log to a text file in the experiment directory</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="the-experimentmanager-class">
+<h2>The ExperimentManager Class<a class="headerlink" href="#the-experimentmanager-class" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-xmen.utils">
+<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-xmen.utils" title="Permalink to this headline">¶</a></h2>
+<p>A module containing several utilitity functions, classes and Meta Classes used by the ExperimentManager
+and the Experiment classes.</p>
+<dl class="py function">
+<dt id="xmen.utils.get_meta">
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_meta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Meta information for the system</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="xmen.utils.get_attribute_helps">
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_attribute_helps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cls</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_attribute_helps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all help files for class <code class="docutils literal notranslate"><span class="pre">cls</span></code> from doc strings from all inherited classes.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="xmen.utils.get_docs">
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_docs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cl</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_docs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all docs for every inherited class</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="xmen.utils.TypedMeta">
+<em class="property">class </em><code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">TypedMeta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">bases</span></em>, <em class="sig-param"><span class="n">attr_dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.TypedMeta" title="Permalink to this definition">¶</a></dt>
+<dd><p>A meta class helper used to generate automatic doc strings generated from typed class definitions. This allows
+the docstrings to be defined inside the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> body instead of inside the doc string iradicating the need
+to type attributes twice:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MyClass</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">TypedMeta</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;This class is bound to do something...&#39;&#39;&#39;</span>
+
+    <span class="n">a</span> <span class="nb">int</span><span class="p">:</span> <span class="mi">3</span>   <span class="c1"># @p My first attribute</span>
+    <span class="n">b</span> <span class="nb">int</span><span class="p">:</span> <span class="mi">5</span>   <span class="c1"># @p My second attribute</span>
+
+ <span class="n">m</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
+ <span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">__init</span><span class="o">.</span><span class="n">__</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now if we call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ob</span> <span class="o">=</span> <span class="nb">print</span><span class="p">(</span><span class="n">MyClass</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+
+<span class="go"> This class is bound to do something...</span>
+
+<span class="go"> Parameters:</span>
+<span class="go">     a (int) : My first attribute (default=3)</span>
+<span class="go">     b (int) : My second attribute (default=5)</span>
+</pre></div>
+</div>
+<p>The doc string has automatically been updated.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="xmen.utils.get_git">
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_git</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_git" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get git information for the given path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Empty if status == False otherwise with keys:</dt><dd><ul class="simple">
+<li><p>remote: A url to the remote repository</p></li>
+<li><p>hash: A git hash to the current commit</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><p>(dict)</p>
+<dl class="simple">
+<dt>status (bool): False if either git is not available, the repo is not in a git repository or if there are</dt><dd><p>uncommited changes in the current repository. Otherwise true</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="xmen.utils.get_version">
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_version</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cls</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get version information for either a path to a directory or a class. Git version information is loaded
+if available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – A path to a repository which is inspected for version information</p></li>
+<li><p><strong>cls</strong> (<em>Class</em>) – A Class object to be inspected for version information</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A dictionary containing at least one of the following:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">path</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">None:</span></code></dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">'path'</span></code>: A copy of the path</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">cls</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">None:</span></code></dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">'module'</span></code>: A path to the module in which the class was defined</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'class'</span></code>: The name of the class</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">git</span> <span class="pre">!=</span> <span class="pre">{}</span></code>: (i.e if path or module is in a git repository):</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">'git_local'</span></code>: The root of the local git repository</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'git_commit'</span></code>: The hash of the commit</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'git_remote'</span></code>: The remote url if has remote else <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>version (dict)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="example.html" class="btn btn-neutral" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Rob Weston.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script type="text/javascript" src="_static/jquery.fancybox.min.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+  <script type="text/javascript">
+    $(function(){
+      $('.image-reference').fancybox();
+    })
+  </script>
+
+</body>
+</html>
