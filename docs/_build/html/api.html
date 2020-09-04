@@ -1,288 +1,269 @@
 
+
+
 <!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>API &mdash; xmen 0.1 documentation</title>
+  
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta charset="utf-8" />
-    <title>API &#8212; xmen 0.1 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Examples" href="example.html" />
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/jquery.fancybox.min.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/glpi.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="xmen 0.1 documentation" href="index.html"/>
+        <link rel="prev" title="Examples" href="example.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
    
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  <div class="wy-grid-for-nav">
 
-  </head><body>
-  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
           
 
-          <div class="body" role="main">
+          
+            <a href="index.html" class="icon icon-home"> xmen
+          
+
+          
+          </a>
+
+          
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">xmen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-experiment-class">The Experiment Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-experimentmanager-class">The ExperimentManager Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-xmen.utils">Utils</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">xmen</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+      
+        <a href="example.html" class="btn btn-neutral" title="Examples" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <div class="section" id="api">
 <h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="the-experiment-class">
 <h2>The Experiment Class<a class="headerlink" href="#the-experiment-class" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="xmen.experiment.Experiment">
-<em class="property">class </em><code class="sig-prename descclassname">xmen.experiment.</code><code class="sig-name descname">Experiment</code><span class="sig-paren">(</span><em class="sig-param">name=None</em>, <em class="sig-param">root=None</em>, <em class="sig-param">purpose=''</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
-<dd><p>A generic experiment type.</p>
-<blockquote>
-<div><p><strong>The Experiment Class</strong>
-Experiments are defined by:</p>
+<em class="property">class </em><code class="sig-prename descclassname">xmen.experiment.</code><code class="sig-name descname">Experiment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">purpose</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">copy</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class from which all other experiments derive. Experiments are defined by:</p>
 <ol class="arabic simple">
-<li><p><em>Parameters</em>: public attributes to the class definition (eg. <code class="docutils literal notranslate"><span class="pre">self.a</span></code>, <code class="docutils literal notranslate"><span class="pre">self.b</span></code> etc.)</p></li>
+<li><p><em>Parameters</em>: class attributes declared with the special parameter <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">&#64;p</span></code> in a comment after the definition.</p></li>
 <li><p><em>Execution</em>: defined by overloading the <code class="docutils literal notranslate"><span class="pre">run()</span></code> method</p></li>
 </ol>
 <p>For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AnExperiment</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
-   <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-      <span class="sd">&#39;&#39;&#39; Doc strings should be used to document the purpose of the experiment.</span>
-<span class="sd">      Parameters are defined as public class attributes. You are encouraged to</span>
-<span class="sd">      use inline typed parameter definitions allowing the type, default and</span>
-<span class="sd">      documentation for a parameter to be generated in a single line.</span>
-<span class="sd">      In this case Attributes documentation will be added to the docstring</span>
-<span class="sd">      automatically by the TypedMeta metaclass.</span>
-<span class="sd">      &#39;&#39;&#39;</span>
-      <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>     <span class="c1"># This is the first parameter</span>
-      <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;4&#39;</span>   <span class="c1"># This is the second parameter</span>
-      <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>     <span class="c1"># This is the third parameter</span>
+     <span class="sd">&#39;&#39;&#39; Doc strings should be used to document the purpose of the experiment&#39;&#39;&#39;</span>
+    <span class="c1"># experiment parameters are defined as class attributes with an @p tag in there comment</span>
+    <span class="n">a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span>   <span class="c1"># @p a parameter</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;World!&#39;</span>  <span class="c1"># @p another parameter</span>
 
-      <span class="c1"># Private attributes are not assumed to be parameters. Use these to store</span>
-      <span class="c1"># state information that vary with program execution.</span>
-      <span class="bp">self</span><span class="o">.</span><span class="n">_a</span> <span class="o">=</span> <span class="kc">None</span>
-
-<span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;The execution of an experiment is defined by overloading the run method.</span>
-<span class="sd">    This method should not be called directly. Instead an experiment is run by</span>
-<span class="sd">    calling it (eg. exp())&#39;&#39;&#39;</span><span class="o">.</span>
-    <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)</span>
-
-   <span class="c1"># You may assume that an experiment is able to write to a folder</span>
-   <span class="c1"># {self.root}/{self.name}. In fact this is ENCOURAGED!</span>
-   <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="s1">&#39;log.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-       <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;experiment finished&#39;</span><span class="p">)</span>
-
-<span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>     <span class="c1"># Experiments are instantiated with &#39;default&#39; status. They cannot be run!</span>
+    <span class="c1"># experiment execution code is defined in the experiments run method</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{self.a}</span><span class="s1"> </span><span class="si">{self.b}</span><span class="s1">)</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">status</span></code> of an experiment is used to control what an experiment object is allowed to do:</p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">'default'</span></code>: When initialised (or loaded from a <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file) experiments are given a <code class="docutils literal notranslate"><span class="pre">'default'</span></code>
-status. In this case their parameters can be changed using the <code class="docutils literal notranslate"><span class="pre">update()</span></code> method call or by
-setting parameters directly (eg. <code class="docutils literal notranslate"><span class="pre">self.a</span> <span class="pre">=</span> <span class="pre">3</span></code>) before saving their state to a <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> through the
-<code class="docutils literal notranslate"><span class="pre">to_defaults()</span></code> method call. They <strong>cannot be executed</strong>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">'registered'</span></code>: In order to be executed experiments must first be <code class="docutils literal notranslate"><span class="pre">'registered'</span></code>. In doing so an experiment
-object is linked with a unique experiment repository, its parameters fixed, and stored in a <code class="docutils literal notranslate"><span class="pre">params.yml</span> <span class="pre">file</span></code>.</p>
-<blockquote>
-<div><p>An experiment is <cite>registered</cite> either through the <code class="docutils literal notranslate"><span class="pre">register()</span></code> method call
-or by loading from a previously created``params.yml`` file using the method call</p>
-</div></blockquote>
-<p><code class="docutils literal notranslate"><span class="pre">from_yml()</span></code>.</p>
-</li>
-</ul>
-<p>Additionally the following statuses are used to communicate the state of an execution:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">'running'</span></code>: Experiments are executed by the <code class="docutils literal notranslate"><span class="pre">__call__</span></code> method. Upon entering this method the experiment
-status is changed to <code class="docutils literal notranslate"><span class="pre">'running'</span></code> (also updated in the <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file) before the <code class="docutils literal notranslate"><span class="pre">run()</span></code> method is
-called.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">'finished'</span></code>: If the run executes correctly then the experiment status will be updated to <code class="docutils literal notranslate"><span class="pre">'finished'</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">'error'</span></code>: If the run returns with an uncaught exception then the status of the experiment will be set to
-<code class="docutils literal notranslate"><span class="pre">'error'</span></code>.</p></li>
-</ul>
-<p><strong>Interfacing with the Experiment Manager</strong>
-The <code class="docutils literal notranslate"><span class="pre">Experiment</span></code> class also provides several features in order to interface with the <code class="docutils literal notranslate"><span class="pre">ExperimentManager</span></code>
-class:</p>
-<ul>
-<li><p><em>Generating Experiment Roots</em>: Any experiment with <code class="docutils literal notranslate"><span class="pre">'default'</span></code> status can be used to generate a <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code>
-file and an execution script (<code class="docutils literal notranslate"><span class="pre">script.sh</span></code>) through the method
-call <code class="docutils literal notranslate"><span class="pre">to_root()</span></code>. This allows config files to be generated from code definition. Parameters evolve as code
-evolves: as code is versioned so to are the experiment parameters:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>
-<span class="n">exp</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="s1">&#39;z&#39;</span><span class="p">})</span>
-<span class="n">exp</span><span class="o">.</span><span class="n">to_root</span><span class="p">(</span><span class="s1">&#39;/path/to/root/dir&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</li>
-<li><p><em>Loading experiments configured with the experiment manager</em>: Each experiment can also be loaded from a
-<code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file generated through the method call <code class="docutils literal notranslate"><span class="pre">from_yml()</span></code>. In doing
-so an experiments status is updated to <code class="docutils literal notranslate"><span class="pre">'registered'</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>
-<span class="n">exp</span><span class="o">.</span><span class="n">from_params_yml</span><span class="p">(</span><span class="s1">&#39;/path/to/params.yml&#39;</span><span class="p">)</span>    <span class="c1"># The status is updated to &#39;registered&#39;</span>
-<span class="n">exp</span><span class="p">()</span>                                         <span class="c1"># Execute the experiment</span>
-</pre></div>
-</div>
-</li>
-<li><p><em>Communicating with the experiment manager</em>: Registered experiment objects are also able to save their dynamic
-state in their <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file by adding to the <code class="docutils literal notranslate"><span class="pre">messages</span></code> dictionary. This allows <code class="docutils literal notranslate"><span class="pre">Experiment</span></code> objects
-to communicate with the experiment manager through shared storage. This is achieved through the <code class="docutils literal notranslate"><span class="pre">send_message</span></code>
-method call:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AnExperiment</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
-     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-          <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>     <span class="c1"># A param</span>
-
-          <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">=</span> <span class="mi">0</span>
-
-     <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-               <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">({</span><span class="s1">&#39;step&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s1">&#39;self._i&#39;</span><span class="p">})</span>
-</pre></div>
-</div>
-</li>
-<li><p><em>Version Control</em>: As code evolves parameters are added or depreciated and their defaults changed. Config
-files generated for a past experiment are no longer valid for the current version. When <code class="docutils literal notranslate"><span class="pre">git</span></code> is available
-each <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> has appended to it the git commit and local repo it was generated from. Similarly, this
-process is repeated each time an experiment is created (either adding to the existing params.yml file or
-creating a new one). This helps the user keep track of experiments versions automatically.</p></li>
-</ul>
-<p><strong>Command Line Interface</strong>
-The class also exposes a basic main loop alongside several command line flags. For example suppose we
-create a module at path <code class="docutils literal notranslate"><span class="pre">path/to/an_experiment.py</span></code> inside which lives:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">xmen.experiment</span> <span class="k">import</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">experiment_parser</span>
-<span class="k">class</span> <span class="nc">AnExperiment</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
-       <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>     <span class="c1"># A param</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">=</span> <span class="mi">0</span>
-
-       <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-          <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
-              <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                 <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">({</span><span class="s1">&#39;step&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s1">&#39;self._i&#39;</span><span class="p">})</span>
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-     <span class="n">args</span> <span class="o">=</span> <span class="n">experiment_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>
-     <span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>
-     <span class="n">exp</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>By including the last two lines we expose the command line interface. As such the module can be run from the
-command line. For available functionality run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">an_experiment</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">h</span>
-</pre></div>
-</div>
-</div></blockquote>
+<p>Create a new experiment object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>register</strong> (<em>name</em><em>, </em><em>root</em><em>, </em><em>purpose</em>) – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root</strong> (<em>str</em>) – If not None then the experiment will be registered to a folder <code class="docutils literal notranslate"><span class="pre">{root}\{name}</span></code></p></li>
+<li><p><strong>name</strong> (<em>str</em>) – If not None then the experiment will be registered to a folder <code class="docutils literal notranslate"><span class="pre">{root}\{name}</span></code></p></li>
+<li><p><strong>purpose</strong> (<em>str</em>) – An optional string giving the purpose of the experiment.</p></li>
+<li><p><strong>copy</strong> (<em>bool</em>) – If True then parameters are deep copied to the object instance from the class definition.
+Mutable attributes will no longer be shared.</p></li>
+<li><p><strong>**kwargs</strong> – Override parameter defaults.</p></li>
+</ul>
 </dd>
 </dl>
-<dl class="method">
-<dt id="xmen.experiment.Experiment.created">
-<em class="property">property </em><code class="sig-name descname">created</code><a class="headerlink" href="#xmen.experiment.Experiment.created" title="Permalink to this definition">¶</a></dt>
-<dd><p>The date the experiment parameters were last updated.</p>
-</dd></dl>
-
-<dl class="method">
+<dl class="py method">
 <dt id="xmen.experiment.Experiment.directory">
 <em class="property">property </em><code class="sig-name descname">directory</code><a class="headerlink" href="#xmen.experiment.Experiment.directory" title="Permalink to this definition">¶</a></dt>
 <dd><p>The directory assigned to the experiment</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="xmen.experiment.Experiment.from_yml">
-<code class="sig-name descname">from_yml</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.from_yml" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load state from either a <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> or <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file (inferred from the filename).
-The status of the experiment will be equal to <code class="docutils literal notranslate"><span class="pre">'default'</span></code> if <code class="docutils literal notranslate"><span class="pre">'defaults.yml'</span></code>
-file else <code class="docutils literal notranslate"><span class="pre">'registered'</span></code> if <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment.Experiment.get_attributes_help">
-<code class="sig-name descname">get_attributes_help</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.get_attributes_help" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get help for all attributes in class (including inherited and private).</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment.Experiment.leave_message">
-<code class="sig-name descname">leave_message</code><span class="sig-paren">(</span><em class="sig-param">message_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.leave_message" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a message to the params.yml file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>message_dict</strong> (<em>dict</em>) – A dictionary of messages. Keys are interpreted as subjects and values interpreted as
-messages. If the <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> already contains subject then the message for subject will be
-updated.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment.Experiment.main">
-<code class="sig-name descname">main</code><span class="sig-paren">(</span><em class="sig-param">args</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.main" title="Permalink to this definition">¶</a></dt>
-<dd><p>A main loop used to expose the command line interface. In order to expose the command line
-interface within a module definition the lines:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">experiment_parser</span> <span class="k">as</span> <span class="nn">exp_parser</span>
-
-<span class="o">...</span>
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">exp_parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
-    <span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>   <span class="c1"># Initialise</span>
-    <span class="n">exp</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>should be added to the module script (where <code class="docutils literal notranslate"><span class="pre">AnExperiment</span></code> inherits from <code class="docutils literal notranslate"><span class="pre">Experiment</span></code>).</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment.Experiment.messages">
-<em class="property">property </em><code class="sig-name descname">messages</code><a class="headerlink" href="#xmen.experiment.Experiment.messages" title="Permalink to this definition">¶</a></dt>
-<dd><p>A dictionary of messages logged by the experimet.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment.Experiment.name">
-<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#xmen.experiment.Experiment.name" title="Permalink to this definition">¶</a></dt>
-<dd><p>The name of the current experiment</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment.Experiment.purpose">
-<em class="property">property </em><code class="sig-name descname">purpose</code><a class="headerlink" href="#xmen.experiment.Experiment.purpose" title="Permalink to this definition">¶</a></dt>
-<dd><p>A string giving a purpose message for the experiment</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment.Experiment.register">
-<code class="sig-name descname">register</code><span class="sig-paren">(</span><em class="sig-param">root</em>, <em class="sig-param">name</em>, <em class="sig-param">purpose=''</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.register" title="Permalink to this definition">¶</a></dt>
-<dd><p>Register an experiment to an experiment directory. Its status will be updated to <code class="docutils literal notranslate"><span class="pre">registered</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
-<dd class="field-odd"><p><strong>ValueError</strong> – if <code class="docutils literal notranslate"><span class="pre">{root}/{name}</span></code> already contains a <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
+<dl class="py method">
 <dt id="xmen.experiment.Experiment.root">
 <em class="property">property </em><code class="sig-name descname">root</code><a class="headerlink" href="#xmen.experiment.Experiment.root" title="Permalink to this definition">¶</a></dt>
 <dd><p>The root directory to which the experiment belongs</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#xmen.experiment.Experiment.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the current experiment</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="xmen.experiment.Experiment.status">
 <em class="property">property </em><code class="sig-name descname">status</code><a class="headerlink" href="#xmen.experiment.Experiment.status" title="Permalink to this definition">¶</a></dt>
 <dd><p>The status of the experiment. One of <code class="docutils literal notranslate"><span class="pre">'default'</span></code>, <code class="docutils literal notranslate"><span class="pre">'registered'</span></code>, <code class="docutils literal notranslate"><span class="pre">'running'</span></code>, <code class="docutils literal notranslate"><span class="pre">'finished'</span></code> or
 <code class="docutils literal notranslate"><span class="pre">'error'</span></code>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.created">
+<em class="property">property </em><code class="sig-name descname">created</code><a class="headerlink" href="#xmen.experiment.Experiment.created" title="Permalink to this definition">¶</a></dt>
+<dd><p>The date the experiment parameters were last updated.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.purpose">
+<em class="property">property </em><code class="sig-name descname">purpose</code><a class="headerlink" href="#xmen.experiment.Experiment.purpose" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string giving a purpose message for the experiment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.messages">
+<em class="property">property </em><code class="sig-name descname">messages</code><a class="headerlink" href="#xmen.experiment.Experiment.messages" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary of messages logged by the experimet.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.version">
+<em class="property">property </em><code class="sig-name descname">version</code><a class="headerlink" href="#xmen.experiment.Experiment.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary giving the version information for the experiment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.get_param_helps">
+<code class="sig-name descname">get_param_helps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.get_param_helps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get help for all attributes in class (including inherited and private).</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="xmen.experiment.Experiment.to_defaults">
-<code class="sig-name descname">to_defaults</code><span class="sig-paren">(</span><em class="sig-param">defaults_dir</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.to_defaults" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_defaults</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">defaults_dir</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.to_defaults" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file from experiment object.
 Any base class inheriting from Experiment can create a default file as:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MyExperiment</span><span class="p">()</span><span class="o">.</span><span class="n">to_yaml</span><span class="p">(</span><span class="s1">&#39;/dir/to/defaults/root&#39;</span><span class="p">)</span>
@@ -290,9 +271,36 @@ Any base class inheriting from Experiment can create a default file as:</p>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.debug">
+<code class="sig-name descname">debug</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inherited classes may overload debug. Used to define a set of setup for minimum example</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.from_yml">
+<code class="sig-name descname">from_yml</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">copy</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.from_yml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load state from either a <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> or <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file (inferred from the filename).
+The status of the experiment will be updated to <code class="docutils literal notranslate"><span class="pre">'default'</span></code> if <code class="docutils literal notranslate"><span class="pre">'defaults.yml'</span></code>
+file else <code class="docutils literal notranslate"><span class="pre">'registered'</span></code> if <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.register">
+<code class="sig-name descname">register</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">purpose</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">force</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">same_names</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">generate_script</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">header</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register an experiment to an experiment directory. Its status will be updated to <code class="docutils literal notranslate"><span class="pre">registered</span></code>. If an
+experiment called <code class="docutils literal notranslate"><span class="pre">name</span></code> exists in <code class="docutils literal notranslate"><span class="pre">root</span></code> and <code class="docutils literal notranslate"><span class="pre">force==True</span></code> then name will be appended with an int
+(eg. <code class="docutils literal notranslate"><span class="pre">{name}_0</span></code>) until a unique name is found in <code class="docutils literal notranslate"><span class="pre">root</span></code>. If <code class="docutils literal notranslate"><span class="pre">force==False</span></code> a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – if <code class="docutils literal notranslate"><span class="pre">{root}/{name}</span></code> already contains a <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="xmen.experiment.Experiment.to_root">
-<code class="sig-name descname">to_root</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.to_root" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_root</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root_dir</span></em>, <em class="sig-param"><span class="n">shell</span><span class="o">=</span><span class="default_value">'/bin/bash'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.to_root" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file and <code class="docutils literal notranslate"><span class="pre">script.sh</span></code> file in <code class="docutils literal notranslate"><span class="pre">root_dir</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -302,16 +310,65 @@ run the experiment.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="xmen.experiment.Experiment.update">
-<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.update" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the parameters with a given dictionary</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="xmen.experiment.Experiment.version">
-<em class="property">property </em><code class="sig-name descname">version</code><a class="headerlink" href="#xmen.experiment.Experiment.version" title="Permalink to this definition">¶</a></dt>
-<dd><p>A dictionary giving the version information for the experiment</p>
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.message">
+<code class="sig-name descname">message</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">messages</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">'latest'</span></em>, <em class="sig-param"><span class="n">leader</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a message to the experiment (and an experiments params.yml file).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>messages</strong> (<em>dict</em>) – A dictionary of messages. Keys are interpreted as subjects and values interpreted as
+messages. If the <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> already contains subject then the message for subject will be
+updated.</p></li>
+<li><p><strong>keep</strong> (<em>str</em>) – which message to keep in the case of collision. One of [‘latest’, ‘min’, ‘max’]</p></li>
+<li><p><strong>leader</strong> (<em>str</em>) – If not None then all messages will be saved if the keep condition is met for the leader key.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only messages of type float, int and string are supported. Any other message will be converted to type float
+(if possible) then string thereafter.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.parse_args">
+<code class="sig-name descname">parse_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.parse_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure the experiment instance from the command line arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.main">
+<code class="sig-name descname">main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.main" title="Permalink to this definition">¶</a></dt>
+<dd><dl>
+<dt>Take the command line args and execute the experiment (see <code class="docutils literal notranslate"><span class="pre">parse_args</span></code> for more</dt><dd><p>information). In order to expose the command line interface:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>Note that for backwards compatibility it is also possible to pass <code class="docutils literal notranslate"><span class="pre">args</span></code> as an argument to <code class="docutils literal notranslate"><span class="pre">main</span></code>.
+This allows the experiment to be run from the commandline as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.stdout_to_txt">
+<code class="sig-name descname">stdout_to_txt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.stdout_to_txt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure stdout to also log to a text file in the experiment directory</p>
 </dd></dl>
 
 </dd></dl>
@@ -319,371 +376,40 @@ run the experiment.</p>
 </div>
 <div class="section" id="the-experimentmanager-class">
 <h2>The ExperimentManager Class<a class="headerlink" href="#the-experimentmanager-class" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="xmen.experiment_manager.ExperimentManager">
-<em class="property">class </em><code class="sig-prename descclassname">xmen.experiment_manager.</code><code class="sig-name descname">ExperimentManager</code><span class="sig-paren">(</span><em class="sig-param">root=''</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment_manager.ExperimentManager" title="Permalink to this definition">¶</a></dt>
-<dd><p>A helper class with wrapped command line interface used to manage a set of experiments. It is compatible both
-with experiments generated by the <code class="docutils literal notranslate"><span class="pre">Experiment.to_root</span></code> method call as well as any experiment that can be
-represented as a bash <cite>script.sh</cite> which takes a set of parameters in a yaml file as input.</p>
-<p>Command Line Interface:</p>
-<blockquote>
-<div><ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">init</span></code> - Initialise an experiment from a set of hyper parameters that can be used to specialise a run script.sh:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span> <span class="n">init</span> <span class="s1">&#39;path/to/defaults.yml&#39;</span> <span class="s1">&#39;path/to/script.sh&#39;</span>
-<span class="n">exp</span> <span class="n">init</span>
-<span class="c1">#(see method initialise)</span>
-</pre></div>
-</div>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">register</span></code> - Register a set of experiments by overloading the default parameters:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span> <span class="n">register</span> <span class="s1">&#39;{a: 1., b: 2.}&#39;</span> <span class="s1">&#39;initial_experiment&#39;</span>
-<span class="n">exp</span> <span class="n">register</span> <span class="s1">&#39;{a: 1 | 2, b: 2., c: a| b| c, d: , e: [a, b, c], f: {a: 1., b: 2., e:5}}&#39;</span> <span class="s1">&#39;another_experiment&#39;</span>
-<span class="c1"># (see method register)</span>
-</pre></div>
-</div>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">list</span></code> - List all experiments:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span> <span class="nb">list</span>
-<span class="c1"># (see method list)</span>
-</pre></div>
-</div>
-<p>An example output will look something like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>     <span class="n">overrides</span>       <span class="n">purpose</span>                  <span class="n">created</span>      <span class="n">status</span> <span class="n">messages</span>                                    <span class="n">commit</span>
-<span class="mi">0</span>     <span class="n">a</span><span class="p">:</span><span class="mi">3</span><span class="n">__b</span><span class="p">:</span><span class="mi">4</span>  <span class="n">initial</span> <span class="n">test</span>  <span class="mi">07</span><span class="p">:</span><span class="mi">17</span><span class="n">PM</span> <span class="n">September</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">2019</span>  <span class="n">created</span>       <span class="p">{}</span>  <span class="n">dda2f262db819e14900c78d807b2182bf6111aef</span>
-<span class="mi">1</span>     <span class="n">a</span><span class="p">:</span><span class="mi">3</span><span class="n">__b</span><span class="p">:</span><span class="mi">5</span>  <span class="n">initial</span> <span class="n">test</span>  <span class="mi">07</span><span class="p">:</span><span class="mi">17</span><span class="n">PM</span> <span class="n">September</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">2019</span>  <span class="n">created</span>       <span class="p">{}</span>  <span class="n">dda2f262db819e14900c78d807b2182bf6111aef</span>
-<span class="mi">2</span>     <span class="n">a</span><span class="p">:</span><span class="mi">4</span><span class="n">__b</span><span class="p">:</span><span class="mi">4</span>  <span class="n">initial</span> <span class="n">test</span>  <span class="mi">07</span><span class="p">:</span><span class="mi">17</span><span class="n">PM</span> <span class="n">September</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">2019</span>  <span class="n">created</span>       <span class="p">{}</span>  <span class="n">dda2f262db819e14900c78d807b2182bf6111aef</span>
-<span class="mi">3</span>     <span class="n">a</span><span class="p">:</span><span class="mi">4</span><span class="n">__b</span><span class="p">:</span><span class="mi">5</span>  <span class="n">initial</span> <span class="n">test</span>  <span class="mi">07</span><span class="p">:</span><span class="mi">17</span><span class="n">PM</span> <span class="n">September</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">2019</span>  <span class="n">created</span>       <span class="p">{}</span>  <span class="n">dda2f262db819e14900c78d807b2182bf6111aef</span>
-
-<span class="n">Defaults</span><span class="p">:</span>
-<span class="o">-</span> <span class="n">created</span> <span class="mi">06</span><span class="p">:</span><span class="mi">34</span><span class="n">PM</span> <span class="n">September</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">2019</span>
-<span class="o">-</span> <span class="kn">from</span>  <span class="nn">NewNewExperiment</span> <span class="n">at</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">robweston</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="n">rad2sim2rad</span><span class="o">/</span><span class="n">python</span><span class="o">/</span><span class="n">rad2sim2rad</span><span class="o">/</span><span class="n">prototypes</span><span class="o">/</span><span class="n">test_typed_experiment</span><span class="o">.</span><span class="n">py</span>
-<span class="o">-</span> <span class="n">git</span> <span class="n">local</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">robweston</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="n">rad2sim2rad</span>
-<span class="o">-</span> <span class="n">commit</span> <span class="mi">51</span><span class="n">ad1eae73a2082e7636056fcd06e112d3fbca9c</span>
-<span class="o">-</span> <span class="n">remote</span> <span class="n">ssh</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="nd">@mrgbuild</span><span class="o">.</span><span class="n">robots</span><span class="o">.</span><span class="n">ox</span><span class="o">.</span><span class="n">ac</span><span class="o">.</span><span class="n">uk</span><span class="p">:</span><span class="mi">7999</span><span class="o">/~</span><span class="n">robw</span><span class="o">/</span><span class="n">rad2sim2rad</span><span class="o">.</span><span class="n">git</span>
-</pre></div>
-</div>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">unlink</span></code> - Unlink all experiments from the experiment manager matching name string:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span> <span class="n">unlink</span> <span class="s1">&#39;a:1__b:2&#39;</span>
-<span class="n">exp</span> <span class="n">unlink</span> <span class="s1">&#39;*&#39;</span>
-<span class="n">exp</span> <span class="n">unlink</span> <span class="s1">&#39;a:1__*&#39;</span>
-<span class="c1">#(see method unlink)</span>
-</pre></div>
-</div>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rm</span></code> - Remove folders of experiments that are no longer managed by the experiment manager:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span> <span class="n">rm</span>
-<span class="c1">#(see method rm)</span>
-</pre></div>
-</div>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">run</span></code> - Run a group of experiments matching pattern:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span> <span class="n">run</span> <span class="s1">&#39;*&#39;</span> <span class="s1">&#39;sh&#39;</span>                                        <span class="c1"># Run all</span>
-<span class="n">exp</span> <span class="n">run</span> <span class="s1">&#39;a:1__b:2&#39;</span> <span class="s1">&#39;[sbatch&#39;</span><span class="p">,</span> <span class="o">--</span><span class="n">gres</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span><span class="s1">&#39;           # yaml list of strings</span>
-<span class="c1">#(see method run)</span>
-</pre></div>
-</div>
-</li>
-</ul>
-</div></blockquote>
-<dl>
-<dt>More Info:</dt><dd><p>At its core the experiment manager maintains a single <cite>root</cite> directory:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>root
-├── defaults.yml
-├── experiment.yml
-├── script.sh
-├── {param}:{value}__{param}:{value}
-│   └── params.yml
-├── {param}:{value}__{param}:{value}
-│   └── params.yml
-...
-</pre></div>
-</div>
-<p>In the above we have:</p>
-<blockquote>
-<div><ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> defines a set of parameter keys and there default values shared by each experiment. It
-generated from the <code class="docutils literal notranslate"><span class="pre">Experiment</span></code> class it will look like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>   # Optional additional Meta parameters
-   _created: 06:58PM September 16, 2019    # The date the defaults were created
-   _version:
-       module: /path/to/module/experiment/that/generated/defaults/was/defined/in
-       class: TheNameOfTheExperiment
-       git:
-          local: /path/to/git/repo/defaults/were/defined/in
-          branch: some_branch
-          remote: /remote/repo/url
-          commit: 80dcfd98e6c3c17e1bafa72ee56744d4a6e30e80    # The git commit defaults were generatd at
-
-   # Default parameters
-   a: 3 #  This is the first parameter (default=3)
-   b: &#39;4&#39; #  This is the second parameter (default=&#39;4&#39;)
-
-The ``ExperimentManager`` is also compatible with generic experiments. In this the ``_version`` meta
-field can be added manually, replacing ``module`` and ``class`` with ``path``. The git information for
-each will be updated automatically provided ``path`` is within a git repository.
-</pre></div>
-</div>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">script.sh</span></code> is a bash script. When run it takes a single argument <code class="docutils literal notranslate"><span class="pre">'params.yml'</span></code> (eg. <code class="docutils literal notranslate"><span class="pre">`script.sh</span> <span class="pre">params.yml`</span></code>).</p>
-<blockquote>
-<div><div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">Experiment</span></code> objects are able to automatically generate script.sh files that look like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
-# File generated on the 06:34PM September 13, 2019
-# GIT:
-# - repo /path/to/project/module/
-# - remote {/path/to/project/module/url}
-# - commit 51ad1eae73a2082e7636056fcd06e112d3fbca9c
-
-export PYTHONPATH=&quot;${PYTHONPATH}:path/to/project&quot;
-python /path/to/project/module/experiment.py --execute ${1}
-</pre></div>
-</div>
-</div>
-</div></blockquote>
-<p>Generic experiments are compatible with the <code class="docutils literal notranslate"><span class="pre">ExperimentManager</span></code> provided they can be executed with a
-shell script. For example a bash only experiment might have a <code class="docutils literal notranslate"><span class="pre">script.sh</span></code> script that looks like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
-<span class="n">echo</span> <span class="s2">&quot;$(cat $</span><span class="si">{1}</span><span class="s2">)&quot;</span>
-</pre></div>
-</div>
-</li>
-<li><p>A set of experiment folders representing individual experiments within which each experiment has a
-<code class="docutils literal notranslate"><span class="pre">params.yml</span></code> with a set of override parameters changed from the original defaults. These overrides define the
-unique name of each experiment (in the case that multiple experiments share the same overrides each experiment
-folder is additionally numbered after the first instantiation). Additionally, each <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> contains the
-following:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Parameters special to params.yml</span>
-<span class="n">_root</span><span class="p">:</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">root</span>  <span class="c1">#  The root directory to which the experiment belongs (should not be set)</span>
-<span class="n">_name</span><span class="p">:</span> <span class="n">a</span><span class="p">:</span><span class="mi">10</span><span class="n">__b</span><span class="p">:</span><span class="mi">3</span> <span class="c1">#  The name of the experiment (should not be set)</span>
-<span class="n">_status</span><span class="p">:</span> <span class="n">registered</span> <span class="c1">#  The status of the experiment (one of [&#39;registered&#39; | &#39;running&#39; | &#39;error&#39; | &#39;finished&#39;])</span>
-<span class="n">_created</span><span class="p">:</span> <span class="mi">07</span><span class="p">:</span><span class="mi">41</span><span class="n">PM</span> <span class="n">September</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">2019</span> <span class="c1">#  The date the experiment was created (should not be set)</span>
-<span class="n">_purpose</span><span class="p">:</span> <span class="n">this</span> <span class="ow">is</span> <span class="n">an</span> <span class="n">experiment</span> <span class="n">example</span> <span class="c1">#  The purpose for the experiment (should not be set)</span>
-<span class="n">_messages</span><span class="p">:</span> <span class="p">{}</span> <span class="c1">#  A dictionary of messages which are able to vary throughout the experiment (should not be set)</span>
-
-<span class="c1"># git information is updated at registration if ``_version[&#39;module&#39;]`` or `_version[&#39;path&#39;]``</span>
-<span class="c1"># exists in the defaults.yml file and the path is to a valid git repo.</span>
-<span class="n">_version</span><span class="p">:</span>
-    <span class="n">module</span><span class="p">:</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">module</span>   <span class="c1"># Path to module where experiment was generated</span>
-    <span class="n">class</span><span class="p">:</span> <span class="n">NameOfExperimentClass</span>     <span class="c1"># Name of experiment class params are compatible with</span>
-    <span class="n">git</span><span class="p">:</span> <span class="c1">#  A dictionary containing the git history corresponding to the defaults.yml file. Only</span>
-      <span class="n">local_path</span><span class="p">:</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">git</span><span class="o">/</span><span class="n">repo</span><span class="o">/</span><span class="n">params</span><span class="o">/</span><span class="n">were</span><span class="o">/</span><span class="n">defined</span><span class="o">/</span><span class="ow">in</span>
-      <span class="n">remote_url</span><span class="p">:</span> <span class="o">/</span><span class="n">remote</span><span class="o">/</span><span class="n">repo</span><span class="o">/</span><span class="n">url</span>
-      <span class="nb">hash</span><span class="p">:</span> <span class="mi">80</span><span class="n">dcfd98e6c3c17e1bafa72ee56744d4a6e30e80</span>
-                    <span class="c1"># Parameters from the default (with values overridden)</span>
-<span class="n">a</span><span class="p">:</span> <span class="mi">3</span> <span class="c1">#  This is the first parameter (default=3)</span>
-<span class="n">b</span><span class="p">:</span> <span class="s1">&#39;4&#39;</span> <span class="c1">#  This is the second parameter (default=&#39;4&#39;)</span>
-</pre></div>
-</div>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">experiment.yml</span></code> preserves the experiment state with the following entries:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="p">:</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">root</span>
-<span class="n">defaults</span><span class="p">:</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">defaults</span><span class="o">.</span><span class="n">yml</span>
-<span class="n">script</span><span class="p">:</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">script</span><span class="o">.</span><span class="n">sh</span>
-<span class="n">experiments</span><span class="p">:</span>
-<span class="o">-</span> <span class="o">/</span><span class="n">private</span><span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">new</span><span class="o">-</span><span class="n">test</span><span class="o">/</span><span class="n">a</span><span class="p">:</span><span class="mi">10</span><span class="n">__b</span><span class="p">:</span><span class="mi">3</span>
-<span class="o">-</span> <span class="o">/</span><span class="n">private</span><span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">new</span><span class="o">-</span><span class="n">test</span><span class="o">/</span><span class="n">a</span><span class="p">:</span><span class="mi">20</span><span class="n">__b</span><span class="p">:</span><span class="mi">3</span>
-<span class="o">-</span> <span class="o">/</span><span class="n">private</span><span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">new</span><span class="o">-</span><span class="n">test</span><span class="o">/</span><span class="n">a</span><span class="p">:</span><span class="mi">10</span><span class="n">__b</span><span class="p">:</span><span class="mi">3_1</span>
-<span class="n">overides</span><span class="p">:</span>
-<span class="o">-</span> <span class="n">a</span><span class="p">:</span> <span class="mi">10</span>
-  <span class="n">b</span><span class="p">:</span> <span class="s1">&#39;3&#39;</span>
-<span class="o">-</span> <span class="n">a</span><span class="p">:</span> <span class="mi">20</span>
-  <span class="n">b</span><span class="p">:</span> <span class="s1">&#39;3&#39;</span>
-<span class="o">-</span> <span class="n">a</span><span class="p">:</span> <span class="mi">10</span>
-  <span class="n">b</span><span class="p">:</span> <span class="s1">&#39;3&#39;</span>
-<span class="n">created</span><span class="p">:</span> <span class="mi">07</span><span class="p">:</span><span class="mi">41</span><span class="n">PM</span> <span class="n">September</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">2019</span>   <span class="c1"># The date the experiment manager was initialised</span>
-</pre></div>
-</div>
-</li>
-</ul>
-</div></blockquote>
-<p>The <code class="docutils literal notranslate"><span class="pre">ExperimentManager</span></code> provides the following public interface for managing experiments:</p>
-<blockquote>
-<div><ul class="simple">
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">__init__(root)</span></code>:</dt><dd><p>Link the experiment manager with a root directory and load the experiments.yml if it exists</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">initialise(script,</span> <span class="pre">defaults)</span></code>:</dt><dd><p>Initialise an experiment set with a given script and default parameters</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">register(string_pattern)</span></code>:</dt><dd><p>Register a number of experiments overriding parameters based on the particular <code class="docutils literal notranslate"><span class="pre">string_pattern</span></code></p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">list()</span></code>:</dt><dd><p>Print all the experiments and their associated information</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">unlink(pattern)</span></code>:</dt><dd><p>Relieve the experiment manager of responsibility for all experiment names matching pattern</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">rm()</span></code>:</dt><dd><p>Delete any experiments which are no longer the responsibility of the experiment manager</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">run(string,</span> <span class="pre">options)</span></code>:</dt><dd><p>Run an experiment or all experiments (if string is <code class="docutils literal notranslate"><span class="pre">'all'</span></code>) with options prepended.</p>
-</dd>
-</dl>
-</li>
-</ul>
-</div></blockquote>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">experiment_manager</span> <span class="o">=</span> <span class="n">ExperimentManager</span><span class="p">(</span><span class="n">ROOT_PATH</span><span class="p">)</span>   <span class="c1"># Create experiment set in ROOT_PATH</span>
-<span class="n">experiment_manager</span><span class="o">.</span><span class="n">initialise</span><span class="p">(</span><span class="n">PATH_TO_SCRIPT</span><span class="p">,</span> <span class="n">PATH_TO_DEFAULTS</span><span class="p">)</span>
-<span class="n">experiment_manager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;parama: 1, paramb: [x, y]&#39;</span><span class="p">)</span>   <span class="c1"># Register a set of experiments</span>
-<span class="n">experiment_manger</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="s1">&#39;parama_1__paramb_y&#39;</span><span class="p">)</span>                    <span class="c1"># Remove an experiment</span>
-<span class="n">experiment_manager</span><span class="o">.</span><span class="n">rm</span><span class="p">()</span>                                    <span class="c1"># Get rid of any experiments no longer managed</span>
-<span class="n">experiment_run</span><span class="p">(</span><span class="s1">&#39;parama:1__paramb:x&#39;</span><span class="p">,</span> <span class="n">sh</span><span class="p">)</span>                      <span class="c1"># Run an experiment</span>
-<span class="n">experiment_run</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>                                         <span class="c1"># Run all created experiments</span>
-</pre></div>
-</div>
-</dd>
-</dl>
-<dl class="method">
-<dt id="xmen.experiment_manager.ExperimentManager.check_initialised">
-<code class="sig-name descname">check_initialised</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment_manager.ExperimentManager.check_initialised" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make sure that <code class="docutils literal notranslate"><span class="pre">'experiment.yml'</span></code>, <code class="docutils literal notranslate"><span class="pre">'script.sh'</span></code>, <code class="docutils literal notranslate"><span class="pre">'defaults.yml'</span></code> all exist in the directory</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment_manager.ExperimentManager.initialise">
-<code class="sig-name descname">initialise</code><span class="sig-paren">(</span><em class="sig-param">defaults=''</em>, <em class="sig-param">script=''</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment_manager.ExperimentManager.initialise" title="Permalink to this definition">¶</a></dt>
-<dd><p>Link an experiment manager with a <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file and <code class="docutils literal notranslate"><span class="pre">sript.sh</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>defaults</strong> (<em>str</em>) – A path to a <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code>. If “” then a <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> is searched for in the current
-work directory.</p></li>
-<li><p><strong>script</strong> (<em>str</em>) – A path to a <code class="docutils literal notranslate"><span class="pre">script.sh</span></code>. If <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> then a script.sh file is searched for in the current work
-directory.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment_manager.ExperimentManager.list">
-<code class="sig-name descname">list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment_manager.ExperimentManager.list" title="Permalink to this definition">¶</a></dt>
-<dd><p>List all experiments currently created with the experiment manager.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment_manager.ExperimentManager.load_defaults">
-<code class="sig-name descname">load_defaults</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment_manager.ExperimentManager.load_defaults" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file into a dictionary</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment_manager.ExperimentManager.load_params">
-<code class="sig-name descname">load_params</code><span class="sig-paren">(</span><em class="sig-param">experiment_path</em>, <em class="sig-param">experiment_name=False</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment_manager.ExperimentManager.load_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load parameters for an experiment. If <code class="docutils literal notranslate"><span class="pre">experiment_name</span></code> is True then experiment_path is assumed to be a
-path to the folder of the experiment else it is assumed to be a path to the <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> file.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment_manager.ExperimentManager.register">
-<code class="sig-name descname">register</code><span class="sig-paren">(</span><em class="sig-param">string_params</em>, <em class="sig-param">purpose</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment_manager.ExperimentManager.register" title="Permalink to this definition">¶</a></dt>
-<dd><p>Register a set of experiments with the experiment manager.</p>
-<p>Experiments are created by passing a yaml dictionary string of parameters to overload in the <code class="docutils literal notranslate"><span class="pre">params.yml</span></code>
-file. The special symbol <code class="docutils literal notranslate"><span class="pre">'|'</span></code> can be thought of as an or operator. When encountered each of the parameters
-either side <code class="docutils literal notranslate"><span class="pre">'|'</span></code> will be created separately with all other parameter combinations.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>string_params</strong> (<em>str</em>) – <p>A yaml dictionary of parameters to override of the form
-<code class="docutils literal notranslate"><span class="pre">'{p1:</span> <span class="pre">val11</span> <span class="pre">|</span> <span class="pre">val12,</span> <span class="pre">p2:</span> <span class="pre">val2,</span> <span class="pre">p3:</span> <span class="pre">val2</span> <span class="pre">|</span> <span class="pre">p4:</span> <span class="pre">val31</span> <span class="pre">|</span> <span class="pre">val32</span> <span class="pre">|</span> <span class="pre">val33,</span> <span class="pre">...}'</span></code>.
-The type of each parameter is inferred from its value in defaults. A ValueError will be raised if any
-of the parameter cannot be found in defaults. Parameters can be float (1.), int (1), str (a), None, and
-dictionaries {a: 1., 2.} or lists [1, 2] of these types. None parameters are specified using empty space.
-The length of list parameters must match the length of the parameter in default.
-Dictionary parameters may only be partially defined. Missing keys will be assumed
-to take there default value.</p>
-<p>The special character ‘|’ is used as an or operator. All combinations of parameters
-either side of an | operator will be created as separate experiments. In the example above
-<code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">=</span> <span class="pre">2</span> <span class="pre">*</span> <span class="pre">2</span> <span class="pre">*</span> <span class="pre">3</span> <span class="pre">=</span> <span class="pre">12</span></code> experiments will be generated representing all the possible values for
-parameters <code class="docutils literal notranslate"><span class="pre">p1</span></code>, <code class="docutils literal notranslate"><span class="pre">p3</span></code> and <code class="docutils literal notranslate"><span class="pre">p4</span></code> can take with <code class="docutils literal notranslate"><span class="pre">p2</span></code> set to <code class="docutils literal notranslate"><span class="pre">val2</span></code> for all.</p>
-</p></li>
-<li><p><strong>purpose</strong> (<em>str</em>) – An optional purpose message for the experiment.</p></li>
-</ul>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This function is currently only able to register list or dictionary parameters at the first level.
-<code class="docutils literal notranslate"><span class="pre">{a:</span> <span class="pre">{a:</span> <span class="pre">1..</span> <span class="pre">b:</span> <span class="pre">2.}</span> <span class="pre">|</span> <span class="pre">{a:</span> <span class="pre">2..</span> <span class="pre">b:</span> <span class="pre">2.}}</span></code> works creating two experiments with overloadeded dicts in each case
-but <code class="docutils literal notranslate"><span class="pre">{a:</span> <span class="pre">{a:</span> <span class="pre">1.</span> <span class="pre">|</span> <span class="pre">2.,</span>&#160; <span class="pre">b:2.}}</span></code> will fail.</p>
-</div>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment_manager.ExperimentManager.relink">
-<code class="sig-name descname">relink</code><span class="sig-paren">(</span><em class="sig-param">pattern='*'</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment_manager.ExperimentManager.relink" title="Permalink to this definition">¶</a></dt>
-<dd><p>Re-link all experiment folders that match <code class="docutils literal notranslate"><span class="pre">pattern</span></code> (and are not currently managed by the experiment
-manager)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment_manager.ExperimentManager.rm">
-<code class="sig-name descname">rm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment_manager.ExperimentManager.rm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove directories no longer linked to the experiment manager</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment_manager.ExperimentManager.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">pattern</em>, <em class="sig-param">*args</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment_manager.ExperimentManager.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run all experiments that match the global pattern using the run command given by args.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment_manager.ExperimentManager.save_params">
-<code class="sig-name descname">save_params</code><span class="sig-paren">(</span><em class="sig-param">params</em>, <em class="sig-param">experiment_name</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment_manager.ExperimentManager.save_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a dictionary of parameters at <code class="docutils literal notranslate"><span class="pre">{root}/{experiment_name}/params.yml</span></code></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>params</strong> (<em>dict</em>) – A dictionary of parameters to be saved. Can also be a CommentedMap from ruamel</p></li>
-<li><p><strong>experiment_name</strong> (<em>str</em>) – The name of the experiment</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="xmen.experiment_manager.ExperimentManager.unlink">
-<code class="sig-name descname">unlink</code><span class="sig-paren">(</span><em class="sig-param">pattern='*'</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment_manager.ExperimentManager.unlink" title="Permalink to this definition">¶</a></dt>
-<dd><p>Unlink all experiments matching pattern. Does not delete experiment folders simply deletes the experiment
-paths from the experiment folder. To delete call method <code class="docutils literal notranslate"><span class="pre">rm</span></code>.</p>
-</dd></dl>
-
-</dd></dl>
-
 </div>
 <div class="section" id="module-xmen.utils">
 <span id="utils"></span><h2>Utils<a class="headerlink" href="#module-xmen.utils" title="Permalink to this headline">¶</a></h2>
 <p>A module containing several utilitity functions, classes and Meta Classes used by the ExperimentManager
 and the Experiment classes.</p>
-<dl class="class">
+<dl class="py function">
+<dt id="xmen.utils.get_meta">
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_meta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Meta information for the system</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="xmen.utils.get_attribute_helps">
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_attribute_helps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cls</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_attribute_helps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all help files for class <code class="docutils literal notranslate"><span class="pre">cls</span></code> from doc strings from all inherited classes.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="xmen.utils.get_docs">
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_docs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cl</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_docs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all docs for every inherited class</p>
+</dd></dl>
+
+<dl class="py class">
 <dt id="xmen.utils.TypedMeta">
-<em class="property">class </em><code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">TypedMeta</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">bases</em>, <em class="sig-param">attr_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.TypedMeta" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">TypedMeta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">bases</span></em>, <em class="sig-param"><span class="n">attr_dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.TypedMeta" title="Permalink to this definition">¶</a></dt>
 <dd><p>A meta class helper used to generate automatic doc strings generated from typed class definitions. This allows
 the docstrings to be defined inside the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> body instead of inside the doc string iradicating the need
 to type attributes twice:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MyClass</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">TypedMeta</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;This class is bound to do something...&#39;&#39;&#39;</span>
-    <span class="n">a</span> <span class="nb">int</span><span class="p">:</span> <span class="mi">3</span>   <span class="c1"># My first attribute</span>
-    <span class="n">b</span> <span class="nb">int</span><span class="p">:</span> <span class="mi">5</span>   <span class="c1"># My second attribute</span>
+
+    <span class="n">a</span> <span class="nb">int</span><span class="p">:</span> <span class="mi">3</span>   <span class="c1"># @p My first attribute</span>
+    <span class="n">b</span> <span class="nb">int</span><span class="p">:</span> <span class="mi">5</span>   <span class="c1"># @p My second attribute</span>
 
  <span class="n">m</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
  <span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">__init</span><span class="o">.</span><span class="n">__</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
@@ -702,21 +428,9 @@ to type attributes twice:</p>
 <p>The doc string has automatically been updated.</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="xmen.utils.get_attribute_helps">
-<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_attribute_helps</code><span class="sig-paren">(</span><em class="sig-param">cls</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_attribute_helps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get all help files for class <code class="docutils literal notranslate"><span class="pre">cls</span></code> from doc strings from all inherited classes.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="xmen.utils.get_docs">
-<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_docs</code><span class="sig-paren">(</span><em class="sig-param">cl</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_docs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return all docs for every inherited class</p>
-</dd></dl>
-
-<dl class="function">
+<dl class="py function">
 <dt id="xmen.utils.get_git">
-<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_git</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_git" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_git</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_git" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get git information for the given path.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -740,9 +454,9 @@ to type attributes twice:</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="xmen.utils.get_version">
-<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_version</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">path=None</em>, <em class="sig-param">cls=None</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_version" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_version</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cls</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_version" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get version information for either a path to a directory or a class. Git version information is loaded
 if available.</p>
 <dl class="field-list simple">
@@ -794,78 +508,82 @@ if available.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
-          
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">xmen</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="README.html">xmen</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#the-experiment-class">The Experiment Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#the-experimentmanager-class">The ExperimentManager Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-xmen.utils">Utils</a></li>
-</ul>
-</li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="example.html" title="previous chapter">Examples</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="example.html" class="btn btn-neutral" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+  
 
+  <hr/>
 
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Rob Weston.
 
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
-
-
-
+</footer>
 
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2019, Rob Weston.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/api.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
 
-    
+    </section>
 
-    
-  </body>
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script type="text/javascript" src="_static/jquery.fancybox.min.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+  <script type="text/javascript">
+    $(function(){
+      $('.image-reference').fancybox();
+    })
+  </script>
+
+</body>
 </html>

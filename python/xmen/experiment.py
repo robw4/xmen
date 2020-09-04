@@ -60,144 +60,34 @@ class TimeoutException(Exception):
 
 
 class Experiment(object, metaclass=TypedMeta):
-    """A generic experiment type.
+    """Base class from which all other experiments derive. Experiments are defined by:
 
-    **The Experiment Class**
-    Experiments are defined by:
-
-    1. *Parameters*: public attributes to the class definition (eg. ``self.a``, ``self.b`` etc.), decalared with the
-        special parameter ``# @p`` in a comment after the definition.
+    1. *Parameters*: class attributes declared with the special parameter ``# @p`` in a comment after the definition.
     2. *Execution*: defined by overloading the ``run()`` method
 
     For example::
 
-       class AnExperiment(Experiment):
-          def __init__(self):
-             ''' Doc strings should be used to document the purpose of the experiment.
-             Parameters are defined as public class attributes. You are encouraged to
-             use inline typed parameter definitions allowing the type, default and
-             documentation for a parameter to be generated in a single line.
-             In this case Attributes documentation will be added to the docstring
-             automatically by the TypedMeta metaclass.
-             '''
-             self.a: int = 3     # @p This is the first parameter
-             self.b: str = '4'   # @p This is the second parameter
-             self.c: int = 2     # @p This is the third parameter
+        class AnExperiment(Experiment):
+             ''' Doc strings should be used to document the purpose of the experiment'''
+            # experiment parameters are defined as class attributes with an @p tag in there comment
+            a: str = 'Hello'   # @p a parameter
+            b: str = 'World!'  # @p another parameter
 
-             # Other attributes are not assumed to be parameters and cun run throughout excution
-             self.a = None   # This is not a parameter
-
-       def run(self):
-           '''The execution of an experiment is defined by overloading the run method.
-           This method should not be called directly. Instead an experiment is run by
-           calling it (eg. exp())'''.
-           print(self.a)
-           print(self.b)
-
-          # You may assume that an experiment is able to write to a folder
-          # {self.root}/{self.name}. In fact this is ENCOURAGED!
-          with open(self.directory + '/' + 'log.txt', 'w') as f:
-              f.write('experiment finished')
-
-       exp = AnExperiment()     # Experiments are instantiated with 'default' status. They cannot be run!
-
-    The ``status`` of an experiment is used to control what an experiment object is allowed to do:
-
-    * ``'default'``: When initialised (or loaded from a ``defaults.yml`` file) experiments are given a ``'default'``
-      status. In this case their parameters can be changed using the ``update()`` method call or by
-      setting parameters directly (eg. ``self.a = 3``) before saving their state to a ``defaults.yml`` through the
-      ``to_defaults()`` method call. They **cannot be executed**.
-    * ``'registered'``: In order to be executed experiments must first be ``'registered'``. In doing so an experiment
-      object is linked with a unique experiment repository, its parameters fixed, and stored in a ``params.yml file``.
-       An experiment is `registered` either through the ``register()`` method call
-       or by loading from a previously created``params.yml`` file using the method call
-      ``from_yml()``.
-
-    Additionally the following statuses are used to communicate the state of an execution:
-
-    * ``'running'``: Experiments are executed by the ``__call__`` method. Upon entering this method the experiment
-      status is changed to ``'running'`` (also updated in the ``params.yml`` file) before the ``run()`` method is
-      called.
-    * ``'finished'``: If the run executes correctly then the experiment status will be updated to ``'finished'``
-    * ``'error'``: If the run returns with an uncaught exception then the status of the experiment will be set to
-      ``'error'``.
-
-    **Interfacing with the Experiment Manager**
-    The ``Experiment`` class also provides several features in order to interface with the ``ExperimentManager``
-    class:
-
-    * *Generating Experiment Roots*: Any experiment with ``'default'`` status can be used to generate a ``defaults.yml``
-      file and an execution script (``script.sh``) through the method
-      call ``to_root()``. This allows config files to be generated from code definition. Parameters evolve as code
-      evolves: as code is versioned so to are the experiment parameters::
-
-         exp = AnExperiment()
-         exp.update({'a': 3, 'b': 'z'})
-         exp.c = 4    # Direct parameter access is also aloud
-         exp.to_root('/path/to/root/dir')
-
-    * *Loading experiments configured with the experiment manager*: Each experiment can also be loaded from a
-      ``params.yml`` file generated through the method call ``from_yml()``. In doing
-      so an experiments status is updated to ``'registered'``::
-
-         exp = AnExperiment()
-         exp.from_params_yml('/path/to/params.yml')    # The status is updated to 'registered'
-         exp()                                         # Execute the experiment
-
-    * *Communicating with the experiment manager*: Registered experiment objects are also able to save their dynamic
-      state in their ``params.yml`` file by adding to the ``messages`` dictionary. This allows ``Experiment`` objects
-      to communicate with the experiment manager through shared storage. This is achieved through the ``send_message``
-      method call::
-
-         class AnExperiment(Experiment):
-              def __init__(self)
-                   self.a: int = 3     # A param
-
-                   self._i = 0
-
-              def run(self):
-                 for i in range(1000):
-                     if i % 3 == 0:
-                        self.send_message({'step': f'self._i'})
-
-    * *Version Control*: As code evolves parameters are added or depreciated and their defaults changed. Config
-      files generated for a past experiment are no longer valid for the current version. When ``git`` is available
-      each ``defaults.yml`` has appended to it the git commit and local repo it was generated from. Similarly, this
-      process is repeated each time an experiment is created (either adding to the existing params.yml file or
-      creating a new one). This helps the user keep track of experiments versions automatically.
-
-    **Command Line Interface**
-    The class also exposes a basic main loop alongside several command line flags. For example suppose we
-    create a module at path ``path/to/an_experiment.py`` inside which lives::
-
-       from xmen.experiment import Experiment, experiment_parser
-       class AnExperiment(Experiment):
-              def __init__(self)
-                   self.a: int = 3     # A param
-
-                   self._i = 0
-
-              def run(self):
-                 for i in range(1000):
-                     if i % 3 == 0:
-                        self.send_message({'step': f'self._i'})
-
-       if __name__ == '__main__':
-            args = experiment_parser.parse()
-            exp = AnExperiment()
-            exp.main(args)
-
-    By including the last two lines we expose the command line interface. As such the module can be run from the
-    command line. For available functionality run::
-
-       path/to/an_experiment.py -h
-
+            # experiment execution code is defined in the experiments run method
+            def run(self):
+                print(f'{self.a} {self.b})
     """
     _params = {}  # Used to store parameters registered by the MetaClass
 
-    def __init__(self, name=None, root=None, purpose='', copy=True, **kwargs, ):
-        """Initialise the experiment object. If name and root are not None then the experiment is initialised in
-        default mode else it is created at '{root}/{name}'.
+    def __init__(self, root=None, name=None, purpose='', copy=True, **kwargs, ):
+        """Create a new experiment object.
+
+        Args:
+            root, name (str): If not None then the experiment will be registered to a folder ``{root}\{name}``
+            purpose (str): An optional string giving the purpose of the experiment.
+            copy (bool): If True then parameters are deep copied to the object instance from the class definition.
+                Mutable attributes will no longer be shared.
+            **kwargs: Override parameter defaults.
         """
         if copy:
             import copy
@@ -365,7 +255,7 @@ class Experiment(object, metaclass=TypedMeta):
 
     def from_yml(self, path, copy=False):
         """Load state from either a ``params.yml`` or ``defaults.yml`` file (inferred from the filename).
-        The status of the experiment will be equal to ``'default'`` if ``'defaults.yml'``
+        The status of the experiment will be updated to ``'default'`` if ``'defaults.yml'``
         file else ``'registered'`` if ``params.yml`` file."""
         import ruamel.yaml
         yaml = ruamel.yaml.YAML()
@@ -559,7 +449,7 @@ class Experiment(object, metaclass=TypedMeta):
         raise NotImplementedError('Derived classes must implement the run method in order to be called')
 
     def message(self, messages, keep='latest', leader=None):
-        """Add a message to the params.yml file.
+        """Add a message to the experiment (and an experiments params.yml file).
 
         Args:
             messages (dict): A dictionary of messages. Keys are interpreted as subjects and values interpreted as

@@ -38,6 +38,11 @@ author = 'Rob Weston'
 # The full version, including alpha/beta/rc tags
 release = '0.1'
 
+autoclass_content = 'both'
+autodoc_default_options = {
+    'member-order': 'bysource',
+}
+
 
 # -- General configuration ---------------------------------------------------
 
@@ -72,8 +77,11 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
-html_theme = 'alabaster'
+import sphinx_glpi_theme
+
+html_theme = "glpi"
+html_theme_path = sphinx_glpi_theme.get_html_themes_path()
+
 html_theme_options = {
 	'font_size': '15px',
 	'code_font_size': '11px',
