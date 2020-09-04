@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-xmen: Fast and reproducible experimentation!
+xmen: fast and reproducible experimentation!
 =============================================
 .. toctree::
    :maxdepth: 4

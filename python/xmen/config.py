@@ -364,7 +364,7 @@ class GlobalExperimentManager(object):
             if display_status:
                 display_keys += ['status']
             if display_date:
-                display_keys += ['date']
+                display_keys += ['created']
             if display_meta:
                 display_keys += list(meta_dict.keys()) + ['origin']
             if (isinstance(display_messages, str) or display_messages) and '_messages' in special_keys:

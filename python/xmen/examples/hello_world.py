@@ -15,6 +15,14 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
+from xmen import Experiment
 
-from xmen.experiment import Experiment
-from xmen.experiment import Experiment
+
+class HelloWorld(Experiment):
+    """My very first experiment"""
+    # Parameters
+    a: str = 'Hello'  # @p The first argument
+    b: str = 'World'  # @p The second argument
+
+    def run(self):
+        print(f'{self.a} {self.b}!')

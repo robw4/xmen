@@ -25,9 +25,21 @@ from xmen.config import GlobalExperimentManager
 from xmen.manager import ExperimentManager, InvalidExperimentRoot
 
 
+DESCRIPTION = [r'||||||||||||||||||||||||| WELCOME TO ||||||||||||||||||||||||||',
+               r'||                                                           ||',
+               r'||    \\\  ///  |||\\        //|||  |||||||||  |||\\   |||   ||',
+               r'||     \\\///   |||\\\      ///|||  |||        |||\\\  |||   ||',
+               r'||      ||||    ||| \\\    /// |||  ||||||     ||| \\\ |||   ||',
+               r'||     ///\\\   |||  \\\  ///  |||  |||        |||  \\\|||   ||',
+               r'||    ///  \\\  |||   \\\///   |||  |||||||||  |||   \\|||   ||',
+               r'||                                                           ||',
+               r'|||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION ||||||||||||']
+
 parser = argparse.ArgumentParser(
     prog='xmen',
-    description='Welcome to xmen!')
+    description='\n'.join(DESCRIPTION),
+    formatter_class=argparse.RawTextHelpFormatter
+)
 subparsers = parser.add_subparsers()
 
 #######################################################################################################################
