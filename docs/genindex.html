@@ -91,6 +91,8 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="README.html">Xmen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cheat-sheet.html">Cheat Sheet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 </ul>
@@ -163,6 +165,8 @@
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
  | <a href="#P"><strong>P</strong></a>
@@ -177,6 +181,12 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.manager.ExperimentManager.check_initialised">check_initialised() (xmen.manager.ExperimentManager method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.manager.ExperimentManager.clean">clean() (xmen.manager.ExperimentManager method)</a>
+</li>
       <li><a href="api.html#xmen.experiment.Experiment.created">created() (xmen.experiment.Experiment property)</a>
 </li>
   </ul></td>
@@ -198,6 +208,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.experiment.Experiment">Experiment (class in xmen.experiment)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.manager.ExperimentManager">ExperimentManager (class in xmen.manager)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -230,6 +244,32 @@
   </ul></td>
 </tr></table>
 
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.manager.ExperimentManager.initialise">initialise() (xmen.manager.ExperimentManager method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.monitor.LastStep">LastStep</a>
+</li>
+      <li><a href="api.html#xmen.manager.ExperimentManager.list">list() (xmen.manager.ExperimentManager method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.monitor.load">load() (in module xmen.monitor)</a>
+</li>
+      <li><a href="api.html#xmen.manager.ExperimentManager.load_defaults">load_defaults() (xmen.manager.ExperimentManager method)</a>
+</li>
+      <li><a href="api.html#xmen.manager.ExperimentManager.load_params">load_params() (xmen.manager.ExperimentManager method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -237,17 +277,21 @@
 </li>
       <li><a href="api.html#xmen.experiment.Experiment.message">message() (xmen.experiment.Experiment method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.experiment.Experiment.messages">messages() (xmen.experiment.Experiment property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     module
 
       <ul>
+        <li><a href="api.html#module-xmen.monitor">xmen.monitor</a>
+</li>
         <li><a href="api.html#module-xmen.utils">xmen.utils</a>
 </li>
       </ul></li>
+      <li><a href="api.html#xmen.manager.ExperimentManager.move">move() (xmen.manager.ExperimentManager method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -255,6 +299,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.experiment.Experiment.name">name() (xmen.experiment.Experiment property)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.manager.ExperimentManager.note">note() (xmen.manager.ExperimentManager method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -275,10 +323,20 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.experiment.Experiment.register">register() (xmen.experiment.Experiment method)</a>
+
+      <ul>
+        <li><a href="api.html#xmen.manager.ExperimentManager.register">(xmen.manager.ExperimentManager method)</a>
+</li>
+      </ul></li>
+      <li><a href="api.html#xmen.manager.ExperimentManager.relink">relink() (xmen.manager.ExperimentManager method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.manager.ExperimentManager.reset">reset() (xmen.manager.ExperimentManager method)</a>
+</li>
       <li><a href="api.html#xmen.experiment.Experiment.root">root() (xmen.experiment.Experiment property)</a>
+</li>
+      <li><a href="api.html#xmen.manager.ExperimentManager.run">run() (xmen.manager.ExperimentManager method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -286,10 +344,12 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#xmen.experiment.Experiment.status">status() (xmen.experiment.Experiment property)</a>
+      <li><a href="api.html#xmen.manager.ExperimentManager.save_params">save_params() (xmen.manager.ExperimentManager method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.experiment.Experiment.status">status() (xmen.experiment.Experiment property)</a>
+</li>
       <li><a href="api.html#xmen.experiment.Experiment.stdout_to_txt">stdout_to_txt() (xmen.experiment.Experiment method)</a>
 </li>
   </ul></td>
@@ -312,7 +372,13 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.manager.ExperimentManager.unlink">unlink() (xmen.manager.ExperimentManager method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.experiment.Experiment.update">update() (xmen.experiment.Experiment method)</a>
+</li>
+      <li><a href="api.html#xmen.manager.ExperimentManager.update_meta">update_meta() (xmen.manager.ExperimentManager method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -327,6 +393,15 @@
 
 <h2 id="X">X</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    xmen.monitor
+
+      <ul>
+        <li><a href="api.html#module-xmen.monitor">module</a>
+</li>
+      </ul></li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     xmen.utils

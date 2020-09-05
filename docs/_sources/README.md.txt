@@ -10,31 +10,28 @@
 ||                                                           ||
 |||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION ||||||||||||
 ```
-## What?
-Define An Experiment
-  ```python
-  # xmen/examples/hello_world.py
-  from xmen import Experiment
-  class HelloWorld(Experiment):
-      """Experiments are defined classes"""
-      # Parameters
-      a: str = 'Hello'  # @p The first argument
-      b: str = 'World' # @p The second argument
+## xmen
+1. Define experiments in python
+    ```python
+    # xmen/examples/hello_world.py
+    from xmen import Experiment
 
-      def run(self):
-          print(f'{a} {b}!')
-  ```
+    class HelloWorld(Experiment):
+        """Experiments are defined classes"""
+        # Parameters
+        a: str = 'Hello'  # @p The first argument
+        b: str = 'World' # @p The second argument
 
-Regsiter with the experiment manager
-  ```bash
-  >> xmen py --add xmen.examples.hello_world HelloWorld
-  ```
-
+        def run(self):
+            print(f'{a} {b}!')
+    ```
+2. Add to the experiment manager
+    ```bash
+    >> xmen py --add xmen.examples.hello_world HelloWorld
+    ```
 __Xmen will take it from here...__
-
-- Help Generation
+- _Help generation_ `>>> xmen py HelloWorld --help`
   ```bash
-  >> xmen py --help
   ...
   My very first experiment
 
@@ -43,84 +40,64 @@ __Xmen will take it from here...__
        a (str): The first argument (default='Hello')
        b (str): The second argument (default='World')
   ```
-- Automatic run script generation
+- _Command line interface_ `>>> xmen py HelloWorld -x /tmp/hello_world`
   ```bash
-  >> xmen py -x /tmp/hello_world   # run an experiment
   Hello World!
   ```
-- Built in argument parser
+- _Argument parser_ `>>> xmen py HelloWorld -u "{a: Bye Bye, b: Planet}" -x /tmp/bye_bye_planet`
   ```bash
-  >> xmen py -u "{a: Bye Bye, b: Planet}" -x /tmp/bye_bye_planet   # set parameters
   Bye Bye Planet!
   ```
-- Automatic versioning and logging
+- _Built in versioning and records_ `>>> xmen list /tmp/bye_bye_planet`
   ```bash
-  >> cat /tmp/bye_bye_planet/params.yml
-  _created: 09-04-20-18:27:01  #  The date the experiment was created (default=now_time)
-  _messages: {} #  Messages left by the experiment (default={})
-  _meta: #  The global configuration for the experiment manager (default=None)
-    mac: '0x6c96cfdb71b9'
-    host: robw-macbook-2.local
-    user: robweston
-    home: /Users/robweston
-  _name: bye_bye_planet #  The name of the experiment (under root) (default=None)
-  _purpose: '' #  A description of the experiment purpose (default=None)
-  _root: /tmp #  The root directory of the experiment (default=None)
-  _status: finished #  One of ['default' | 'created' | 'running' | 'error' | 'finished'] (default='default')
-  _version: #  Experiment version information. See `get_version` (default=None)
+  _root: /tmp/hello_world_experiments
+  _name: a=Bye__b=Planet
+  _status: registered
+  _created: 2020-09-05-12-22-20
+  _messages:
+  _version:
     module: /Users/robweston/xmen/python/xmen/examples/hello_world.py
     class: HelloWorld
     git:
       local: /Users/robweston/xmen
       remote: https://github.com/robw4/xmen.git
-      commit: 2178773b46a982f67140fd5cef42ae56014b6716
+      commit: 93e5309e0f333419e1cebf49903fdb08df1a5af6
       branch: master
-  a: Bye Bye #  The first argument (default='Hello')
-  b: Planet #  The second argument (default='World')
+  _meta:
+    mac: 0x6c96cfdb71b9
+    host: robw-macbook-2.local
+    user: robweston
+    home: /Users/robweston
+  a: Bye
+  b: Planet
   ```
-- Rapid config generation and experimentation
-  ```bash
-  >> mkdir /tmp/exps && cd /tmp/exps
-  >> xmen init -n HelloWorld -r .
-  >> xmen register -u "{a: Hello | Bye, b: World | Planet}"
-  >> xmen list -ds -p ".*"
-     root               name      status              created      a       b
-  0  exps   a=Hello__b=World  registered  2020-09-04-18-36-12  Hello   World
-  1  exps  a=Hello__b=Planet  registered  2020-09-04-18-36-11  Hello  Planet
-  2  exps     a=Bye__b=World  registered  2020-09-04-18-36-11    Bye   World
-  3  exps    a=Bye__b=Planet  registered  2020-09-04-18-36-10    Bye  Planet
-  >> xmen run "*" bash
-  Bye Planet!
-  Bye World!
-  Hello Planet!
-  Hello World!
-  >> xmen list -ds -p ".*"
-     root               name    status              created      a       b
-  0  exps   a=Hello__b=World  finished  2020-09-04-18-44-45  Hello   World
-  1  exps  a=Hello__b=Planet  finished  2020-09-04-18-44-44  Hello  Planet
-  2  exps     a=Bye__b=World  finished  2020-09-04-18-44-43    Bye   World
-  3  exps    a=Bye__b=Planet  finished  2020-09-04-18-44-43    Bye  Planet
-  ```
-- slurm job Scheduler compatibility
-```bash
-xmen run "*" sbatch
-```
-
-__and much, much much more!__
+- _Rapid experimentation_
+    ```bash
+    # Initialise Experiment Set
+    >>> xmen init -n HelloWorld -r .
+    # Register Experiments
+    >>> xmen register -u "{a: Hello | Bye, b: World | Planet}"
+    # Visulaise
+    >>> xmen list -ds -p ".*"
+       root               name      status              created      a       b
+    0  exps   a=Hello__b=World  registered  2020-09-04-18-36-12  Hello   World
+    1  exps  a=Hello__b=Planet  registered  2020-09-04-18-36-11  Hello  Planet
+    2  exps     a=Bye__b=World  registered  2020-09-04-18-36-11    Bye   World
+    3  exps    a=Bye__b=Planet  registered  2020-09-04-18-36-10    Bye  Planet
+    # Run
+    >>> xmen run "*" bash
+    >>> xmen run "*" screen -dm bash
+    >>> xmen run "*" docker ...
+    >>> xmen run "*" sbatch
+    ```
+__... and much, much more!__
 
 ## Installation
-To install xmen run:
 ```bash
-git clone https://github.com/robw4/xmen.git ~/xmen
-pip install ~/xmen/python
+>>> git clone https://github.com/robw4/xmen.git ~/xmen
+>>> pip install ~/xmen/python
+>>> xmen --help
 ```
-To check that everything has run currectly run:
-
-```bash
-xmen --help
-```
-which should display:
-
 ```
 usage: xmen [-h]
             {py,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
@@ -157,28 +134,27 @@ optional arguments:
 
 ## Tutorials, Examples, Documentation
 Full documentation and examples can be found [here](https://robw4.github.io/xmen/).
-
 Several examples are included as part of the repo and can be run as,
-
+  
 ```bash
-python -m xmen.examples.hello_world --help
+>>> python -m xmen.examples.hello_world --help
 ```
 
 ## Dependencies
 - Core Xmen dependencies:
   - `python>=3.6`
-  - ruamel.yaml
-  - git-python
-  - pandas
+  - `ruamel.yaml`
+  - `git-python`
+  - `pandas`
+- Optional Dependencies
+  - ``pytorch``
+  - ``tensorboard``
 - Documentation:
-  - sphinx
-  - recommonmark
-  - nbsphinx
+  - `sphinx`
+  - `recommonmark`
+  - `nbsphinx`
 
 ## Author, Issues, Contributions
-Xmen was created and is managed by Rob Weston (robw@robots.ox.ac.uk)
-
-Author: Rob Weston
-Email: robw@robots.ox.ac.uk
-
-Any issues, file an issue or contact me! If you would like to contribute make a pull requests :)
+- Xmen was created and is managed by Rob Weston (robw@robots.ox.ac.uk) 
+- Any issues, file an issue or contact me! 
+- If you would like to contribute make a pull requests :)

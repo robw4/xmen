@@ -7,11 +7,17 @@ The Experiment Class
 .. autoclass:: xmen.experiment.Experiment
    :members:
 
-
 The ExperimentManager Class
 --------------------------------
-.. autoclass:: xmen.experiment_manager.ExperimentManager
+.. autoclass:: xmen.manager.ExperimentManager
    :members:
+
+
+The Monitor Class
+--------------------------------
+.. automodule:: xmen.monitor
+   :members:
+   :show-inheritance:
 
 
 Utils

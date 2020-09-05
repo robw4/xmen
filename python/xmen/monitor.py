@@ -15,8 +15,22 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-"""A generic torch experiment implementation. This will be moved to a seperate repo"""
+#
+#  xmen
+#  email:   robw@robots.ox.ac.uk
+#  github: https://github.com/robw4/xmen/
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#   along with this program. If not, see <http://www.gnu.org/licenses/>.
 import time
 import datetime
 import glob
@@ -27,10 +41,6 @@ import warnings
 import os
 import logging
 logging.basicConfig(format='%(message)s')
-
-with warnings.catch_warnings():
-    warnings.filterwarnings('ignore', category=FutureWarning, append=True)
-    import torch.utils.tensorboard as tb
 
 TRIGGERS = ['step', 'epoch', 'era', 'eon', 'supereon']
 BRIEF = {"step": "s", "epoch": "e", "era": "er", "eon": "eo", "supereon": "se"}
@@ -312,6 +322,10 @@ class TensorboardLogger(Hook):
 
     def __call__(self, var_dict, monitor):
         if len(var_dict) > 0:
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore', category=FutureWarning, append=True)
+                import torch.utils.tensorboard as tb
+
             if not os.path.join(monitor.directory, 'summaries'):
                 os.makedirs(os.path.join(monitor.directory, 'summaries'))
             tb_writer = tb.SummaryWriter(os.path.join(monitor.directory, 'summaries'))

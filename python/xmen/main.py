@@ -382,54 +382,69 @@ def _list(args):
     if len(args.pattern) > 1:
         print(f'ERROR: Only one pattern may be passed but got {args.pattern}')
     pattern = os.path.abspath(os.path.expanduser(args.pattern[0]))
-    if pattern == '':
-        pattern = os.path.join(os.getcwd() + '*')
-    global_exp_manager = GlobalExperimentManager()
 
-    if args.list:
-        results = global_exp_manager.find(
-            mode='set', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
-            load_defaults=True)
-        notes = []
-        for i, (r, e, p, n, d, t) in enumerate(
-                zip(*[results[j] for j in ('_root', '_experiments', '_purpose', '_notes', '_created', '_type')])):
-            k = 5
-            i = str(i)
-            note = ' ' * (k // 2 - len(str(i))) + str(i) + ' ' * (k // 2 - 1) + r + '\n' + ' ' * k
-            if len(e) > 0:
-                note += ('\n' + ' ' * k).join(['|- ' + ee[len(r) + 1:] for ee in e]) + '\n' + ' ' * k
-            note += 'Purpose: ' + p + '\n' + ' ' * k
-            note += 'Created: ' + d + '\n' + ' ' * k
-            note += 'Type: ' + str(t)
-            if len(n) > 0:
-                note += '\n' + ' ' * k + 'Notes: ' + '\n' + ' ' * (k + 2)
-                note += ('\n' + ' ' * (k + 2)).join(
-                    ['\n'.join(textwrap.wrap(nn, width=1000, subsequent_indent=' ' * (k + 3))) for i, nn in
-                     enumerate(n)])
-            notes += [note]
-        print('\n'.join(notes))
+    if pattern == '':
+        pattern = os.path.join(os.getcwd())
+
+    params = os.path.join(pattern, 'params.yml')
+    if os.path.exists(params):
+        import ruamel.yaml
+        from xmen.utils import recursive_print_lines
+        with open(os.path.join(params), 'r') as params_yml:
+            params = ruamel.yaml.load(params_yml, ruamel.yaml.RoundTripLoader)
+            lines = recursive_print_lines(params)
+            for l in lines:
+                print(l)
     else:
-        results = global_exp_manager.find(
-            mode='all', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
-            load_defaults=args.load_defaults)
-        data_frame, root = global_exp_manager.find_to_dataframe(
-            results,
-            verbose=args.verbose,
-            display_git=args.display_git,
-            display_purpose=args.display_purpose,
-            display_date=args.display_date,
-            display_messages=args.display_messages,
-            display_meta=args.display_meta,
-            display_status=args.display_status)
-        if data_frame.empty:
-            print(f'No experiments found which match glob pattern {pattern}. With parameter filter = {args.param_match}'
-                  f' and type filter = {args.type_match}.')
+        if args.pattern[0] == '':
+            pattern += '*'
+        global_exp_manager = GlobalExperimentManager()
+        if args.list:
+            results = global_exp_manager.find(
+                mode='set', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
+                load_defaults=True)
+            notes = []
+            for i, (r, e, p, n, d, t) in enumerate(
+                    zip(*[results[j] for j in ('_root', '_experiments', '_purpose', '_notes', '_created', '_type')])):
+                k = 5
+                i = str(i)
+                note = ' ' * (k // 2 - len(str(i))) + str(i) + ' ' * (k // 2 - 1) + r + '\n' + ' ' * k
+                if len(e) > 0:
+                    note += ('\n' + ' ' * k).join(['|- ' + ee[len(r) + 1:] for ee in e]) + '\n' + ' ' * k
+                note += 'Purpose: ' + p + '\n' + ' ' * k
+                note += 'Created: ' + d + '\n' + ' ' * k
+                note += 'Type: ' + str(t)
+                if len(n) > 0:
+                    note += '\n' + ' ' * k + 'Notes: ' + '\n' + ' ' * (k + 2)
+                    note += ('\n' + ' ' * (k + 2)).join(
+                        ['\n'.join(textwrap.wrap(nn, width=1000, subsequent_indent=' ' * (k + 3))) for i, nn in
+                         enumerate(n)])
+                notes += [note]
+            print('\n'.join(notes))
         else:
-            if args.csv:
-                print(data_frame.to_csv())
+            print(pattern)
+            results = global_exp_manager.find(
+                mode='all', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
+                load_defaults=args.load_defaults)
+            print(results)
+            data_frame, root = global_exp_manager.find_to_dataframe(
+                results,
+                verbose=args.verbose,
+                display_git=args.display_git,
+                display_purpose=args.display_purpose,
+                display_date=args.display_date,
+                display_messages=args.display_messages,
+                display_meta=args.display_meta,
+                display_status=args.display_status)
+            if data_frame.empty:
+                print(f'No experiments found which match glob pattern {pattern}. With parameter filter = {args.param_match}'
+                      f' and type filter = {args.type_match}.')
             else:
-                print(data_frame)
-            print(f'\nRoots relative to: {root}')
+                if args.csv:
+                    print(data_frame.to_csv())
+                else:
+                    print(data_frame)
+                print(f'\nRoots relative to: {root}')
 
 list_parser.set_defaults(func=_list)
 

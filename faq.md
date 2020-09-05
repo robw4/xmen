@@ -1,3 +1,5 @@
+# FAQ
+
 ## Create a frozen package
 This will allow the code to be distributed as a single complete repo (including the python interpreter).
 

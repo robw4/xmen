@@ -57,6 +57,5 @@ When initially installed the repository also contains a prebuilt doucmentation f
 open ~/xmen/docs/_build/html/index.html
 ```
 
-
 ## Contributing
 For additional features/ bugs please file an `https://github.com/robw4/xmen` and feel free to make changes yourself before sending a pull request.

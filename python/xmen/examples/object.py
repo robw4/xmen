@@ -111,7 +111,7 @@ class MnistCGan(Experiment):
     def run(self):
         """Train the mnist dataset for a fixed number of epochs running an
         inference loop after every epoch."""
-        from xmen.torch.monitor import Monitor, TensorboardLogger
+        from xmen.monitor import Monitor, TensorboardLogger
         from xmen.examples.models import weights_init, set_requires_grad
         from torch.distributions import Normal
         from torch.distributions.one_hot_categorical import OneHotCategorical
