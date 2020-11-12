@@ -332,6 +332,7 @@ class TensorboardLogger(Hook):
             monitor.log(f'saved tb {self.type} summaries for {list(var_dict.keys())} at {monitor.directory}')
             # print(monitor.directory, 'summaries')
             for k, v in var_dict.items():
+                v = v.detach().clone()
                 k = self.prefix + k
                 if v is not None:
                     if self.process_func is not None:

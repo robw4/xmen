@@ -613,6 +613,20 @@ class Experiment(object, metaclass=TypedMeta):
                 print(f'WARNING: The --execute flag was passed but run is not implemented for {self.__class__}')
                 pass
 
+    @classmethod
+    def functional(cls, func):
+        def _func(*args, **kwargs):
+            exp = cls()
+            exp.parse_args()
+            if exp.status not in ['default']:
+                with exp:
+                    x = func(exp)
+                return x
+            else:
+                print('To run an experiment please register first. See --help for more options')
+
+        return _func
+
     def stdout_to_txt(self):
         """Configure stdout to also log to a text file in the experiment directory"""
         sys.stdout = MultiOut(sys.__stdout__, open(os.path.join(self.directory, 'out.txt'), 'a+'))

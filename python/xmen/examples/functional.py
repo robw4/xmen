@@ -16,6 +16,9 @@
 #  the Free Software Foundation; either version 3 of the License, or
 #  (at your option) any later version.
 from typing import Tuple
+import sys
+sys.path.append('/home/robw/projects/xmen/python')
+
 import os
 try:
     import torch
@@ -24,11 +27,88 @@ except ImportError:
 from xmen.experiment import Experiment
 
 
+def functional_experiment(func):
+    import inspect
+    Exp = type(func.__name__, (Experiment,), {})
+    signature = inspect.signature(func)
+    src = '*'.join(inspect.getsource(func).split('*')[1:])
+    lines = []
+    names = []
+    for k in signature.parameters:
+        p = signature.parameters[k]
+        if p.kind == inspect.Parameter.KEYWORD_ONLY:
+            ty = p.annotation
+            if ty == inspect.Parameter.empty:
+                ty = None
+
+            default = p.default
+            if default == inspect.Parameter.empty:
+                default = None
+
+            if ty is not None:
+                if not isinstance(ty, str):
+                    string = getattr(ty, '__name__', None)
+                    if string is not None:
+                        string = str(string).replace('.typing', '')
+                    ty = string
+
+            comment = p.name.join(src.split(p.name)[1:]).split('\n')[0].split('#')
+            if len(comment) == 2:
+                comment = comment[-1]
+            else:
+                comment = None
+            # Generate attribute lines
+            help_string = f'    {p.name}'
+            if p.annotation is not None:
+                help_string += f' ({ty}):'
+            else:
+                help_string += ':'
+            if comment is not None:
+                help_string += f' {comment.strip()}'
+            if default is not None:
+                help_string += f' (default={default})'
+            lines += [help_string]
+            # cls._params.update({attr.strip(' '): (default, ty, comment, help_string, cls.__name__)})
+            setattr(Exp, p.name, default)
+            Exp._params.update({p.name: (default, ty, comment, help_string, func.__name__)})
+
+        Exp.__doc__ = ''
+        if func.__doc__ is not None:
+            Exp.__doc__ = func.__doc__
+
+        if len(lines) > 0:
+            Exp.__doc__ += '\n\nParameters:\n'
+            Exp.__doc__ += '\n'.join(lines)
+    return Exp
+
+
+def functional(func):
+    cls = functional_experiment(func)
+    exp = cls()
+    exp.parse_args()
+
+    params = {k: v for k, v in exp.__dict__.items() if not k.startswith('_')}
+
+    def _func(*args, **kwargs):
+        if len(args) < 2 and len(kwargs) == 0:
+            if exp.status not in ['default']:
+                with exp:
+                    x = func(exp, **params)
+                return x
+            else:
+                print('To run an experiment please register first. See --help for more options')
+        else:
+            return func(*args, **kwargs)
+
+    return _func
+
+
 def get_datasets(cy, cz, b, ngpus, ncpus, ns, data_root, hw, **kwargs):
     """Returns a dictionary of iterable get_datasets for modes 'train' (label image pairs)
     and 'inference' (just inputs spanning the prediction space)"""
     from torch.utils.data import DataLoader
     from torchvision.datasets.mnist import MNIST
+    from torch.distributions import Normal
     import torchvision.transforms as T
 
     def to_target(y):
@@ -54,106 +134,99 @@ def get_datasets(cy, cz, b, ngpus, ncpus, ns, data_root, hw, **kwargs):
             zip(y.unsqueeze(0), z.unsqueeze(0)))}  # Turn into batches
 
 
-def to_target(y):
-    Y = torch.zeros([X.cy])
-    Y[y] = 1.
-    return Y.reshape([X.cy, 1, 1])
-
-
-class MnistCGan(Experiment):
-    b: int = 128  # @p the batch size per gpu
-    hw0: Tuple[int, int] = (4, 4)  # @p the height and width of the image
-    nl: int = 4  # @p The number of levels in the discriminator.
-    data_root: str = os.getenv("HOME") + '/data/mnist'  # @p the root data directory
-    cx: int = 1  # @p the dimensionality of the image input
-    cy: int = 10  # @p the dimensionality of the conditioning vector
-    cf: int = 512  # @p the number of features after the first conv in the discriminator
-    cz: int = 100  # @p the dimensionality of the noise vector
-    ncpus: int = 8  # @p the number of threads to use for data loading
-    ngpus: int = 1  # @p the number of gpus to run the model on
-    epochs: int = 20  # @p no. of epochs to train for
-    gan: str = 'lsgan'  # @p the gan type to use (one of ['vanilla', 'lsgan'])
-    lr: float = 0.0002  # @p learning rate
-    betas: Tuple[float, float] = (0.5, 0.999)  # @p The beta parameters for the
+@functional
+def main(
+    X,  # The first argument is always a monitor
+    *,
+    b: int = 128,  # the batch size per gpu
+    hw0: Tuple[int, int] = (4, 4),  # the height and width of the image
+    nl: int = 4,  # the number of levels in the discriminator.
+    data_root: str = os.getenv("HOME") + '/data/mnist',  # @p the root data directory
+    cx: int = 1,
+    cy: int = 10,  # the dimensionality of the conditioning vector
+    cf: int = 512,  # the number of features after the first conv in the discriminator
+    cz: int = 100,  # the dimensionality of the noise vector
+    ncpus: int = 8,  # the number of threads to use for data loading
+    ngpus: int = 1,  # the number of gpus to run the model on
+    epochs: int = 20,  # no. of epochs to train for
+    gan: str = 'lsgan',  # the gan type to use (one of ['vanilla', 'lsgan'])
+    lr: float = 0.0002,  # learning rate
+    betas: Tuple[float, float] = (0.5, 0.999),  # the beta parameters for the
     # Monitoring parameters
-    checkpoint: str = 'nn_.*@1e'  # @p
-    log: str = 'loss_.*@20s'  # @p log scalars
-    sca: str = 'loss_.*@20s'  # @p tensorboard scalars
-    img: str = '_x_|x$@20s'  # @p tensorboard images
-    time: str = ('@20s', '@1e')  # @p timing modulos
-    nimg: int = 64  # @p The maximum number of images to display to tensorboard
-    ns: int = 5  # @p The number of samples to generate at inference
-
-    @property
-    def hw(self): return [d * 2 ** self.nl for d in self.hw0]
-
-    @property
-    def device(self): return 'cuda' if torch.cuda.is_available() else 'cpu'
-
-
-if __name__ == '__main__':
-    import logging
-    logger = logging.getLogger()
-    logger.setLevel('INFO')
+    checkpoint: str = 'nn_.*@1e',  # checkpoint at this modulo string
+    log: str = 'loss_.*@20s',  # log scalars
+    sca: str = 'loss_.*@20s',  # tensorboard scalars
+    img: str = '_x_|x$@20s',  # tensorboard images
+    time: str = ('@20s', '@1e'),  # timing modulos
+    nimg: int = 64,  # the maximum number of images to display to tensorboard
+    ns: int = 5  # the number of samples to generate at inference)
+):
+    print(X.__doc__)
     from xmen.monitor import Monitor, TensorboardLogger
     from xmen.examples.models import weights_init, set_requires_grad, GeneratorNet, DiscriminatorNet
     from torch.distributions import Normal
     from torch.distributions.one_hot_categorical import OneHotCategorical
     from torch.optim import Adam
+    import logging
 
-    # parse command line arguments
-    experiment = MnistCGan()
-    experiment.parse_args()
+    hw = [d * 2 ** nl for d in hw0]
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    with experiment as X:
-        # dataset
-        datasets = get_datasets(
-            X.cy, X.cz, X.b, X.ngpus, X.ncpus, X.ns, X.data_root, X.hw)
-        # models
-        nn_g = GeneratorNet(X.cy, X.cz, X.cx, X.cf, X.hw0, X.nl)
-        nn_d = DiscriminatorNet(X.cx, X.cy, X.cf, X.hw0, X.nl)
-        nn_g = nn_g.to(X.device).float().apply(weights_init)
-        nn_d = nn_d.to(X.device).float().apply(weights_init)
-        # distributions
-        pz = Normal(torch.zeros([X.cz]), torch.ones([X.cz]))
-        py = OneHotCategorical(probs=torch.ones([X.cy]) / X.cy)
-        # optimisers
-        op_d = Adam(nn_d.parameters(), lr=X.lr, betas=X.betas)
-        op_g = Adam(nn_g.parameters(), lr=X.lr, betas=X.betas)
-        # monitor
-        m = Monitor(
-            X.directory, checkpoint=X.checkpoint,
-            log=X.log, sca=X.sca, img=X.img,
-            time=('@20s', '@1e'),
-            img_fn=lambda x: x[:min(X.nimg, x.shape[0])],
-            hooks=[TensorboardLogger('image', '_xi_$@1e', nrow=10)])
+    logger = logging.getLogger()
+    logger.setLevel('INFO')
+    # dataset
+    datasets = get_datasets(
+        cy, cz, b, ngpus, ncpus, ns, data_root, hw)
+    # models
+    nn_g = GeneratorNet(cy, cz, cx, cf, hw0, nl)
+    nn_d = DiscriminatorNet(cx, cy, cf, hw0, nl)
+    nn_g = nn_g.to(device).float().apply(weights_init)
+    nn_d = nn_d.to(device).float().apply(weights_init)
+    # distributions
+    pz = Normal(torch.zeros([cz]), torch.ones([cz]))
+    py = OneHotCategorical(probs=torch.ones([cy]) / cy)
+    # optimisers
+    op_d = Adam(nn_d.parameters(), lr=lr, betas=betas)
+    op_g = Adam(nn_g.parameters(), lr=lr, betas=betas)
 
-        for _ in m(range(X.epochs)):
-            # (1) train
-            for x, y in m(datasets['train']):
-                # process input
-                x, y = x.to(X.device), y.to(X.device).float()
-                b = x.shape[0]
-                # discriminator step
-                set_requires_grad([nn_d], True)
-                op_d.zero_grad()
-                z = pz.sample([b]).reshape([b, X.cz, 1, 1]).to(X.device)
-                _x_ = nn_g(y, z)
-                loss_d = nn_d((x, y), True) + nn_d((_x_.detach(), y.detach()), False)
-                loss_d.backward()
-                op_d.step()
-                # generator step
-                op_g.zero_grad()
-                y = py.sample([b]).reshape([b, X.cy, 1, 1]).to(X.device)
-                z = pz.sample([b]).reshape([b, X.cz, 1, 1]).to(X.device)
-                _x_ = nn_g(y, z)
-                set_requires_grad([nn_d], False)
-                loss_g = nn_d((_x_, y), True)
-                loss_g.backward()
-                op_g.step()
-            # (2) inference
-            if 'inference' in datasets:
-                with torch.no_grad():
-                    for yi, zi in datasets['inference']:
-                        yi, zi = yi.to(X.device), zi.to(X.device)
-                        _xi_ = nn_g(yi, zi)
+    # monitor
+    m = Monitor(
+        X.directory, checkpoint=checkpoint,
+        log=log, sca=sca, img=img,
+        time=('@20s', '@1e'),
+        img_fn=lambda x: x[:min(nimg, x.shape[0])],
+        hooks=[TensorboardLogger('image', '_xi_$@1e', nrow=10)])
+
+    for _ in m(range(epochs)):
+        # (1) train
+        for x, y in m(datasets['train']):
+            # process input
+            x, y = x.to(device), y.to(device).float()
+            b = x.shape[0]
+            # discriminator step
+            set_requires_grad([nn_d], True)
+            op_d.zero_grad()
+            z = pz.sample([b]).reshape([b, cz, 1, 1]).to(device)
+            _x_ = nn_g(y, z)
+            loss_d = nn_d((x, y), True) + nn_d((_x_.detach(), y.detach()), False)
+            loss_d.backward()
+            op_d.step()
+            # generator step
+            op_g.zero_grad()
+            y = py.sample([b]).reshape([b, cy, 1, 1]).to(device)
+            z = pz.sample([b]).reshape([b, cz, 1, 1]).to(device)
+            _x_ = nn_g(y, z)
+            set_requires_grad([nn_d], False)
+            loss_g = nn_d((_x_, y), True)
+            loss_g.backward()
+            op_g.step()
+        # (2) inference
+        if 'inference' in datasets:
+            with torch.no_grad():
+                for yi, zi in datasets['inference']:
+                    yi, zi = yi.to(device), zi.to(device)
+                    _xi_ = nn_g(yi, zi)
+
+
+if __name__ == '__main__':
+    main()

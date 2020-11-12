@@ -106,44 +106,83 @@ def get_docs(cl):
         return [cl.__doc__] + get_docs(cl.__base__)
 
 
-def get_parameters(cls):
-    code = inspect.getsource(cls.__init__)
-    lines = code.splitlines()
-    new_lines = []
-    # new_lines = ['', '', 'Attributes:']
+def get_parameters(lines, name):
+    params = {}
+    helps = []
     for l in lines:
-        if 'self.' in l and 'self._' not in l:
+        # if l.startswith(indent * ' ' + 'self.')  and 'self._' not in l:
+        # All parameters will have a comment
+        if not l.replace(' ', '').startswith('#') and '#@p' in l.replace(' ', ''):
             l = l.strip()
-            default = l.split('=')[1] if '=' in l else None  # default always appears after = and before comment
-            comment = l.split('#')[1] if '#' in l else None  # comment always appears after #
-            if comment is not None and default is not None:
-                default = default.split('#')[0].strip()
+            # default always appears after = and before comment
+            default = l.split('=')[1].split('#')[0].strip() if '=' in l else None
+            # comment always appears after #@p
+            comment = l.split('@p')[1].strip() if len(l.split('@p')) > 1 else None
+            if comment == '':
+                comment = None
+            # New line
+            l = l.split('#')[0]
+            l = l.split('=')[0]
             ty = None
             if ':' in l:  # self.a: int ...
-                attr = l.split(':')[0].replace('self.', '')
-                if '=' in l:
-                    ty = l.split(':')[1].split('=')[0].strip()
-                elif '#' in l:
-                    ty = l.split(':')[1].split('#')[0].strip()
-                else:
-                    ty = l.split(':')[1].strip()
-            elif '=' in l:  # self.a = 3 ....
-                attr = l.split('=')[0].replace('self.', '')
-            elif '#' in l:  # self.a # Some docs
-                attr = l.split('#')[0].replace('self.', '')
+                attr = l.split(':')[0].replace('self.', '').strip()
+                ty = l.split(':')[1].strip()
             else:  # self.a (already stripped)
-                attr = l.replace('self.', '')
+                attr = l.replace('self.', '').strip()
             # Generate attribute lines
-            new_line = f'    {attr}'
+            help_string = f'    {attr}'
             if ty is not None:
-                new_line += f' ({ty}):'
+                help_string += f' ({ty}):'
             else:
-                new_line += ':'
+                help_string += ':'
             if comment is not None:
-                new_line += f' {comment.strip()}'
+                help_string += f' {comment.strip()}'
             if default is not None:
-                new_line += f' (default={default})'
-            new_lines += [new_line]
+                help_string += f' (default={default})'
+            # Log parameters
+            params.update({attr.strip(' '): (default, ty, comment, help_string, name)})
+            helps += [help_string]
+        return params, helps
+
+
+# def get_parameters(cls):
+#     code = inspect.getsource(cls.__init__)
+#     lines = code.splitlines()
+#     new_lines = []
+#     # new_lines = ['', '', 'Attributes:']
+#     for l in lines:
+#         if 'self.' in l and 'self._' not in l:
+#             l = l.strip()
+#             default = l.split('=')[1] if '=' in l else None  # default always appears after = and before comment
+#             comment = l.split('#')[1] if '#' in l else None  # comment always appears after #
+#             if comment is not None and default is not None:
+#                 default = default.split('#')[0].strip()
+#             ty = None
+#             if ':' in l:  # self.a: int ...
+#                 attr = l.split(':')[0].replace('self.', '')
+#                 if '=' in l:
+#                     ty = l.split(':')[1].split('=')[0].strip()
+#                 elif '#' in l:
+#                     ty = l.split(':')[1].split('#')[0].strip()
+#                 else:
+#                     ty = l.split(':')[1].strip()
+#             elif '=' in l:  # self.a = 3 ....
+#                 attr = l.split('=')[0].replace('self.', '')
+#             elif '#' in l:  # self.a # Some docs
+#                 attr = l.split('#')[0].replace('self.', '')
+#             else:  # self.a (already stripped)
+#                 attr = l.replace('self.', '')
+#             # Generate attribute lines
+#             new_line = f'    {attr}'
+#             if ty is not None:
+#                 new_line += f' ({ty}):'
+#             else:
+#                 new_line += ':'
+#             if comment is not None:
+#                 new_line += f' {comment.strip()}'
+#             if default is not None:
+#                 new_line += f' (default={default})'
+#             new_lines += [new_line]
 
 
 class TypedMeta(type):
@@ -172,6 +211,7 @@ class TypedMeta(type):
 
     The doc string has automatically been updated.
     """
+
     def __init__(cls, name, bases, attr_dict):
         super(TypedMeta, cls).__init__(name, bases, attr_dict)
         import copy
@@ -237,7 +277,13 @@ class TypedMeta(type):
 
         # Inspect the cls body for parameter definitions
         helps = []
-        cls_source = inspect.getsource(cls)
+
+        try:
+            cls_source = inspect.getsource(cls)
+        except OSError:
+            # If the cls has no source code than all of the above cannot be executed
+            return
+
         if cls.__doc__ is not None:
             # Remove the doc string
             cls_source = cls_source.replace(cls.__doc__, "")
