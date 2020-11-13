@@ -386,7 +386,7 @@ def get_git(path):
     return info
 
 
-def get_version(*, path=None, cls=None):
+def get_version(*, path=None, cls=None, fn=None):
     """Get version information for either a path to a directory or a class. Git version information is loaded
     if available.
 
@@ -406,14 +406,19 @@ def get_version(*, path=None, cls=None):
                 * ``'git_commit'``: The hash of the commit
                 * ``'git_remote'``: The remote url if has remote else ``None``
     """
-    if (path is None) == (cls is None):
+    if (path is None) == (cls is None) == (fn is None):
         raise ValueError('Exactly one of path or class must be set!')
 
     if cls is not None:
         # Note: inspecting cls.__init__ is compatible with ipython whilst inspecting cls directly is not
         module = os.path.realpath(inspect.getfile(cls))
         path = os.path.dirname(module)
-        version = {'module': module, 'class': cls.__name__}
+        version = {'module': cls.__module__, 'class': cls.__name__, path: path}
+    elif fn is not None:
+        import importlib
+        mod, name = fn
+        path = importlib.import_module(mod).__file__
+        version = {'module': mod, 'function': name, 'path': path}
     else:
         version = {'path': path}
 

@@ -192,7 +192,10 @@ class Experiment(object, metaclass=TypedMeta):
         return {k: v[3].strip() for k, v in self._params.items()}
 
     def update_version(self):
-        self._version = get_version(cls=self.__class__)
+        if hasattr(self, 'fn'):
+            self._version = get_version(fn=self.fn)
+        else:
+            self._version = get_version(cls=self.__class__)
 
     def update_meta(self):
         self._meta = get_meta()
@@ -232,6 +235,8 @@ class Experiment(object, metaclass=TypedMeta):
                 if k in ['_root', '_name', '_status', '_purpose', '_messages', '_origin']:
                     continue
             comment = helps[k].split(':')[1] if helps[k] is not None else None
+            if comment == '':
+                comment = None
             defaults.insert(i, k, v, comment=comment)
 
         if self._status == 'default':

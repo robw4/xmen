@@ -17,4 +17,7 @@
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from xmen.experiment import Experiment
-from xmen.experiment import Experiment
+
+
+class X(Experiment):
+    pass

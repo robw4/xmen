@@ -392,12 +392,14 @@ class GlobalExperimentManager(object):
     def add_class(self, module, name):
         import importlib.util
         import stat
-        mod = importlib.import_module(module)
 
-        # Get experiment from module
-        X = getattr(mod, name)
-        x = X()
-        script = x.get_run_script()
+        # mod = importlib.import_module(module)
+        # # Get experiment from module
+        # X = getattr(mod, name)
+        # if type(X) is not xmen.utils.TypedMeta:
+        #     X, _ = xmen._functional.functional_experiment(X)
+        # x = X()
+        script = get_run_script(module, name)
 
         # Make executable run script
         path = os.path.join(self._dir, 'experiments')
@@ -410,3 +412,55 @@ class GlobalExperimentManager(object):
         os.chmod(path, st.st_mode | stat.S_IEXEC)
         self.python_experiments.update({name: path})
         self._to_yml()
+
+
+def get_run_script(module, name, shell='/usr/bin/env python3', comment='#'):
+    import datetime
+    import importlib
+    sh = [f'#!{shell}']
+    mod = importlib.import_module(module)
+    X = getattr(mod, name)
+    if type(X) is not xmen.utils.TypedMeta:
+        X, _ = xmen.functional.functional_experiment(X)
+        version = xmen.utils.get_version(path=mod.__file__)
+    else:
+        version = xmen.utils.get_version(cls=X.__class__)
+
+    sh += [f'# File generated on the {datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")}']
+    if 'git' in version:
+        sh += [f'{comment} GIT:']
+        sh += [f'{comment} - repo {version["git"]["local"]}']
+        sh += [f'{comment} - branch {version["git"]["branch"]}']
+        sh += [f'{comment} - remote {version["git"]["remote"]}']
+        sh += [f'{comment} - commit {version["git"]["commit"]}']
+        sh += ['']
+    possible_roots = sorted([p for p in sys.path if p in version.get('module', version.get('path'))])
+    root = None
+    if len(possible_roots) > 0:
+        root = possible_roots[0]
+
+    sh += ['import sys']
+    sh += ['import importlib']
+    sh += ['import xmen']
+    if root is not None:
+        sh += [f'sys.path.append("{root}")']
+    sh += ['import logging']
+    sh += ['logger = logging.getLogger()']
+    sh += ['logger.setLevel(logging.INFO)']
+    sh += ['']
+    sh += [f'mod = importlib.import_module("{module}")']
+    sh += [f'X = getattr(mod, "{name}")']
+    sh += ['if type(X) is not xmen.utils.TypedMeta:']
+    sh += ['    X, _ = xmen._functional.functional_experiment(X)']
+    sh += ['X().main()']
+        #
+        # sh += [f'module = importlib.import_module("{self.__class__.__module__}")']
+        # sh += [f'X = getattr(module, "{self.__class__.__name__}")']
+        # sh += ['X().main()']
+        # sh += [f'x = X()']
+        # sh += [f'x.from_yml(sys.argv[1])']
+        # sh += [f'print(x, end="\\n")']
+        # sh += [f'x.stdout_to_txt()']
+        # sh += ['# Finally run the experiment']
+        # sh += [f'x()']
+    return '\n'.join(sh)

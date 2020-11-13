@@ -16,91 +16,13 @@
 #  the Free Software Foundation; either version 3 of the License, or
 #  (at your option) any later version.
 from typing import Tuple
-import sys
-sys.path.append('/home/robw/projects/xmen/python')
-
+import xmen
 import os
+
 try:
     import torch
 except ImportError:
     print('In order to run this script first add pytorch to the python path')
-from xmen.experiment import Experiment
-
-
-def functional_experiment(func):
-    import inspect
-    Exp = type(func.__name__, (Experiment,), {})
-    signature = inspect.signature(func)
-    src = '*'.join(inspect.getsource(func).split('*')[1:])
-    lines = []
-    names = []
-    for k in signature.parameters:
-        p = signature.parameters[k]
-        if p.kind == inspect.Parameter.KEYWORD_ONLY:
-            ty = p.annotation
-            if ty == inspect.Parameter.empty:
-                ty = None
-
-            default = p.default
-            if default == inspect.Parameter.empty:
-                default = None
-
-            if ty is not None:
-                if not isinstance(ty, str):
-                    string = getattr(ty, '__name__', None)
-                    if string is not None:
-                        string = str(string).replace('.typing', '')
-                    ty = string
-
-            comment = p.name.join(src.split(p.name)[1:]).split('\n')[0].split('#')
-            if len(comment) == 2:
-                comment = comment[-1]
-            else:
-                comment = None
-            # Generate attribute lines
-            help_string = f'    {p.name}'
-            if p.annotation is not None:
-                help_string += f' ({ty}):'
-            else:
-                help_string += ':'
-            if comment is not None:
-                help_string += f' {comment.strip()}'
-            if default is not None:
-                help_string += f' (default={default})'
-            lines += [help_string]
-            # cls._params.update({attr.strip(' '): (default, ty, comment, help_string, cls.__name__)})
-            setattr(Exp, p.name, default)
-            Exp._params.update({p.name: (default, ty, comment, help_string, func.__name__)})
-
-        Exp.__doc__ = ''
-        if func.__doc__ is not None:
-            Exp.__doc__ = func.__doc__
-
-        if len(lines) > 0:
-            Exp.__doc__ += '\n\nParameters:\n'
-            Exp.__doc__ += '\n'.join(lines)
-    return Exp
-
-
-def functional(func):
-    cls = functional_experiment(func)
-    exp = cls()
-    exp.parse_args()
-
-    params = {k: v for k, v in exp.__dict__.items() if not k.startswith('_')}
-
-    def _func(*args, **kwargs):
-        if len(args) < 2 and len(kwargs) == 0:
-            if exp.status not in ['default']:
-                with exp:
-                    x = func(exp, **params)
-                return x
-            else:
-                print('To run an experiment please register first. See --help for more options')
-        else:
-            return func(*args, **kwargs)
-
-    return _func
 
 
 def get_datasets(cy, cz, b, ngpus, ncpus, ns, data_root, hw, **kwargs):
@@ -134,9 +56,8 @@ def get_datasets(cy, cz, b, ngpus, ncpus, ns, data_root, hw, **kwargs):
             zip(y.unsqueeze(0), z.unsqueeze(0)))}  # Turn into batches
 
 
-@functional
-def main(
-    X,  # The first argument is always a monitor
+def dcgan(
+    x=xmen.X,   # experiment instance
     *,
     b: int = 128,  # the batch size per gpu
     hw0: Tuple[int, int] = (4, 4),  # the height and width of the image
@@ -149,19 +70,16 @@ def main(
     ncpus: int = 8,  # the number of threads to use for data loading
     ngpus: int = 1,  # the number of gpus to run the model on
     epochs: int = 20,  # no. of epochs to train for
-    gan: str = 'lsgan',  # the gan type to use (one of ['vanilla', 'lsgan'])
     lr: float = 0.0002,  # learning rate
     betas: Tuple[float, float] = (0.5, 0.999),  # the beta parameters for the
-    # Monitoring parameters
+    # monitoring parameters
     checkpoint: str = 'nn_.*@1e',  # checkpoint at this modulo string
     log: str = 'loss_.*@20s',  # log scalars
     sca: str = 'loss_.*@20s',  # tensorboard scalars
     img: str = '_x_|x$@20s',  # tensorboard images
-    time: str = ('@20s', '@1e'),  # timing modulos
     nimg: int = 64,  # the maximum number of images to display to tensorboard
     ns: int = 5  # the number of samples to generate at inference)
 ):
-    print(X.__doc__)
     from xmen.monitor import Monitor, TensorboardLogger
     from xmen.examples.models import weights_init, set_requires_grad, GeneratorNet, DiscriminatorNet
     from torch.distributions import Normal
@@ -191,7 +109,7 @@ def main(
 
     # monitor
     m = Monitor(
-        X.directory, checkpoint=checkpoint,
+        x.directory, checkpoint=checkpoint,
         log=log, sca=sca, img=img,
         time=('@20s', '@1e'),
         img_fn=lambda x: x[:min(nimg, x.shape[0])],
@@ -228,5 +146,6 @@ def main(
                     _xi_ = nn_g(yi, zi)
 
 
-if __name__ == '__main__':
-    main()
+def printer(a, b, c, d, e, f, g, h, i, j):
+    """Print out the inputs"""
+    print(a, b, c, d, e, f, g, h, i, j)
