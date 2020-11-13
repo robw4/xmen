@@ -28,27 +28,28 @@ import io
 from argparse import RawTextHelpFormatter
 from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recursive_print_lines, TypedMeta, MultiOut
 
+import os
 
-experiment_parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
-experiment_parser.add_argument('--update', '-u', type=str, default=None, nargs='+',
-                               help='Update the parameters given by a yaml string. Note this will be called before'
-                                    'other flags and can be used in combination with --to_root, --to_defaults,'
-                                    'and --register.', metavar='YAML_STRING')
-experiment_parser.add_argument('--execute', '-x', type=str, default=None,
-                               help='Execute the experiment from a given params.yml file '
-                                    'or at the passed location.')
-experiment_parser.add_argument('--to_root', '-r', type=str, default=None,
-                               help='Generate a run script and defaults.yml file for interfacing with the experiment'
-                                    ' manager. If the directory does not exist then it is first created.')
+helps = {
+    'execute': 'Execute the experiment from a given params.yml file or at the passed location.',
+    'update': 'Update the parameters given by a yaml string. Note this will be called before '
+              'other flags and can be used in combination with --to_root, --to_defaults, and --register',
+    'root': 'Generate a run script and defaults.yml file for interfacing with xgent',
+    'debug': 'Run experiment in debug mode. Experiment is registered to a folder in /tmp',
+    'txt': 'Also log stdout and stderr to an out.txt file. Enabled by default'
+}
+
+import textwrap
+for k in helps:
+    helps[k] = '\n'.join(textwrap.wrap(helps[k], 50))
+
+experiment_parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+experiment_parser.add_argument('--update', '-u', type=str, default=None, nargs='+', help=helps['update'])
+experiment_parser.add_argument('--execute', '-x', type=str, default=None, help=helps['execute'])
+experiment_parser.add_argument('--to_root', '-r', type=str, default=None, help=helps['root'])
 # Optional extras
-experiment_parser.add_argument('--debug', '-d', default=None, action='store_true',
-                               help='Run experiment in debug mode. Experiment is registered to a folder in /tmp')
-experiment_parser.add_argument('--to_txt', '-t', default=None, action='store_true',
-                               help='Also log stdout and stderr to an out.txt file. Enabled by default')
-
-
-experiment_parser.add_argument('--name', action='store_true', help='Return the name of the experiment class')
-
+experiment_parser.add_argument('--debug', '-d', default=None, action='store_true', help=helps['debug'])
+experiment_parser.add_argument('--to_txt', '-t', default=None, action='store_true', help=helps['txt'])
 
 _SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta']
 
@@ -128,7 +129,7 @@ class Experiment(object, metaclass=TypedMeta):
     @property
     def directory(self):
         """The directory assigned to the experiment"""
-        if self._status is 'default':
+        if self._status == 'default':
             return None
         else:
             return os.path.join(self._root, self._name)
@@ -234,7 +235,8 @@ class Experiment(object, metaclass=TypedMeta):
             if self._status == 'default':
                 if k in ['_root', '_name', '_status', '_purpose', '_messages', '_origin']:
                     continue
-            comment = helps[k].split(':')[1] if helps[k] is not None else None
+            # comment = helps[k].split(k)[1] if helps[k] is not None else None
+            comment = helps[k]
             if comment == '':
                 comment = None
             defaults.insert(i, k, v, comment=comment)
@@ -514,25 +516,15 @@ class Experiment(object, metaclass=TypedMeta):
     def parse_args(self):
         """Configure the experiment instance from the command line arguments.
         """
+        experiment_parser.prog = f'xmen {self.__class__.__name__}'
 
         # Configure help information from the class
-        # definition.
-
-        n = len(experiment_parser.prog) + 8
-        experiment_parser.usage = experiment_parser.prog + '\n'.join(
-            [' ' * 1 + '[--update [PARAMS_FILE] STR_YML] --to_root PATH',
-             ' ' * n + '[--update [PARAMS_FILE] STR_YML] --execute DIR ',
-             ' ' * n + '--execute PARAMS_FILE',
-             ' ' * n + '--name'
-                       ' '])
-        experiment_parser.epilog = self.__doc__
-
-        ['example:',
-         'python -m xmen.tests.experiment --update "{a: cat, x: [10., 20.], t: {100: x, 101: y}, h: }" \ ',
-         '                                --execute /tmp/test/xmen/command_line',
-         '',
-         'Note STR_YML is a yaml dictionary - None is given by the null string. '
-         'For a list of valid parameters see below']
+        n = 7
+        experiment_parser.usage = '\n'.join(
+            [' ' * 0 + experiment_parser.prog + ' ' + '-u YML -r PATH',
+             ' ' * n + experiment_parser.prog + ' ' + '-u YML -x DIR ',
+             ' ' * n + experiment_parser.prog + ' ' + '-x PARAMS'])
+        # experiment_parser.description = self.__doc__
         args = experiment_parser.parse_args()
 
         # Run the debug method if implemented and
@@ -594,9 +586,9 @@ class Experiment(object, metaclass=TypedMeta):
         if args is None:
             args = self.parse_args()
 
-        # Show the experiment Name
-        if args.name:
-            print(self.__class__.__name__)
+        if all(a is None for a in (args.debug, args.execute, args.to_root, args.to_txt, args.update)):
+            print(self.__doc__)
+            print('\nFor more help use --help.')
 
         # Generate experiment root
         if args.to_root is not None:
@@ -648,3 +640,26 @@ class Experiment(object, metaclass=TypedMeta):
         lines += ['  ' + f'{k}: {v}' for k, v in params.items()]
         return '\n'.join(lines)
 
+    def monitor(
+            self,
+            hooks=[],
+            # Default saving for parameters
+            checkpoint=None, checkpoints_to_keep=None,
+            log=None,
+            img=None, img_fn=None, img_n=None,
+            sca=None, sca_fn=None,
+            time=None,
+            message=None,
+            limit=None):
+        from xmen.monitor import Monitor
+        return Monitor(  # User defined hooks (either) modulo or not modulo
+             self.directory,
+             hooks=hooks,
+             # Default saving for parameters
+             checkpoint=checkpoint, checkpoints_to_keep=checkpoints_to_keep,
+             log=log,
+             img=img, img_fn=img_fn, img_n=img_n,
+             sca=sca, sca_fn=sca_fn,
+             time=time,
+             message=message,
+             limit=limit)

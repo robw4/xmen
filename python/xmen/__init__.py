@@ -18,6 +18,5 @@
 
 from xmen.experiment import Experiment
 
-
 class X(Experiment):
     pass

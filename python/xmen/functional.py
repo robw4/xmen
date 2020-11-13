@@ -1,17 +1,26 @@
 from xmen import Experiment
-import xmen
 
 
-def functional_experiment(func):
+def functional_experiment(fn):
+    """Convert a class inheriting from experiment from the given func.
+
+    - func must have a signature ``fn(ex, ...)`` where ``ex`` has a base class
+        experiment can be unused in which case use ``_`` and can be named whatever
+    - the parameters of the returned Exp class are added from the function signature.
+    - the run method of the Exp class is defined by fn()
+    """
     import inspect
-    Exp = type(func.__name__, (Experiment,), {})
-    signature = inspect.signature(func)
-    src = '('.join(inspect.getsource(func).split('(')[1:])
+    # Generate new class instance with name of the function inheriting from Experiment
+    cls = type(fn.__name__, (Experiment,), {})
+    # Add parameters and get helps from the function definition
+    signature = inspect.signature(fn)
+    src = '('.join(inspect.getsource(fn).split('(')[1:])
+
     lines = []
-    X = None
-    for k in signature.parameters:
+    obj = None
+    for i, k in enumerate(signature.parameters):
         p = signature.parameters[k]
-        if p.default != xmen.X:
+        if i > 0:
             ty = p.annotation
             if ty == inspect.Parameter.empty:
                 ty = None
@@ -27,47 +36,59 @@ def functional_experiment(func):
                         string = str(string).replace('.typing', '')
                     ty = string
 
-            comment = p.name.join(src.split(p.name)[1:]).split('\n')[0].split('#')
-            if len(comment) == 2:
-                comment = comment[-1]
-            else:
-                comment = None
+            # find first comment
+            comments = p.name.join(src.split(p.name)[1:]).split('\n')
+
+            help = None
+            for i, c in enumerate(comments):
+                c = c.split('#')
+                if i == 0 and len(c) == 2:
+                    help = c[-1].strip()
+                elif i > 0 and c[0].strip() == '' and len(c) == 2:
+                    help += ' ' + c[1].strip()
+                else:
+                    break
+
             # Generate attribute lines
-            help_string = f'    {p.name}'
-            if p.annotation is not None:
-                help_string += f' ({ty}):'
-            else:
-                help_string += ':'
-            if comment is not None:
-                help_string += f' {comment.strip()}'
+            help_string = f'{p.name}'
+            if ty is not None:
+                help_string += f': {ty}'
             if default is not None:
-                help_string += f' (default={default})'
-            lines += [help_string]
-            # cls._params.update({attr.strip(' '): (default, ty, comment, help_string, cls.__name__)})
-            setattr(Exp, p.name, default)
-            Exp._params.update({p.name: (default, ty, comment, help_string, func.__name__)})
+                help_string += f'={default}'
+            if help is not None:
+                help_string += f' ~ {help.strip()}'
 
+            # wrap text
+            import textwrap
+            help_string_wrapped = textwrap.wrap(help_string, break_long_words=False)
+            for i in range(len(help_string_wrapped)):
+                help_string_wrapped[i] = textwrap.indent(help_string_wrapped[i], ' ' * (4 + (i > 0) * 2))
+
+            lines += ['\n'.join(help_string_wrapped)]
+
+            # Add attribute to class
+            setattr(cls, p.name, default)
+            # Update parameter information
+            cls._params.update({p.name: (default, ty, help, help_string, fn.__name__)})
         else:
-            X = p.name
+            obj = p.name
 
-    Exp.__doc__ = ''
-    if func.__doc__ is not None:
-        Exp.__doc__ = func.__doc__
-
+    # Add parameters to __doc__ of the function
+    cls.__doc__ = ''
+    if fn.__doc__ is not None:
+        cls.__doc__ = fn.__doc__
     if len(lines) > 0:
-        Exp.__doc__ += '\n\nParameters:\n'
-        Exp.__doc__ += '\n'.join(lines)
+        cls.__doc__ += '\n\nParameters:\n'
+        cls.__doc__ += '\n'.join(lines)
+    cls.fn = (fn.__module__, fn.__name__)
 
-    Exp.fn = (func.__module__, func.__name__)
-
+    # generate run method from the function
     def run(self):
         params = {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
-        if X is not None:
-            params.update({X: self})
-        return func(**params)
+        return fn(self, **params)
 
-    Exp.run = run
-    return Exp, X
+    cls.run = run
+    return cls, obj
 
 
 # def functional(func):

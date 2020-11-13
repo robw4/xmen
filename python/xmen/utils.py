@@ -145,46 +145,6 @@ def get_parameters(lines, name):
         return params, helps
 
 
-# def get_parameters(cls):
-#     code = inspect.getsource(cls.__init__)
-#     lines = code.splitlines()
-#     new_lines = []
-#     # new_lines = ['', '', 'Attributes:']
-#     for l in lines:
-#         if 'self.' in l and 'self._' not in l:
-#             l = l.strip()
-#             default = l.split('=')[1] if '=' in l else None  # default always appears after = and before comment
-#             comment = l.split('#')[1] if '#' in l else None  # comment always appears after #
-#             if comment is not None and default is not None:
-#                 default = default.split('#')[0].strip()
-#             ty = None
-#             if ':' in l:  # self.a: int ...
-#                 attr = l.split(':')[0].replace('self.', '')
-#                 if '=' in l:
-#                     ty = l.split(':')[1].split('=')[0].strip()
-#                 elif '#' in l:
-#                     ty = l.split(':')[1].split('#')[0].strip()
-#                 else:
-#                     ty = l.split(':')[1].strip()
-#             elif '=' in l:  # self.a = 3 ....
-#                 attr = l.split('=')[0].replace('self.', '')
-#             elif '#' in l:  # self.a # Some docs
-#                 attr = l.split('#')[0].replace('self.', '')
-#             else:  # self.a (already stripped)
-#                 attr = l.replace('self.', '')
-#             # Generate attribute lines
-#             new_line = f'    {attr}'
-#             if ty is not None:
-#                 new_line += f' ({ty}):'
-#             else:
-#                 new_line += ':'
-#             if comment is not None:
-#                 new_line += f' {comment.strip()}'
-#             if default is not None:
-#                 new_line += f' (default={default})'
-#             new_lines += [new_line]
-
-
 class TypedMeta(type):
     """A meta class helper used to generate automatic doc strings generated from typed class definitions. This allows
     the docstrings to be defined inside the ``__init__`` body instead of inside the doc string iradicating the need
@@ -332,13 +292,12 @@ class TypedMeta(type):
                 # Generate attribute lines
                 help_string = f'    {attr}'
                 if ty is not None:
-                    help_string += f' ({ty}):'
-                else:
-                    help_string += ':'
-                if comment is not None:
-                    help_string += f' {comment.strip()}'
+                    help_string += f': {ty}'
                 if default is not None:
-                    help_string += f' (default={default})'
+                    help_string += f'={default}'
+                if comment is not None:
+                    help_string += f' ~ {comment.strip()}'
+
                 # Log parameters
                 cls._params.update({attr.strip(' '): (default, ty, comment, help_string, cls.__name__)})
                 helps += [help_string]
@@ -413,7 +372,7 @@ def get_version(*, path=None, cls=None, fn=None):
         # Note: inspecting cls.__init__ is compatible with ipython whilst inspecting cls directly is not
         module = os.path.realpath(inspect.getfile(cls))
         path = os.path.dirname(module)
-        version = {'module': cls.__module__, 'class': cls.__name__, path: path}
+        version = {'module': cls.__module__, 'class': cls.__name__, 'path': path}
     elif fn is not None:
         import importlib
         mod, name = fn
@@ -436,6 +395,58 @@ def commented_to_py(x, seq=tuple):
         return seq(commented_to_py(v) for v in x)
     else:
         return x
+
+
+def get_run_script(module, name, shell='/usr/bin/env python3', comment='#'):
+    """Generate a run script for a particular experiment.
+
+    module (str): the module to look in
+    name (str): the name of the experiment in the module. If name corresponds to
+        a function it will be converted to an Experiment class
+    """
+    import sys
+    import xmen
+    import datetime
+    import importlib
+    sh = [f'#!{shell}']
+    mod = importlib.import_module(module)
+    X = getattr(mod, name)
+    if type(X) is not xmen.utils.TypedMeta:
+        from xmen.functional import functional_experiment
+        X, _ = functional_experiment(X)
+        version = xmen.utils.get_version(path=mod.__file__)
+    else:
+        version = xmen.utils.get_version(cls=X.__class__)
+
+    sh += [f'# File generated on the {datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")}']
+    if 'git' in version:
+        sh += [f'{comment} GIT:']
+        sh += [f'{comment} - repo {version["git"]["local"]}']
+        sh += [f'{comment} - branch {version["git"]["branch"]}']
+        sh += [f'{comment} - remote {version["git"]["remote"]}']
+        sh += [f'{comment} - commit {version["git"]["commit"]}']
+        sh += ['']
+    possible_roots = sorted([p for p in sys.path if p in version.get('module', version.get('path'))])
+    root = None
+    if len(possible_roots) > 0:
+        root = possible_roots[0]
+
+    sh += ['import sys']
+    sh += ['import importlib']
+    sh += ['import xmen']
+    if root is not None:
+        sh += [f'sys.path.append("{root}")']
+    sh += ['import logging']
+    sh += ['logger = logging.getLogger()']
+    sh += ['logger.setLevel(logging.INFO)']
+    sh += ['']
+    sh += [f'mod = importlib.import_module("{module}")']
+    sh += [f'X = getattr(mod, "{name}")']
+    sh += ['if type(X) is not xmen.utils.TypedMeta:']
+    sh += ['    from xmen.functional import functional_experiment']
+    sh += ['    X, _ = functional_experiment(X)']
+    sh += ['X().main()']
+    return '\n'.join(sh)
 
 
 if __name__ == '__main__':

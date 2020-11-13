@@ -24,62 +24,44 @@ import glob
 from xmen.config import GlobalExperimentManager
 from xmen.manager import ExperimentManager, InvalidExperimentRoot
 
-
-DESCRIPTION = [r'||||||||||||||||||||||||| WELCOME TO ||||||||||||||||||||||||||',
-               r'||                                                           ||',
-               r'||    \\\  ///  |||\\        //|||  |||||||||  |||\\   |||   ||',
-               r'||     \\\///   |||\\\      ///|||  |||        |||\\\  |||   ||',
-               r'||      ||||    ||| \\\    /// |||  ||||||     ||| \\\ |||   ||',
-               r'||     ///\\\   |||  \\\  ///  |||  |||        |||  \\\|||   ||',
-               r'||    ///  \\\  |||   \\\///   |||  |||||||||  |||   \\|||   ||',
-               r'||                                                           ||',
-               r'|||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION ||||||||||||']
-
+DESCRIPTION = r"""
+||||||||||||||||||||||||||| WELCOME TO ||||||||||||||||||||||||||||
+||                                                              ||
+||          &@&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&@&%          ||    
+||         *@&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&         ||    
+||          &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&          ||    
+||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&          ||    
+||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#          ||    
+||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&.          ||    
+||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.          ||    
+||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*          ||    
+||           @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@          ||    
+||   #&@@@@@&%&&&&&&&@@@@@@@@@@@@@@@@@@@@@@@@@&&&&&&&&@@@@@@&#  ||    
+||  /#%%%%%%%%%&&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&&%%&%%%%%%#  ||    
+||   &%&&&&&&&&&&&@@@@@@@@@@@@@@@@@@@@@@@@@@@&&@&&&&&&&&&&&&&   ||    
+||     (@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&.    ||    
+||      ...,*/#%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&##(*,...      ||    
+||                                                              ||
+||  \\\  ///  |||||||||||  |||||||||  |||\\   |||  ||||||||||   ||
+||   \\\///   |||          |||        |||\\\  |||      |||      ||
+||    ||||    |||   |||||  ||||||     ||| \\\ |||      |||      ||
+||   ///\\\   |||     |||  |||        |||  \\\|||      |||      ||
+||  ///  \\\  |||||||||||  |||||||||  |||   \\|||      |||      ||
+||                                                              ||
+||                      %@@,     (@@/                           ||
+||                     @@@@@@@@@@@@@@@@@@@@@                    ||
+||        @@        @@@@@@@@@@@@@@@@@@@@@@@@@@/        @#       ||
+||       @@#     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#     @@       ||
+||        @@@@@@@@@@@@@@@@@@@@@@@.@@@@@@@@@@@@@@@@@@@@@@.       ||
+||           ,@@@@@@@@@@@@@@@%       @@@@@@@@@@@@@@@@           ||
+||                                                              ||
+|||||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION |||||||||||||
+"""
 parser = argparse.ArgumentParser(
-    prog='xmen',
-    description='\n'.join(DESCRIPTION),
-    formatter_class=argparse.RawTextHelpFormatter
-)
+    prog='xman',
+    description=DESCRIPTION,
+    formatter_class=argparse.RawTextHelpFormatter)
 subparsers = parser.add_subparsers()
-
-#######################################################################################################################
-#  py
-#######################################################################################################################
-py_parser = subparsers.add_parser('py', help='Python experiment interface')
-
-py_parser.add_argument('name', help='The name of the experiment to run', nargs='*', default=None)
-py_parser.add_argument('--list', '-l', action='store_true', default=None, help='List available python experiments')
-py_parser.add_argument('--add', default=None, metavar='MODULE NAME',
-                       help='Add a python Experiment class or run script (it must already be on PYTHONPATH)', nargs=2)
-py_parser.add_argument('--remove', '-r',  help='Remove a python experiment (passed by Name)')
-py_parser.add_argument('flags', help='Python flags (pass --help for more info)', nargs=argparse.REMAINDER, default=[])
-
-
-def _py(args):
-    import subprocess
-
-    global_exp_manager = GlobalExperimentManager()
-    if args.list is not None:
-        for k, v in global_exp_manager.python_experiments.items():
-            print(f'{k}: {v}')
-    elif args.add is not None:
-        with global_exp_manager as config:
-            config.add_class(*args.add)
-    elif args.remove is not None:
-        with global_exp_manager as config:
-            if args.remove in config.python_experiments:
-                path = config.python_experiments.pop(args.remove)
-                if '.xmen' in path:
-                    os.remove(path)
-    else:
-        if args.name[0] not in global_exp_manager.python_experiments:
-            print(f'No experiments found matching {args.name[0]}')
-            exit()
-        args = [global_exp_manager.python_experiments[args.name[0]]] + args.flags
-        subprocess.call(args)
-
-
-py_parser.set_defaults(func=_py)
 
 
 #######################################################################################################################
@@ -465,7 +447,11 @@ def main():
     import sys
     sys.excepthook = invalid_experiment_root_hook
     args = parser.parse_args()
-    args.func(args)
+
+    if hasattr(args, 'func'):
+        args.func(args)
+    else:
+        parser.print_help()
 
 
 # Enable command line interface

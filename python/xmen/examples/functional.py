@@ -57,8 +57,11 @@ def get_datasets(cy, cz, b, ngpus, ncpus, ns, data_root, hw, **kwargs):
 
 
 def dcgan(
-    x=xmen.X,   # experiment instance
-    *,
+    root: xmen.Experiment,  #
+        # first argument is always an experiment instance.
+        # can be unused (specify with _) in python
+        # syntax practice. can be named whatever depending
+        # on use case. Eg. logger, root, experiment ...
     b: int = 128,  # the batch size per gpu
     hw0: Tuple[int, int] = (4, 4),  # the height and width of the image
     nl: int = 4,  # the number of levels in the discriminator.
@@ -80,6 +83,7 @@ def dcgan(
     nimg: int = 64,  # the maximum number of images to display to tensorboard
     ns: int = 5  # the number of samples to generate at inference)
 ):
+    """A function dcgan example found at xmen.examples.functional"""
     from xmen.monitor import Monitor, TensorboardLogger
     from xmen.examples.models import weights_init, set_requires_grad, GeneratorNet, DiscriminatorNet
     from torch.distributions import Normal
@@ -106,10 +110,9 @@ def dcgan(
     # optimisers
     op_d = Adam(nn_d.parameters(), lr=lr, betas=betas)
     op_g = Adam(nn_g.parameters(), lr=lr, betas=betas)
-
     # monitor
     m = Monitor(
-        x.directory, checkpoint=checkpoint,
+        root.directory, checkpoint=checkpoint,
         log=log, sca=sca, img=img,
         time=('@20s', '@1e'),
         img_fn=lambda x: x[:min(nimg, x.shape[0])],
