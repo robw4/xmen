@@ -98,6 +98,7 @@ __... and much, much more!__
 >>> pip install ~/xmen/python
 >>> xmen
 ```
+```
 usage: xman [-h] [--list] [--add MODULE NAME MODULE NAME] [--remove REMOVE] [name [name ...]] ...
 
 ||||||||||||||||||||||||| WELCOME TO ||||||||||||||||||||||||||
