@@ -41,7 +41,7 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="xmen 0.1 documentation" href="index.html"/>
-        <link rel="prev" title="Examples" href="example.html"/> 
+        <link rel="prev" title="Tutorials" href="example.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -94,12 +94,13 @@
 <li class="toctree-l1"><a class="reference internal" href="README.html">Xmen</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cheat-sheet.html">Cheat Sheet</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#the-experiment-class">The Experiment Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#the-experimentmanager-class">The ExperimentManager Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-xmen.monitor">The Monitor Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#root">Root</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#experiment">Experiment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#monitor">Monitor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-xmen.utils">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-experimentmanager-class">The ExperimentManager Class</a></li>
 </ul>
 </li>
 </ul>
@@ -163,7 +164,7 @@
   <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
       
       
-        <a href="example.html" class="btn btn-neutral" title="Examples" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="example.html" class="btn btn-neutral" title="Tutorials" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
   </div>
   
@@ -174,8 +175,67 @@
             
   <div class="section" id="api">
 <h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="the-experiment-class">
-<h2>The Experiment Class<a class="headerlink" href="#the-experiment-class" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="root">
+<h2>Root<a class="headerlink" href="#root" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="xmen.experiment.Root">
+<em class="property">class </em><code class="sig-prename descclassname">xmen.experiment.</code><code class="sig-name descname">Root</code><a class="headerlink" href="#xmen.experiment.Root" title="Permalink to this definition">¶</a></dt>
+<dd><p>The first argument passed to a functional experiment and principally used to root an experiment instance to a
+particular directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">functional_experiment</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n">Root</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Running experiment)</span>
+
+    <span class="n">root</span><span class="o">.</span><span class="n">message</span><span class="p">({</span><span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()})</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Root is nothing more than Experiment with a different name. Whilst principally offering exactly the same
+functionality, primarily the purpose of Root is to expose the directory property and messaging protocol of
+the Experiment class to functional experiment definitions. However, there is nothing stopping the user
+form using the full functionality of the Experiment class if they wish. Please consult the Experiment class
+documentation in this case.</p>
+</div>
+<dl class="py method">
+<dt id="xmen.experiment.Root.directory">
+<em class="property">property </em><code class="sig-name descname">directory</code><a class="headerlink" href="#xmen.experiment.Root.directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>The directory assigned to the experiment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Root.message">
+<code class="sig-name descname">message</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">messages</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">'latest'</span></em>, <em class="sig-param"><span class="n">leader</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Root.message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a message to the experiment (and an experiments params.yml file).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>messages</strong> (<em>dict</em>) – A dictionary of messages. Keys are interpreted as subjects and values interpreted as
+messages. If the <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> already contains subject then the message for subject will be
+updated.</p></li>
+<li><p><strong>keep</strong> (<em>str</em>) – which message to keep in the case of collision. One of [‘latest’, ‘min’, ‘max’]</p></li>
+<li><p><strong>leader</strong> (<em>str</em>) – If not None then all messages will be saved if the keep condition is met for the leader key.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only messages of type float, int and string are supported. Any other message will be converted to type float
+(if possible) then string thereafter.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.experiment.Root.messages">
+<em class="property">property </em><code class="sig-name descname">messages</code><a class="headerlink" href="#xmen.experiment.Root.messages" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary of messages logged by the experimet.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="experiment">
+<h2>Experiment<a class="headerlink" href="#experiment" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="xmen.experiment.Experiment">
 <em class="property">class </em><code class="sig-prename descclassname">xmen.experiment.</code><code class="sig-name descname">Experiment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">purpose</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">copy</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
@@ -196,7 +256,10 @@
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{self.a}</span><span class="s1"> </span><span class="si">{self.b}</span><span class="s1">)</span>
 </pre></div>
 </div>
-<p>Create a new experiment object.</p>
+<dl class="py method">
+<dt id="xmen.experiment.Experiment.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">purpose</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">copy</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new experiment object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -209,6 +272,8 @@ Mutable attributes will no longer be shared.</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="xmen.experiment.Experiment.directory">
 <em class="property">property </em><code class="sig-name descname">directory</code><a class="headerlink" href="#xmen.experiment.Experiment.directory" title="Permalink to this definition">¶</a></dt>
@@ -377,6 +442,293 @@ This allows the experiment to be run from the commandline as:</p>
 </dd></dl>
 
 </div>
+<div class="section" id="monitor">
+<h2>Monitor<a class="headerlink" href="#monitor" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="xmen.monitor.Monitor">
+<em class="property">class </em><code class="sig-prename descclassname">xmen.monitor.</code><code class="sig-name descname">Monitor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">directory</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">hooks</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">checkpoint</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">checkpoints_to_keep</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">img</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">img_fn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">img_n</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sca</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sca_fn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">time</span><span class="o">=</span><span class="default_value">'&#64;100s', '&#64;1e', '&#64;1er', '&#64;1eo', '&#64;1se'</span></em>, <em class="sig-param"><span class="n">message</span><span class="o">=</span><span class="default_value">'self&#64;100step', 'self&#64;100epoch', 'self&#64;100era', 'self&#64;100eon', 'self&#64;100supereon'</span></em>, <em class="sig-param"><span class="n">limit</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.monitor.Monitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="xmen.monitor.Monitor.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">directory</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">hooks</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">checkpoint</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">checkpoints_to_keep</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">img</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">img_fn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">img_n</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sca</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sca_fn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">time</span><span class="o">=</span><span class="default_value">'&#64;100s', '&#64;1e', '&#64;1er', '&#64;1eo', '&#64;1se'</span></em>, <em class="sig-param"><span class="n">message</span><span class="o">=</span><span class="default_value">'self&#64;100step', 'self&#64;100epoch', 'self&#64;100era', 'self&#64;100eon', 'self&#64;100supereon'</span></em>, <em class="sig-param"><span class="n">limit</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.monitor.Monitor.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automate tracking, logging and saving of experiments.</p>
+<p>Logging / checkpointing is configured through arguments of the form <code class="docutils literal notranslate"><span class="pre">f'{regex}&#64;{modulo}{trigger}'</span></code>.
+Any variables in the local scope of the monitor which match the
+specified regular expression will be logged / checkpointed every modulo steps of the trigger. Triggers are
+incremented either manually (using the <code class="docutils literal notranslate"><span class="pre">inc</span></code> method) or automatically using nested iterators
+(see example). Supported triggers include [“step”, “epoch”, “era”, “eon”, “supereon”] or their
+abbreviations [“s”, “e”, “er”, “eo”, “se”].</p>
+<p>Alongside the built in logging / checkpointing options, more sophisticated cases can be configured
+through user defined hooks. If a hook is passed with modulo == None it can instead be triggered manually
+as <code class="docutils literal notranslate"><span class="pre">monitor.to_hooks()</span></code>. Manual logging and checkpoint are also supported as
+<code class="docutils literal notranslate"><span class="pre">monitor.log(...)</span></code> and <code class="docutils literal notranslate"><span class="pre">monitor.checkpoint(...)</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>directory</strong> – A path to store checkpoints / logs in (required for checkpointing and tensorboard logging
+otherwise optional)</p></li>
+<li><p><strong>checkpoint</strong> – checkpoint specified torch.Module objects</p></li>
+<li><p><strong>log</strong> – log specified objects on triggers to stdout</p></li>
+<li><p><strong>img</strong> – log as tensorboard images</p></li>
+<li><p><strong>img_fn</strong> – Apply this function to each variable before logging as images</p></li>
+<li><p><strong>sca</strong> – log as tensorboard scalars</p></li>
+<li><p><strong>sca_fn</strong> – Apply this function to each variable before logging as scalars</p></li>
+<li><p><strong>time</strong> – log timing statistics at these frequencies</p></li>
+<li><p><strong>hooks</strong> – A list of user specified hooks conforming the the <code class="docutils literal notranslate"><span class="pre">Hook</span></code> api.</p></li>
+<li><p><strong>message</strong> – summarise the current state of the experiment at these frequencies using the xmen.Experiment api.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nn</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="n">dataset</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span> <span class="o">...</span>
+
+<span class="n">em</span> <span class="o">=</span> <span class="n">Monitor</span><span class="p">(</span>
+    <span class="n">directory</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;model@1e&#39;</span><span class="p">,</span> <span class="s1">&#39;opt@100s&#39;</span><span class="p">),</span>   <span class="c1"># Checkpoint the model once per epoch and opt every 100 steps</span>
+    <span class="n">log</span><span class="o">=</span><span class="s1">&#39;^loss$@100s&#39;</span><span class="p">,</span>   <span class="c1"># Log the loss to stdout every 100 steps</span>
+    <span class="n">img</span><span class="o">=</span><span class="s1">&#39;^x$@1000s&#39;</span><span class="p">,</span> <span class="n">sca</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;^loss$@100s&#39;</span><span class="p">,</span> <span class="s1">&#39;eval_.*@1e&#39;</span><span class="p">),</span> <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;@100s&#39;</span><span class="p">)</span>     <span class="c1"># Log to tensorboard</span>
+    <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;@100s&#39;</span><span class="p">,</span> <span class="p">),</span>   <span class="c1"># Generate timing statistics every 100 steps</span>
+    <span class="n">hooks</span><span class="o">=</span><span class="p">[</span>  <span class="c1"># Custom hooks are also supported</span>
+        <span class="n">MyVeryOwnHook</span><span class="p">(</span><span class="o">...</span><span class="p">)])</span>
+
+<span class="c1"># The only modification needed to the training loop are the em calls.</span>
+<span class="c1"># Nested loops corresponds to different triggers from inside out</span>
+<span class="c1"># we have [&quot;step&quot; or &quot;s&quot;, &quot;epoch&quot; or &quot;e&quot;, &quot;era&quot; or &quot;er&quot;, &quot;eon&quot; or &quot;eo&quot;, &quot;supereon&quot; or &quot;se&quot;]</span>
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="n">em</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">em</span><span class="p">(</span><span class="n">datset</span><span class="p">):</span>
+        <span class="n">_y_</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">_y_</span><span class="p">)</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="n">em</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Manual Logging is also supported&#39;</span><span class="p">)</span>
+    <span class="n">eval_1</span><span class="p">,</span> <span class="n">eval_2</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">ds</span><span class="p">)</span>
+
+<span class="c1"># Steps and epoch have been incremented</span>
+<span class="k">assert</span> <span class="n">em</span><span class="o">.</span><span class="n">step</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span>
+<span class="k">assert</span> <span class="n">em</span><span class="o">.</span><span class="n">epoch</span> <span class="o">==</span> <span class="mi">10</span>
+
+<span class="c1"># Lets reload the model at the 5th epoch</span>
+<span class="n">em</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">step</span><span class="o">=</span><span class="mi">5</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span> <span class="n">model</span><span class="p">)</span>
+<span class="c1"># The step and epoch will be updated</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">em</span><span class="o">.</span><span class="n">step</span><span class="p">,</span> <span class="n">em</span><span class="o">.</span><span class="n">epoch</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.monitor.Monitor.inc">
+<code class="sig-name descname">inc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trigger</span></em>, <em class="sig-param"><span class="n">back</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.monitor.Monitor.inc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manually increment trigger. Will also run modulo hooks defined by the user.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.monitor.Monitor.to_hooks">
+<code class="sig-name descname">to_hooks</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.monitor.Monitor.to_hooks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pass all keyword arguments to manual hooks (hooks where modulo is None)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.monitor.Monitor.log">
+<code class="sig-name descname">log</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">format=''</em>, <em class="sig-param">process_func=&lt;class 'str'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.monitor.Monitor.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log string with time, epoch and step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – Value to be logged</p></li>
+<li><p><strong>format</strong> – The format used to convert x to a string as ‘{x:{format}}’</p></li>
+<li><p><strong>process_func</strong> – A callable able to convert x to a valid format for printing as {x:{format}}’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.monitor.Monitor.modulo">
+<code class="sig-name descname">modulo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trigger</span></em>, <em class="sig-param"><span class="n">modulo</span></em>, <em class="sig-param"><span class="n">exclude_1st</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.monitor.Monitor.modulo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if trigger % modulo == 0. If exclude_1st is True then modulo will return False for triggers at 0</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.monitor.Monitor.checkpoint">
+<code class="sig-name descname">checkpoint</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.monitor.Monitor.checkpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checkpoint the torch.nn objects with step and epoch passed as <code class="docutils literal notranslate"><span class="pre">name==variable_to_save</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.monitor.Monitor.load">
+<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">directory</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">step</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">attempt</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">update_triggers</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">modules</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.monitor.Monitor.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the torch torch.nn objects passed as name=variable_to_load,
+from the directory and reset the state of the em (if update_triggers == True). If attempt == False then an
+Exception will be raised if either the directory does not contain checkpoints corresponding to modules.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="xmen.monitor.Monitor.summary">
+<code class="sig-name descname">summary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.monitor.Monitor.summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Summarise the current state of the experiment monitor</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-xmen.monitor"></span><dl class="py exception">
+<dt id="xmen.monitor.LastStep">
+<em class="property">exception </em><code class="sig-prename descclassname">xmen.monitor.</code><code class="sig-name descname">LastStep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trigger</span></em>, <em class="sig-param"><span class="n">step</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.monitor.LastStep" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="xmen.monitor.load">
+<code class="sig-prename descclassname">xmen.monitor.</code><code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">load_dir</span></em>, <em class="sig-param"><span class="n">step</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">attempt</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">modules</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.monitor.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load torch objects from a checkpoint object. If <code class="docutils literal notranslate"><span class="pre">Step</span> <span class="pre">is</span> <span class="pre">None</span></code> then the most recent checkpoint is loaded.
+Else the checkpoint is loaded at the specified step. If attempt == False then load will raise a ValueError
+if either one of the modules was not found in modules or if no checkpoints were found in load_dir.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>No check to ensure the meta information in each file is the same. The meta information returned corresponds
+to the first module encountered in modules.</p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-xmen.utils">
+<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-xmen.utils" title="Permalink to this headline">¶</a></h2>
+<p>A module containing several utilitity functions, classes and Meta Classes used by the ExperimentManager
+and the Experiment classes.</p>
+<dl class="py function">
+<dt id="xmen.utils.get_meta">
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_meta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Meta information for the system</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="xmen.utils.get_attribute_helps">
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_attribute_helps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cls</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_attribute_helps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all help files for class <code class="docutils literal notranslate"><span class="pre">cls</span></code> from doc strings from all inherited classes.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="xmen.utils.get_docs">
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_docs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cl</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_docs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all docs for every inherited class</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="xmen.utils.TypedMeta">
+<em class="property">class </em><code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">TypedMeta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">bases</span></em>, <em class="sig-param"><span class="n">attr_dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.TypedMeta" title="Permalink to this definition">¶</a></dt>
+<dd><p>A meta class helper used to generate automatic doc strings generated from typed class definitions. This allows
+the docstrings to be defined inside the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> body instead of inside the doc string iradicating the need
+to type attributes twice:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MyClass</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">TypedMeta</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;This class is bound to do something...&#39;&#39;&#39;</span>
+
+    <span class="n">a</span> <span class="nb">int</span><span class="p">:</span> <span class="mi">3</span>   <span class="c1"># @p My first attribute</span>
+    <span class="n">b</span> <span class="nb">int</span><span class="p">:</span> <span class="mi">5</span>   <span class="c1"># @p My second attribute</span>
+
+ <span class="n">m</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
+ <span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">__init</span><span class="o">.</span><span class="n">__</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now if we call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ob</span> <span class="o">=</span> <span class="nb">print</span><span class="p">(</span><span class="n">MyClass</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+
+<span class="go"> This class is bound to do something...</span>
+
+<span class="go"> Parameters:</span>
+<span class="go">     a (int) : My first attribute (default=3)</span>
+<span class="go">     b (int) : My second attribute (default=5)</span>
+</pre></div>
+</div>
+<p>The doc string has automatically been updated.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="xmen.utils.get_git">
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_git</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_git" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get git information for the given path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Empty if status == False otherwise with keys:</dt><dd><ul class="simple">
+<li><p>remote: A url to the remote repository</p></li>
+<li><p>hash: A git hash to the current commit</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><p>(dict)</p>
+<dl class="simple">
+<dt>status (bool): False if either git is not available, the repo is not in a git repository or if there are</dt><dd><p>uncommited changes in the current repository. Otherwise true</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="xmen.utils.get_version">
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_version</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cls</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fn</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get version information for either a path to a directory or a class. Git version information is loaded
+if available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – A path to a repository which is inspected for version information</p></li>
+<li><p><strong>cls</strong> (<em>Class</em>) – A Class object to be inspected for version information</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A dictionary containing at least one of the following:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">path</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">None:</span></code></dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">'path'</span></code>: A copy of the path</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">cls</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">None:</span></code></dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">'module'</span></code>: A path to the module in which the class was defined</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'class'</span></code>: The name of the class</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">git</span> <span class="pre">!=</span> <span class="pre">{}</span></code>: (i.e if path or module is in a git repository):</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">'git_local'</span></code>: The root of the local git repository</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'git_commit'</span></code>: The hash of the commit</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'git_remote'</span></code>: The remote url if has remote else <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>version (dict)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="xmen.utils.get_run_script">
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_run_script</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">module</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">shell</span><span class="o">=</span><span class="default_value">'/usr/bin/env python3'</span></em>, <em class="sig-param"><span class="n">comment</span><span class="o">=</span><span class="default_value">'#'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_run_script" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a run script for a particular experiment.</p>
+<p>module (str): the module to look in
+name (str): the name of the experiment in the module. If name corresponds to</p>
+<blockquote>
+<div><p>a function it will be converted to an Experiment class</p>
+</div></blockquote>
+</dd></dl>
+
+</div>
 <div class="section" id="the-experimentmanager-class">
 <h2>The ExperimentManager Class<a class="headerlink" href="#the-experimentmanager-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
@@ -447,7 +799,8 @@ represented as a bash <cite>script.sh</cite> which takes a set of parameters in 
 </ul>
 </div></blockquote>
 <dl>
-<dt>More Info:</dt><dd><p>At its core the experiment manager maintains a single <cite>root</cite> directory:</p>
+<dt>More Info:</dt><dd><blockquote>
+<div><p>At its core the experiment manager maintains a single <cite>root</cite> directory:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>root
 ├── defaults.yml
 ├── experiment.yml
@@ -609,9 +962,11 @@ following:</p>
 <span class="n">experiment_run</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>                                         <span class="c1"># Run all created experiments</span>
 </pre></div>
 </div>
-</dd>
-</dl>
-<p>Link an experiment manager to root. If root already contains an <code class="docutils literal notranslate"><span class="pre">experiment.yml</span></code> then it is loaded.</p>
+</div></blockquote>
+<dl class="py method">
+<dt id="xmen.manager.ExperimentManager.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">headless</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.manager.ExperimentManager.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Link an experiment manager to root. If root already contains an <code class="docutils literal notranslate"><span class="pre">experiment.yml</span></code> then it is loaded.</p>
 <p>In order to link a new experiment with a defaults.yml and script.sh file then the initialise method must be
 called.</p>
 <dl class="field-list simple">
@@ -629,6 +984,10 @@ has just been created).</p></li>
 <li><p><strong>overides</strong> – A list of dictionaries giving the names (keys) and values of the parameters overridden from the
 defaults for each experiment in experiments.</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
 </dd>
 </dl>
 <dl class="py method">
@@ -793,156 +1152,6 @@ manager)</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-xmen.monitor">
-<span id="the-monitor-class"></span><h2>The Monitor Class<a class="headerlink" href="#module-xmen.monitor" title="Permalink to this headline">¶</a></h2>
-<dl class="py exception">
-<dt id="xmen.monitor.LastStep">
-<em class="property">exception </em><code class="sig-prename descclassname">xmen.monitor.</code><code class="sig-name descname">LastStep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trigger</span></em>, <em class="sig-param"><span class="n">step</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.monitor.LastStep" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="xmen.monitor.load">
-<code class="sig-prename descclassname">xmen.monitor.</code><code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">load_dir</span></em>, <em class="sig-param"><span class="n">step</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">attempt</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">modules</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.monitor.load" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load torch objects from a checkpoint object. If <code class="docutils literal notranslate"><span class="pre">Step</span> <span class="pre">is</span> <span class="pre">None</span></code> then the most recent checkpoint is loaded.
-Else the checkpoint is loaded at the specified step. If attempt == False then load will raise a ValueError
-if either one of the modules was not found in modules or if no checkpoints were found in load_dir.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>No check to ensure the meta information in each file is the same. The meta information returned corresponds
-to the first module encountered in modules.</p>
-</div>
-</dd></dl>
-
-</div>
-<div class="section" id="module-xmen.utils">
-<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-xmen.utils" title="Permalink to this headline">¶</a></h2>
-<p>A module containing several utilitity functions, classes and Meta Classes used by the ExperimentManager
-and the Experiment classes.</p>
-<dl class="py function">
-<dt id="xmen.utils.get_meta">
-<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_meta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_meta" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get Meta information for the system</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="xmen.utils.get_attribute_helps">
-<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_attribute_helps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cls</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_attribute_helps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get all help files for class <code class="docutils literal notranslate"><span class="pre">cls</span></code> from doc strings from all inherited classes.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="xmen.utils.get_docs">
-<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_docs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cl</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_docs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return all docs for every inherited class</p>
-</dd></dl>
-
-<dl class="py class">
-<dt id="xmen.utils.TypedMeta">
-<em class="property">class </em><code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">TypedMeta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">bases</span></em>, <em class="sig-param"><span class="n">attr_dict</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.TypedMeta" title="Permalink to this definition">¶</a></dt>
-<dd><p>A meta class helper used to generate automatic doc strings generated from typed class definitions. This allows
-the docstrings to be defined inside the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> body instead of inside the doc string iradicating the need
-to type attributes twice:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MyClass</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">TypedMeta</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;This class is bound to do something...&#39;&#39;&#39;</span>
-
-    <span class="n">a</span> <span class="nb">int</span><span class="p">:</span> <span class="mi">3</span>   <span class="c1"># @p My first attribute</span>
-    <span class="n">b</span> <span class="nb">int</span><span class="p">:</span> <span class="mi">5</span>   <span class="c1"># @p My second attribute</span>
-
- <span class="n">m</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
- <span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">__init</span><span class="o">.</span><span class="n">__</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Now if we call:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ob</span> <span class="o">=</span> <span class="nb">print</span><span class="p">(</span><span class="n">MyClass</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
-
-<span class="go"> This class is bound to do something...</span>
-
-<span class="go"> Parameters:</span>
-<span class="go">     a (int) : My first attribute (default=3)</span>
-<span class="go">     b (int) : My second attribute (default=5)</span>
-</pre></div>
-</div>
-<p>The doc string has automatically been updated.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="xmen.utils.get_git">
-<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_git</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_git" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get git information for the given path.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><dl class="simple">
-<dt>Empty if status == False otherwise with keys:</dt><dd><ul class="simple">
-<li><p>remote: A url to the remote repository</p></li>
-<li><p>hash: A git hash to the current commit</p></li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><p>(dict)</p>
-<dl class="simple">
-<dt>status (bool): False if either git is not available, the repo is not in a git repository or if there are</dt><dd><p>uncommited changes in the current repository. Otherwise true</p>
-</dd>
-</dl>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="xmen.utils.get_version">
-<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_version</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cls</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.utils.get_version" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get version information for either a path to a directory or a class. Git version information is loaded
-if available.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<em>str</em>) – A path to a repository which is inspected for version information</p></li>
-<li><p><strong>cls</strong> (<em>Class</em>) – A Class object to be inspected for version information</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>A dictionary containing at least one of the following:</dt><dd><ul class="simple">
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">path</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">None:</span></code></dt><dd><ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">'path'</span></code>: A copy of the path</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">cls</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">None:</span></code></dt><dd><ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">'module'</span></code>: A path to the module in which the class was defined</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">'class'</span></code>: The name of the class</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">git</span> <span class="pre">!=</span> <span class="pre">{}</span></code>: (i.e if path or module is in a git repository):</dt><dd><ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">'git_local'</span></code>: The root of the local git repository</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">'git_commit'</span></code>: The hash of the commit</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">'git_remote'</span></code>: The remote url if has remote else <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>version (dict)</p>
-</dd>
-</dl>
-</dd></dl>
-
-</div>
 </div>
 
 
@@ -956,7 +1165,7 @@ if available.</p>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="example.html" class="btn btn-neutral" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="example.html" class="btn btn-neutral" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

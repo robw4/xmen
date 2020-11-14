@@ -1,26 +1,45 @@
+****
 API
-####
+****
 
-The Experiment Class
--------------------------
+Root
+######
+
+.. autoclass:: xmen.experiment.Root()
+   :members: directory, message, messages
+
+
+Experiment
+###########
 
 .. autoclass:: xmen.experiment.Experiment
    :members:
 
-The ExperimentManager Class
---------------------------------
-.. autoclass:: xmen.manager.ExperimentManager
-   :members:
+   .. automethod:: __init__
 
 
-The Monitor Class
---------------------------------
+Monitor
+########
+.. autoclass:: xmen.monitor.Monitor
+	:members:
+	:show-inheritance:
+
+   	.. automethod:: __init__
+
 .. automodule:: xmen.monitor
    :members:
-   :show-inheritance:
+   
 
 
 Utils
-------
+######
 .. automodule:: xmen.utils
 	:members:
+
+
+The ExperimentManager Class
+#############################
+.. autoclass:: xmen.manager.ExperimentManager
+   :members:
+
+    .. automethod:: __init__
