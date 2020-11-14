@@ -93,6 +93,11 @@ __Xmen will take it from here...__
 __... and much, much more!__
 
 ## Installation
+To install xmen use pip
+```bash
+pip install git+https://github.com/robw4/xmen.git
+```
+Alternatively, clone the repo and then run pip if you also want access to the example scripts.
 ```bash
 >>> git clone https://github.com/robw4/xmen.git ~/xmen
 >>> pip install ~/xmen/python
