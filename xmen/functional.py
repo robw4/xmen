@@ -20,6 +20,7 @@ def functional_experiment(fn):
     obj = None
     for i, k in enumerate(signature.parameters):
         p = signature.parameters[k]
+
         if i > 0:
             ty = p.annotation
             if ty == inspect.Parameter.empty:
@@ -37,14 +38,26 @@ def functional_experiment(fn):
                     ty = string
 
             # find first comment
-            comments = p.name.join(src.split(p.name)[1:]).split('\n')
+            comments = []
+            for ii, l in enumerate(src.splitlines()):
+                l = l.split('#')[0]
+                l = l.replace(' ', '')
+                if ':' in l:
+                    l = l.split(':')[0]
+                elif '=' in l:
+                    l = l.split('=')[0]
+                if l == p.name:
+                    comments = src.splitlines()[ii:]
+                    break
+
+            # comments = p.name.join(src.split(p.name)[1:]).split('\n')
 
             help = None
-            for i, c in enumerate(comments):
+            for k, c in enumerate(comments):
                 c = c.split('#')
-                if i == 0 and len(c) == 2:
+                if k == 0 and len(c) == 2:
                     help = c[-1].strip()
-                elif i > 0 and c[0].strip() == '' and len(c) == 2:
+                elif k > 0 and c[0].strip() == '' and len(c) == 2:
                     help += ' ' + c[1].strip()
                 else:
                     break

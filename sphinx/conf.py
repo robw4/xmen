@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../python'))
+sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('.'))
 
 import commonmark
@@ -38,7 +38,7 @@ author = 'Rob Weston'
 # The full version, including alpha/beta/rc tags
 release = '0.1'
 
-autoclass_content = 'both'
+autoclass_content = 'class'
 autodoc_default_options = {
     'member-order': 'bysource',
 }

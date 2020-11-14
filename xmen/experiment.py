@@ -24,6 +24,7 @@ import argparse
 from typing import Optional, Dict, List, Any
 import signal
 import io
+import abc
 
 from argparse import RawTextHelpFormatter
 from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recursive_print_lines, TypedMeta, MultiOut
@@ -53,8 +54,10 @@ experiment_parser.add_argument('--to_txt', '-t', default=None, action='store_tru
 
 _SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta']
 
+
 class IncompatibleYmlException(Exception):
     pass
+
 
 class TimeoutException(Exception):
     pass
@@ -604,25 +607,11 @@ class Experiment(object, metaclass=TypedMeta):
                 self.stdout_to_txt()
             # Execute experiment
             try:
-                print(self)
+                # print(self)
                 self.__call__()
             except NotImplementedError:
                 print(f'WARNING: The --execute flag was passed but run is not implemented for {self.__class__}')
                 pass
-
-    @classmethod
-    def functional(cls, func):
-        def _func(*args, **kwargs):
-            exp = cls()
-            exp.parse_args()
-            if exp.status not in ['default']:
-                with exp:
-                    x = func(exp)
-                return x
-            else:
-                print('To run an experiment please register first. See --help for more options')
-
-        return _func
 
     def stdout_to_txt(self):
         """Configure stdout to also log to a text file in the experiment directory"""
@@ -640,26 +629,22 @@ class Experiment(object, metaclass=TypedMeta):
         lines += ['  ' + f'{k}: {v}' for k, v in params.items()]
         return '\n'.join(lines)
 
-    def monitor(
-            self,
-            hooks=[],
-            # Default saving for parameters
-            checkpoint=None, checkpoints_to_keep=None,
-            log=None,
-            img=None, img_fn=None, img_n=None,
-            sca=None, sca_fn=None,
-            time=None,
-            message=None,
-            limit=None):
-        from xmen.monitor import Monitor
-        return Monitor(  # User defined hooks (either) modulo or not modulo
-             self.directory,
-             hooks=hooks,
-             # Default saving for parameters
-             checkpoint=checkpoint, checkpoints_to_keep=checkpoints_to_keep,
-             log=log,
-             img=img, img_fn=img_fn, img_n=img_n,
-             sca=sca, sca_fn=sca_fn,
-             time=time,
-             message=message,
-             limit=limit)
+
+class Root(Experiment):
+    """The first argument passed to a functional experiment and principally used to root an experiment instance to a
+    particular directory::
+
+
+        def functional_experiment(root: Root, ...):
+            with open(root.directory, 'w') as f:
+                f.write('Running experiment)
+
+            root.message({'time': time.time()})
+
+    Note:
+        Root is nothing more than Experiment with a different name. Whilst principally offering exactly the same
+        functionality, primarily the purpose of Root is to expose the directory property and messaging protocol of
+        the Experiment class to functional experiment definitions. However, there is nothing stopping the user
+        form using the full functionality of the Experiment class if they wish. Please consult the Experiment class
+        documentation in this case.
+    """
