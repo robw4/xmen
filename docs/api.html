@@ -41,7 +41,7 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="xmen 0.1 documentation" href="index.html"/>
-        <link rel="prev" title="Tutorials" href="example.html"/> 
+        <link rel="prev" title="FAQ" href="faq.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -92,9 +92,9 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="README.html">Xmen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="class-api.html">Xmen Experiment Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cheat-sheet.html">Cheat Sheet</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#root">Root</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#experiment">Experiment</a></li>
@@ -164,7 +164,7 @@
   <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
       
       
-        <a href="example.html" class="btn btn-neutral" title="Tutorials" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="faq.html" class="btn btn-neutral" title="FAQ" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
   </div>
   
@@ -206,7 +206,8 @@ documentation in this case.</p>
 <dl class="py method">
 <dt id="xmen.experiment.Root.message">
 <code class="sig-name descname">message</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">messages</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">'latest'</span></em>, <em class="sig-param"><span class="n">leader</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Root.message" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a message to the experiment (and an experiments params.yml file).</p>
+<dd><p>Add a message to the experiment (and an experiments params.yml file). If the experiment is not registered to
+a root then no messages will be logged.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -387,7 +388,8 @@ run the experiment.</p>
 <dl class="py method">
 <dt id="xmen.experiment.Experiment.message">
 <code class="sig-name descname">message</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">messages</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">'latest'</span></em>, <em class="sig-param"><span class="n">leader</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xmen.experiment.Experiment.message" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a message to the experiment (and an experiments params.yml file).</p>
+<dd><p>Add a message to the experiment (and an experiments params.yml file). If the experiment is not registered to
+a root then no messages will be logged.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1165,7 +1167,7 @@ manager)</p>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="example.html" class="btn btn-neutral" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="faq.html" class="btn btn-neutral" title="FAQ" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

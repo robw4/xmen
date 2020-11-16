@@ -10,9 +10,10 @@ xmen: fast and reproducible experimentation!
    :caption: Contents:
 
    README
+   example
+   class-api
    cheat-sheet
    faq
-   example
    api
 
 

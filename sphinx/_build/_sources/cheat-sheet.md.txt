@@ -1,84 +1,77 @@
-# Cheat Sheet
-__Python Interface__
+# Command Line
+## xmen
 ```bash
-xmen py --add xmen.examples.object MnistCGan  # add a new python experiment (must be on path)
-xmen py --list  # list current experiments
-xmen py MnistCGan --help  # display ex
-xmen py MnistCGan [--debug] [-u "{lr: 0.01}"] -x "/tmp/my_exp"  # execute an experiment at "/tmp/my_exp"
-xmen py MnistCGan [-u "/path/to/params.yml"] -x "/tmp/my_exp"  # execute an experiment using parameters in a params.uml file
-xmen py --remove MnistCGan # remove experiment from the xmen interface (non-destructive)
-```
-__Config__
-```bash
-xmen config --enable_prompt  # turn prompting on (recommended)
-xmen config --disable_prompt  # turn prompting off
-xmen config --clean  # remove experiments from config that no longer exist
-xmen config -H /path/to/header.txt  # update header prepended to each run script
-xmen config --list  # list the current configuration
+xmen --help # get help
+xmen --add xmen.examples.hello_world HelloWorld  # add a new python experiment (must be on path)
+xmen --list  # list current experiments
+xmen HelloWorld # display experiemnt docs
+xmen HelloWorld --help # get help with running the experiment
+xmen HelloWorld [--debug] [-u "{lr: 0.01}"] -x "/tmp/my_exp"  # execute an experiment at "/tmp/my_exp"
+xmen HelloWorld [-u "/path/to/params.yml"] -x "/tmp/my_exp"  # execute an experiment using parameters in a params.uml file
+xmen --remove HelloWorld # remove experiment from the xmen interface (non-destructive)
 ```
 
-__Initialise an Experiment Set__
-```bash
-xmen init -n MnistCGan  # from a python experiment in the current dirctory
-xmen init -n MnistCGan -r mnist_gann # at folder relative to cwd
-xmen init -s /path/to/script.sh -d /path/to/defaults.yml  # from a script and defaults 
-```
+## xgent
 
-__Register__
 ```bash
-xmen register -u "{lr: 1e-2 | 1e-3, epochs: 10}" # experiments from parameter combinations
-xmen register -u "{lr: 1e-2}" -x 10  # register 10 experiments with the same configiration
-xmen register [-u "{lr: 1e-2}" ] -n test # register an experiment named test
-```
+# config - global configuration
+xgent config --enable_prompt  # turn prompting on (recommended)
+xgent config --disable_prompt  # turn prompting off
+xgent config --clean  # remove experiments from config that no longer exist
+xgent config -H /path/to/header.txt  # update header prepended to each run script
+xgent config --list  # list the current configuration
 
-__Run__
-```bash
-xmen run "*" bash # run all experiments iteratively matching glob and with default status
-xmen run "lr=0.0001" bash   # run a particular experiment
-xmen run "*" sbatch  # run each experiment using the slurm job shecudler
-xmen run "*" screen -dm bash   # run each experiment in a seperate screen session
-```
+# init - initialise an experiment set
+xgent init -n HelloWorld  # from a python experiment in the current dirctory
+xgent init -n HelloWorld -r mnist_gann # at folder relative to cwd
+xgent init -s /path/to/script.sh -d /path/to/defaults.yml  # from a script and defaults
 
-__Note__
-```bash
-xmen note "some message" # add note to experiment set
-xmen note "TODO: do something" # add note to experiment set
-```
+# register - register experiments for running
+xgent register -u "{lr: 1e-2 | 1e-3, epochs: 10}" # experiments from parameter combinations
+xgent register -u "{lr: 1e-2}" -x 10  # register 10 experiments with the same configiration
+xgent register [-u "{lr: 1e-2}" ] -n test # register an experiment named test
 
-__Manipulating__
-```bash
-xmen reset {PATTERN}   # reset experiments to default status
-xmen unlink {PATTERN}  # unlink experiment(s) from a set 
-xmen relink -e {PATTERN}  # relink experiments matching pattern
-xmen clean  # remove all experiments no longer in the set
-xmen rm {FOLDER}  # remove entire experiment folder
+# run
+xgent run "*" bash # run all experiments iteratively matching glob and with default status
+xgent run "lr=0.0001" bash   # run a particular experiment
+xgent run "*" sbatch  # run each experiment using the slurm job shecudler
+xgent run "*" screen -dm bash   # run each experiment in a seperate screen session
+
+# note
+xgent note "some message" # add note to experiment set
+xgent note "TODO: do something" # add note to experiment set
+
+# list
+xgent list  # list experiments in cwd
+xgent list -l  # display experiments in notebook form
+xgent list -d  # display date registered
+xgent list -g  # display version information
+xgent list -P  # display purpose message
+xgent list -M  # display meta information
+xgent list -s  # display experiment status
+xgent list "*"  # display experiments matching glob string
+xgent list -p "lr.*"  # display all experiments with parrameters matching regex search
+xgent list -m   # display messages matching default regex search
+xgent list -m "e|s"  # display messages matching specified regex search
+xgent list "*" -sd -m "e|s"  # options can be used together
+xgent list -v  # verbose list
+xgent list [...] --to_csv  # list as csv instead of formatted table
+xgent list --csv >> my_file.txt   # list as csv and pipe to text file
+xgent list --max_width 1000   # maximum width of each collumn
+xgent list --max_rows 100    # maximum number of rows
+
+# manipulating
+xgent reset {PATTERN}   # reset experiments to default status
+xgent unlink {PATTERN}  # unlink experiment(s) from a set 
+xgent relink -e {PATTERN}  # relink experiments matching pattern
+xgent clean  # remove all experiments no longer in the set
+xgent rm {FOLDER}  # remove entire experiment folder
 
 # moving a single experiment set
 mv experiment-set experiment-set-2   # move experiment folder
-xmen relink -r experiment-set-2   # relink the experiment folder
+xgent relink -r experiment-set-2   # relink the experiment folder
 
 # moving a folder of multiple experiment sets
 mv folder folder-2  # move experiment folder
-xmen relink -r folder-2 --recursive # recursively relink all experiment folders
-```
-
-__List__
-```bash
-xmen list  # list experiments in cwd
-xmen list -l  # display experiments in notebook form
-xmen list -d  # display date registered
-xmen list -g  # display version information
-xmen list -P  # display purpose message
-xmen list -M  # display meta information
-xmen list -s  # display experiment status
-xmen list "*"  # display experiments matching glob string
-xmen list -p "lr.*"  # display all experiments with parrameters matching regex search
-xmen list -m   # display messages matching default regex search
-xmen list -m "e|s"  # display messages matching specified regex search
-xmen list "*" -sd -m "e|s"  # options can be used together
-xmen list -v  # verbose list
-xmen list [...] --to_csv  # list as csv instead of formatted table
-xmen list --csv >> my_file.txt   # list as csv and pipe to text file
-xmen list --max_width 1000   # maximum width of each collumn
-xmen list --max_rows 100    # maximum number of rows
+xgent relink -r folder-2 --recursive # recursively relink all experiment folders
 ```
