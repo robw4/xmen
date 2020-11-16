@@ -40,10 +40,11 @@ class MnistCGan(Experiment):
     Note:
         The output size is given as hw0 * 2 ** nl (eg (4, 2) * 2 ** 4 = (64, 32)
     """
+    import os
     b: int = 128  # @p the batch size per gpu
     hw0: Tuple[int, int] = (4, 4)  # @p the height and width of the image
     nl: int = 4  # @p The number of levels in the discriminator.
-    data_root: str = '/home/robw/data/mnist'  # @p the root data directory
+    data_root: str = os.environ['TMPDIR']  # @p the root data directory
     cx: int = 1  # @p the dimensionality of the image input
     cy: int = 10  # @p the dimensionality of the conditioning vector
     cf: int = 512  # @p the number of features after the first conv in the discriminator
@@ -101,7 +102,7 @@ class MnistCGan(Experiment):
     def build(self):
         """Build generator, discriminator and optimisers."""
         from torch.optim import Adam
-        from rad2sim2rad.experiments.gan.models import GeneratorNet, DiscriminatorNet
+        from xmen.examples.models import GeneratorNet, DiscriminatorNet
         nn_g = GeneratorNet(self.cy, self.cz, self.cx, self.cf, self.hw0, self.nl)
         op_g = Adam(nn_g.parameters(), lr=self.lr, betas=self.betas)
         nn_d = DiscriminatorNet(self.cx, self.cy, self.cf, self.hw0, self.nl)

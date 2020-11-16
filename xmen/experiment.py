@@ -32,11 +32,13 @@ from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recu
 import os
 
 helps = {
-    'execute': 'Execute the experiment from a given params.yml file or at the passed location.',
+    'execute': 'Execute the experiment from a given params.yml file linked to folder. If no folder is '
+               'passed the experiment will be run in a detached state. This is useful for debugging but is'
+               'not recommended for deployment.',
     'update': 'Update the parameters given by a yaml string. Note this will be called before '
               'other flags and can be used in combination with --to_root, --to_defaults, and --register',
     'root': 'Generate a run script and defaults.yml file for interfacing with xgent',
-    'debug': 'Run experiment in debug mode. Experiment is registered to a folder in /tmp',
+    'debug': 'Run experiment in debug mode. The experiments debug will be called before registering.',
     'txt': 'Also log stdout and stderr to an out.txt file. Enabled by default'
 }
 
@@ -44,11 +46,22 @@ import textwrap
 for k in helps:
     helps[k] = '\n'.join(textwrap.wrap(helps[k], 50))
 
+
+class NullRoot(str):
+    def __new__(cls):
+        obj = str.__new__(cls, os.devnull)
+        return obj
+
+    def __add__(self, other):
+        return self
+
+
 experiment_parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 experiment_parser.add_argument('--update', '-u', type=str, default=None, nargs='+', help=helps['update'])
-experiment_parser.add_argument('--execute', '-x', type=str, default=None, help=helps['execute'])
+experiment_parser.add_argument('--execute', '-x', type=str, default=None, help=helps['execute'],
+                               nargs='?', const=NullRoot())
 experiment_parser.add_argument('--to_root', '-r', type=str, default=None, help=helps['root'])
-# Optional extras
+# optional extras
 experiment_parser.add_argument('--debug', '-d', default=None, action='store_true', help=helps['debug'])
 experiment_parser.add_argument('--to_txt', '-t', default=None, action='store_true', help=helps['txt'])
 
@@ -251,7 +264,10 @@ class Experiment(object, metaclass=TypedMeta):
 
         # Convert to yaml
         yaml = ruamel.yaml.YAML()
+        yaml.register_class(NullRoot)
         try:
+            if self.status == 'detached':
+                pass
             yaml.dump(defaults, io.StringIO())
         except yaml.representer.RepresenterError as m:
             raise RuntimeError(f'Invalid yaml encountered with error {m}')
@@ -352,12 +368,6 @@ class Experiment(object, metaclass=TypedMeta):
             sh += [f'module = importlib.import_module("{self.__class__.__module__}")']
             sh += [f'X = getattr(module, "{self.__class__.__name__}")']
             sh += ['X().main()']
-            # sh += [f'x = X()']
-            # sh += [f'x.from_yml(sys.argv[1])']
-            # sh += [f'print(x, end="\\n")']
-            # sh += [f'x.stdout_to_txt()']
-            # sh += ['# Finally run the experiment']
-            # sh += [f'x()']
         else:
             sh = [f'#!{shell}']
             sh += ['python3 ' + self._version['module'] + ' --execute ']
@@ -400,6 +410,8 @@ class Experiment(object, metaclass=TypedMeta):
         self._to_yaml()
 
     def detach(self):
+        self._root = NullRoot()
+        self._name = ''
         self._status = 'detached'
 
     def update(self, kwargs):
@@ -459,7 +471,8 @@ class Experiment(object, metaclass=TypedMeta):
         raise NotImplementedError('Derived classes must implement the run method in order to be called')
 
     def message(self, messages, keep='latest', leader=None):
-        """Add a message to the experiment (and an experiments params.yml file).
+        """Add a message to the experiment (and an experiments params.yml file). If the experiment is not registered to
+        a root then no messages will be logged.
 
         Args:
             messages (dict): A dictionary of messages. Keys are interpreted as subjects and values interpreted as
@@ -473,7 +486,7 @@ class Experiment(object, metaclass=TypedMeta):
             (if possible) then string thereafter.
 
         """
-        if self._status != 'default':
+        if self._root is not None:
             # Add leader to messages group
             if leader is not None:
                 best_leader = self.compare(leader, messages[leader], keep)[0]
@@ -494,8 +507,6 @@ class Experiment(object, metaclass=TypedMeta):
                 if best:
                     self._messages.update({k: v})
             self._to_yaml()
-        else:
-            raise ValueError('An experiment must be registered to leave a message')
 
     @staticmethod
     def convert_type(v):
@@ -557,18 +568,21 @@ class Experiment(object, metaclass=TypedMeta):
         # Then execute the experiment
         if args.execute is not None:
             # (1) register experiment from pre-existing params.yml file
-            if os.path.isfile(args.execute):
-                try:
-                    self.from_yml(args.execute)
-                    if not self.status == 'registered':
-                        raise IncompatibleYmlException
-                except IncompatibleYmlException:
-                    print(f'ERROR: File {args.execute} is not a valid params.yml file')
-            # (2) register experiment to a repository
+            if args.execute != os.devnull:
+                if os.path.isfile(args.execute):
+                    try:
+                        self.from_yml(args.execute)
+                        if not self.status == 'registered':
+                            raise IncompatibleYmlException
+                    except IncompatibleYmlException:
+                        print(f'ERROR: File {args.execute} is not a valid params.yml file')
+                # (2) register experiment to a repository
+                else:
+                    name = os.path.basename(os.path.normpath(args.execute))
+                    root = os.path.dirname(os.path.normpath(args.execute))
+                    self.register(root, name)
             else:
-                name = os.path.basename(os.path.normpath(args.execute))
-                root = os.path.dirname(os.path.normpath(args.execute))
-                self.register(root, name)
+                self.detach()
         return args
 
     def main(self, args=None):
@@ -600,7 +614,7 @@ class Experiment(object, metaclass=TypedMeta):
 
         # Run the experiment
         if args.execute is not None:
-            assert self.status == 'registered', 'Experiment must be registered before execution'
+            assert self.status in ['registered', 'detached'], 'Experiment must be registered before execution'
             # Configure standard out to print to the registered directory as well as
             # the original standard out
             if args.to_txt:

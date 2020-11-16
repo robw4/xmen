@@ -147,8 +147,3 @@ def dcgan(
                 for yi, zi in datasets['inference']:
                     yi, zi = yi.to(device), zi.to(device)
                     _xi_ = nn_g(yi, zi)
-
-
-def printer(a, b, c, d, e, f, g, h, i, j):
-    """Print out the inputs"""
-    print(a, b, c, d, e, f, g, h, i, j)
