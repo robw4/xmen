@@ -36,7 +36,7 @@ DESCRIPTION = [r'||||||||||||||||||||||||| WELCOME TO ||||||||||||||||||||||||||
 #  py
 #######################################################################################################################
 py_parser = argparse.ArgumentParser(
-    prog='xman',
+    prog='xmen',
     description='\n'.join(DESCRIPTION),
     formatter_class=argparse.RawTextHelpFormatter
 )

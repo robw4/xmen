@@ -386,12 +386,14 @@ class Experiment(object, metaclass=TypedMeta):
         self.update_version()
         self.update_meta()
 
-        print(self.get_run_script())
+        from xmen.utils import get_run_script
+        if hasattr(self, 'fn'):
+            script = get_run_script(*self.fn)
+        else:
+            script = get_run_script(self.__class__.__module__, self.__class__.__name__)
 
         if not os.path.exists(root_dir):
             os.makedirs(root_dir)
-
-        script = self.get_run_script()
 
         # Save to root directory
         path = os.path.join(root_dir, f'{self.__class__.__module__}.{self.__class__.__name__}')

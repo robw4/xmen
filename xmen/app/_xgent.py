@@ -58,7 +58,7 @@ DESCRIPTION = r"""
 |||||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION |||||||||||||
 """
 parser = argparse.ArgumentParser(
-    prog='xman',
+    prog='xgent',
     description=DESCRIPTION,
     formatter_class=argparse.RawTextHelpFormatter)
 subparsers = parser.add_subparsers()
@@ -408,7 +408,6 @@ def _list(args):
             results = global_exp_manager.find(
                 mode='all', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
                 load_defaults=args.load_defaults)
-            print(results)
             data_frame, root = global_exp_manager.find_to_dataframe(
                 results,
                 verbose=args.verbose,

@@ -400,9 +400,10 @@ def commented_to_py(x, seq=tuple):
 def get_run_script(module, name, shell='/usr/bin/env python3', comment='#'):
     """Generate a run script for a particular experiment.
 
-    module (str): the module to look in
-    name (str): the name of the experiment in the module. If name corresponds to
-        a function it will be converted to an Experiment class
+    Args:
+        module (str): the module to look in
+        name (str): the name of the experiment in the module. If name corresponds to
+            a function it will be converted to an Experiment class
     """
     import sys
     import xmen

@@ -1,19 +1,13 @@
 #SBATCH --nodes=1
 #SBATCH --job-name=single_job
 #SBATCH --time=1-00:00:00
-#SBATCH --gres=gpu:rtx:1
-#SBATCH --partition=htc-nova
+#SBATCH --gres=gpu:1
+#SBATCH --constraint='gpu_sku:RTX|gpu_sku:V100-LS|gpu_sku:V100|gpu_sku:P100'
+#SBATCH --partition=htc-nova,htc
 #SBATCH --cpus-per-task=2
 #SBATCH --mail-user=robw@robots.ox.ac.uk
 #SBATCH --mail-type=ALL
 #SBATCH --account=engs-a2i
+#SBATCH --signal=SIGUSR1@90
 # Author: Rob Weston
 # Email: robw@robots.ox.ac.uk
-
-# Lets activate an environment
-conda active xmen
-
-
-# Maybe we want to set some environement variables
-PATH1="..."
-PATH2="..."

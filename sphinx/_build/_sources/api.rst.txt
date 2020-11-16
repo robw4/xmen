@@ -37,8 +37,8 @@ Utils
 	:members:
 
 
-The ExperimentManager Class
-#############################
+ExperimentManager
+###################
 .. autoclass:: xmen.manager.ExperimentManager
    :members:
 

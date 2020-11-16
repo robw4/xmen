@@ -1,4 +1,4 @@
-# Command Line
+# Cheat Sheet
 ## xmen
 ```bash
 xmen --help # get help
