@@ -9,14 +9,11 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 3 of the License, or
 #  (at your option) any later version.
-import sys
-sys.path.append('/home/robw/xmen/python')
-
 from typing import Tuple
 import torch
 from torch.distributions import Normal
 from xmen.experiment import Experiment
-
+import os
 
 # ------------------------------------------------------
 # ---- BASE EXPERIMENTS --------------------------------
@@ -39,7 +36,7 @@ class BaseGenerative(Experiment):
     b: int = 256  # @p the batch size per gpu
     hw0: Tuple[int, int] = (4, 4)  # @p the height and width of the image
     nl: int = 4  # @p The number of levels in the discriminator.
-    data_root: str = '/home/robw/data/mnist'  # @p the root data directory
+    data_root: str = os.getenv("HOME") + '/data/mnist'  # @p the root data directory
     cx: int = 1  # @p the dimensionality of the image input
     cy: int = 10  # @p the dimensionality of the conditioning vector
     cf: int = 512  # @p the number of features after the first conv in the discriminator
@@ -75,7 +72,7 @@ class BaseGenerative(Experiment):
 
 
 class BaseCVae(BaseGenerative):
-    """BaseCVae is an itemediary class defining the model and training loop but not the dataset.
+    """BaseCVae is an intermediary class defining the model and training loop but not the dataset.
 
     Inherited classes should overload:
     - dataset()
@@ -93,7 +90,7 @@ class BaseCVae(BaseGenerative):
     def build(self):
         from torch.optim import Adam
         from itertools import chain
-        from rad2sim2rad.experiments.gan.models import GeneratorNet, PosteriorNet, PriorNet
+        from xmen.examples.torch.models import GeneratorNet, PosteriorNet, PriorNet
         nn_gen = GeneratorNet(self.cy, self.cz, self.cx, self.cf, self.hw0, self.nl)
         nn_post = PosteriorNet(self.cx, self.cy, self.cz, self.cf, self.hw0, self.nl)
         nn_prior = PriorNet(self.cy, self.cz, self.cf, self.nlprior)
@@ -103,8 +100,8 @@ class BaseCVae(BaseGenerative):
 
     def run(self):
         from torch.distributions import Normal, kl_divergence
-        from rad2sim2rad.utils.torch.experiment_monitor import Monitor, TensorboardLogger
-        from rad2sim2rad.experiments.gan.models import weights_init
+        from xmen.monitor import Monitor, TensorboardLogger
+        from xmen.examples.torch.models import weights_init
         # construct model
         datasets = self.datasets()
         nn_gen, nn_post, nn_prior, opt = self.build()
@@ -147,7 +144,7 @@ class BaseCVae(BaseGenerative):
 
 
 class BaseGAN(BaseGenerative):
-    """BaseGan is an itemediary class defining the model and training loop but not the dataset.
+    """BaseGan is an intermediary class defining the model and training loop but not the dataset.
 
     Inherited classes should overload:
     - dataset()
@@ -161,7 +158,7 @@ class BaseGAN(BaseGenerative):
     def build(self):
         """Build the model from the current configuration"""
         from torch.optim import Adam
-        from rad2sim2rad.experiments.gan.models import GeneratorNet, DiscriminatorNet
+        from xmen.examples.torch.models import GeneratorNet, DiscriminatorNet
         nn_g = GeneratorNet(self.cy, self.cz, self.cx, self.cf, self.hw0, self.nl)
         op_g = Adam(nn_g.parameters(), lr=self.lr, betas=self.betas)
         nn_d = DiscriminatorNet(self.cx, self.cy, self.cf, self.hw0, self.nl)
@@ -171,16 +168,14 @@ class BaseGAN(BaseGenerative):
     def distributions(self): raise NotImplementedError
 
     def run(self):
-        from rad2sim2rad.utils.torch.experiment_monitor import Monitor, TensorboardLogger
-        from rad2sim2rad.utils.torch.models import GanLoss, set_requires_grad
-        from rad2sim2rad.experiments.gan.models import weights_init
+        from xmen.monitor import Monitor, TensorboardLogger
+        from xmen.examples.torch.models import set_requires_grad, weights_init
         # Get get_datasets
         datasets = self.datasets()
         py, pz = self.distributions()
         nn_g, nn_d, op_g, op_d = self.build()
         nn_g = nn_g.to(self.device).float().apply(weights_init)
         nn_d = nn_d.to(self.device).float().apply(weights_init)
-        cr = GanLoss(self.gan)
         m = Monitor(
             self.directory, checkpoint=self.checkpoint,
             log=self.log, sca=self.sca, img=self.img,
@@ -197,7 +192,7 @@ class BaseGAN(BaseGenerative):
                 op_d.zero_grad()
                 z = pz.sample([b]).reshape([b, self.cz, 1, 1]).to(self.device)
                 _x_ = nn_g(y, z)
-                loss_d = cr.disc(nn_d, (x, y), (_x_.detach(), y.detach()))
+                loss_d = nn_d((x, y), True) + nn_d((_x_.detach(), y.detach()), False)
                 loss_d.backward()
                 op_d.step()
                 # generator step
@@ -206,7 +201,7 @@ class BaseGAN(BaseGenerative):
                 z = pz.sample([b]).reshape([b, self.cz, 1, 1]).to(self.device)
                 _x_ = nn_g(y, z)
                 set_requires_grad([nn_d], False)
-                loss_g = cr.gen(nn_d, (_x_, y))
+                loss_g = nn_d((_x_, y), True)
                 loss_g.backward()
                 op_g.step()
             # Inference
@@ -221,7 +216,7 @@ class BaseMnist(BaseGenerative):
     """cDCGAN Training on the MNIST get_datasets"""
     # Update defaults
     hw0, nl = (4, 4), 3  # Default size = 32 x 32
-    data_root = '/home/robw/data/mnist'
+    data_root = os.getenv("HOME") + '/data/mnist'
     cx, cy, cz, cf = 1, 10, 100, 512
     ns = 10  # Number of samples to generate during inference
 
@@ -258,7 +253,7 @@ class BaseMnist(BaseGenerative):
 # ------------------------------------------------------
 # ---- RUNABLE EXPERIMENTS -----------------------------
 # ------------------------------------------------------
-class MnistGAN(BaseMnist, BaseGAN):
+class InheritedMnistGAN(BaseMnist, BaseGAN):
     """Train a cDCGAN on MNIST"""
     epochs = 20
     ncpus, ngpus = 0, 1
@@ -273,7 +268,7 @@ class MnistGAN(BaseMnist, BaseGAN):
         return py, pz
 
 
-class MnistVae(BaseMnist, BaseCVae):
+class InheritedMnistVae(BaseMnist, BaseCVae):
     """Train a conditional VAE on MNIST"""
     ns = 10
     w_beta = 1.5

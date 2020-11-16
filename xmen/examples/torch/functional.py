@@ -83,7 +83,16 @@ def dcgan(
     nimg: int = 64,  # the maximum number of images to display to tensorboard
     ns: int = 5  # the number of samples to generate at inference)
 ):
-    """A function dcgan example found at xmen.examples.functional"""
+    """A function dcgan example found at xmen.examples.functional.
+
+    see
+    > xmen dcgan --help
+    for more options.
+
+    To visualise results run
+    > tensorboard --logdir $ROOT
+    where $ROOT is the path the experiment was linked to (eg. using xmen -x $ROOT)
+    """
     from xmen.monitor import Monitor, TensorboardLogger
     from xmen.examples.models import weights_init, set_requires_grad, GeneratorNet, DiscriminatorNet
     from torch.distributions import Normal
@@ -115,6 +124,7 @@ def dcgan(
         root.directory, checkpoint=checkpoint,
         log=log, sca=sca, img=img,
         time=('@20s', '@1e'),
+        message='root@100s',
         img_fn=lambda x: x[:min(nimg, x.shape[0])],
         hooks=[TensorboardLogger('image', '_xi_$@1e', nrow=10)])
 

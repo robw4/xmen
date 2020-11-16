@@ -34,17 +34,21 @@ from torch.distributions import Normal
 from xmen.experiment import Experiment
 
 
-class MnistCGan(Experiment):
+class Dcgan(Experiment):
     """Train a conditional GAN to predict MNIST digits.
+
+    To viusalise the results run::
+
+        tensorboard
 
     Note:
         The output size is given as hw0 * 2 ** nl (eg (4, 2) * 2 ** 4 = (64, 32)
     """
-    import os
+    import tempfile
     b: int = 128  # @p the batch size per gpu
     hw0: Tuple[int, int] = (4, 4)  # @p the height and width of the image
     nl: int = 4  # @p The number of levels in the discriminator.
-    data_root: str = os.environ['TMPDIR']  # @p the root data directory
+    data_root: str = tempfile.gettempdir()  # @p the root data directory
     cx: int = 1  # @p the dimensionality of the image input
     cy: int = 10  # @p the dimensionality of the conditioning vector
     cf: int = 512  # @p the number of features after the first conv in the discriminator
@@ -129,7 +133,7 @@ class MnistCGan(Experiment):
             log=self.log, sca=self.sca, img=self.img,
             time=('@20s', '@1e'),
             img_fn=lambda x: x[:min(self.nimg, x.shape[0])],
-            hooks=[TensorboardLogger('image', '_xi_$@1e', nrow=self.ns)])
+            hooks=[TensorboardLogger('image', '_xi_$@1e', nrow=10)])
         for _ in m(range(self.epochs)):
             for x, y in m(datasets['train']):
                 # process input
