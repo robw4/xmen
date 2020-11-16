@@ -48,7 +48,7 @@
     >>> xmen HelloWorld -x /tmp/hello_world  
     Hello World!
     # change the parameters
-    >>> men HelloWorld -u "{a: Bye Bye, b: Planet}" -x /tmp/bye_bye_planet
+    >>> men HelloWorld -u "{a: Bye, b: Planet}" -x /tmp/bye_bye_planet
     Bye Bye Planet!
     # built in records
     >>> xmen list /tmp/bye_bye_planet   
