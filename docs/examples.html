@@ -1,0 +1,1110 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Examples &mdash; xmen 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/jquery.fancybox.min.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/glpi.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="xmen 0.1 documentation" href="index.html"/>
+        <link rel="next" title="Xmen Experiment Classes" href="class-api.html"/>
+        <link rel="prev" title="Tutorial" href="tutorial.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> xmen
+          
+
+          
+          </a>
+
+          
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">Xmen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hello-world">Hello World</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a-little-more-detail">A little more detail</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xmen-meets-pytorch">Xmen meets Pytorch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dcgan-using-the-functional-api">DCGAN using the functional api</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dcgan-using-the-class-api">DCGAN using the class api</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#generative-modelling-with-inheritance">Generative modelling with inheritance</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="class-api.html">Xmen Experiment Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cheat-sheet.html">Cheat Sheet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">xmen</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Examples</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/examples.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="class-api.html" class="btn btn-neutral float-right" title="Xmen Experiment Classes" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tutorial.html" class="btn btn-neutral" title="Tutorial" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p>All examples, are defined in <code class="docutils literal notranslate"><span class="pre">xmen.examples</span></code> and can be run from the commandline using the <code class="docutils literal notranslate"><span class="pre">xmen</span></code> command line interface; just add them using <code class="docutils literal notranslate"><span class="pre">xmen</span> <span class="pre">--add</span></code> (if they are not already).</p></li>
+<li><p>For the “Xmen Meets Pytorch” experiments you will also need to have torch and tensorboard installed.</p></li>
+</ul>
+<div class="section" id="hello-world">
+<h2>Hello World<a class="headerlink" href="#hello-world" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Basic Examples&quot;&quot;&quot;</span>
+<span class="c1">#  Copyright (C) 2019  Robert J Weston, Oxford Robotics Institute</span>
+<span class="c1">#</span>
+<span class="c1">#  xmen</span>
+<span class="c1">#  email:   robw@robots.ox.ac.uk</span>
+<span class="c1">#  github: https://github.com/robw4/xmen/</span>
+<span class="c1">#</span>
+<span class="c1">#  This program is free software; you can redistribute it and/or modify</span>
+<span class="c1">#  it under the terms of the GNU General Public License as published by</span>
+<span class="c1">#  the Free Software Foundation; either version 3 of the License, or</span>
+<span class="c1">#  (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1">#  This program is distributed in the hope that it will be useful,</span>
+<span class="c1">#  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1">#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1">#  GNU General Public License for more details.</span>
+<span class="c1">#  You should have received a copy of the GNU General Public License</span>
+<span class="c1">#   along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="kn">import</span> <span class="nn">xmen</span>
+
+
+<span class="nd">@xmen</span><span class="o">.</span><span class="n">autodoc</span>
+<span class="k">def</span> <span class="nf">hello_world</span><span class="p">(</span>
+    <span class="n">root</span><span class="p">:</span> <span class="n">xmen</span><span class="o">.</span><span class="n">Root</span><span class="p">,</span>   <span class="c1"># experiments are assigned a root before being executed</span>
+    <span class="n">a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span><span class="p">,</span>  <span class="c1"># the first</span>
+    <span class="c1"># argument</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;World&#39;</span>   <span class="c1"># the second argument</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A hello world experiment designed to demonstrate</span>
+<span class="sd">    defining experiments through the functional experiment api&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{a}</span><span class="s1">  </span><span class="si">{b}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="o">...</span>     <span class="c1"># Whatever other experiment code you want</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">directory</span> <span class="o">+</span> <span class="s1">&#39;/out.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{a}</span><span class="s1"> </span><span class="si">{b}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">message</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">a</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="n">b</span><span class="p">})</span>
+
+
+<span class="k">class</span> <span class="nc">HelloWorld</span><span class="p">(</span><span class="n">xmen</span><span class="o">.</span><span class="n">Experiment</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A hello world experiment designed to demonstrate</span>
+<span class="sd">    defining experiments through the class experiment api&quot;&quot;&quot;</span>
+    <span class="c1"># Parameters</span>
+    <span class="n">a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span>  <span class="c1"># @p The first argument</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;World&#39;</span>  <span class="c1"># @p The second argument</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.a}</span><span class="s1"> </span><span class="si">{self.b}</span><span class="s1">!&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="a-little-more-detail">
+<h2>A little more detail<a class="headerlink" href="#a-little-more-detail" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Using the class api to define experiments with inheritance.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">xmen.experiment</span> <span class="k">import</span> <span class="n">Experiment</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span>
+
+
+<span class="k">class</span> <span class="nc">BaseExperiment</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A basic python experiment demonstrating the features of the xmen api.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Parameters are defined as attributes in the class body with the</span>
+    <span class="c1"># @p identifier</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="s1">&#39;cat&#39;</span>    <span class="c1"># @p</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="mi">3</span>        <span class="c1"># @p parameter w has a help message whilst t does not</span>
+    <span class="n">h</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># @p h declared with typing is very concise and neat</span>
+
+    <span class="c1"># Parameters can also be defined in the __init__ method</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BaseExperiment</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;h&#39;</span>  <span class="c1"># @p A parameter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">17</span>   <span class="c1"># @p Another parameter</span>
+
+        <span class="c1"># Normal attributes are still allowed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>    <span class="c1"># This is not a parameter</span>
+
+
+<span class="k">class</span> <span class="nc">AnotherExperiment</span><span class="p">(</span><span class="n">BaseExperiment</span><span class="p">):</span>
+    <span class="n">m</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Another value&#39;</span>  <span class="c1"># @p Multiple inheritance example</span>
+    <span class="n">p</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;A parameter only in Another Experiment &#39;</span>  <span class="c1"># @p</span>
+
+
+<span class="k">class</span> <span class="nc">AnExperiment</span><span class="p">(</span><span class="n">BaseExperiment</span><span class="p">):</span>
+                    <span class="c1">#     |</span>
+                    <span class="c1"># Experiments can inherit from other experiments</span>
+                    <span class="c1"># parameters are inherited too</span>
+    <span class="sd">&quot;&quot;&quot;An experiment testing the xmen experiment API. The __docstring__ will</span>
+<span class="sd">    appear in both the docstring of the class __and__ as the prolog in the</span>
+<span class="sd">    command line interface.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Feel free to define more parameters</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">]</span>  <span class="c1"># @p Parameters can be defined cleanly as class attributes</span>
+    <span class="n">y</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># @p This parameter will have this</span>
+    <span class="c1"># Parameters can be overridden</span>
+    <span class="n">a</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># a&#39;s default and type will be changed. Its help will be overridden</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">17</span>  <span class="c1"># @p b&#39;s help will be changed</span>
+
+    <span class="n">m</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Defined in AnExperiment&#39;</span>  <span class="c1"># @p m is defined in AnExperiment</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Experiment execution is defined in the run method</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;The experiment state inside run is </span><span class="si">{self.status}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># recording messaging is super easy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">({</span><span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()})</span>
+
+        <span class="c1"># Each experiment has its own unique directory. You are encourage to</span>
+        <span class="c1"># write out data accumulated through the execution (snapshots, logs etc.)</span>
+        <span class="c1"># to this directory.</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s1">&#39;logs.txt&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;This was written from a running experiment&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="s1">&#39;In debug mode&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">h</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;h has been overloaded as propery and will no longer&#39;</span> \
+               <span class="s1">&#39;considered as a parameter&#39;</span>
+
+
+<span class="c1"># Experiments can inheret from multiple classes</span>
+<span class="k">class</span> <span class="nc">MultiParentsExperiment</span><span class="p">(</span><span class="n">AnotherExperiment</span><span class="p">,</span> <span class="n">AnExperiment</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1"># documentation is automatically added to the class</span>
+    <span class="n">help</span><span class="p">(</span><span class="n">AnExperiment</span><span class="p">)</span>
+
+    <span class="c1"># to run an experiment first we initialise it</span>
+    <span class="c1"># the experiment is initialised in &#39;default&#39; status</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Initialising&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------------------&#39;</span><span class="p">)</span>
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+
+    <span class="c1"># whilst the status is default the parameters of the</span>
+    <span class="c1"># experiment can be changed</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Configuring&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;------------ &#39;</span><span class="p">)</span>
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="s1">&#39;hello&#39;</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="s1">&#39;dog&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">})</span>
+
+    <span class="c1"># Note parameters are copied from the class during</span>
+    <span class="c1"># instantiation. This way you don&#39;t need to worry</span>
+    <span class="c1"># about accidentally changing the mutable class</span>
+    <span class="c1"># types across the entire class.</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">x</span> <span class="o">+=</span> <span class="p">[</span><span class="mf">4.</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">AnExperiment</span><span class="o">.</span><span class="n">x</span> <span class="o">==</span> <span class="p">[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">]</span>
+    <span class="c1"># If this is not desired (or neccessary) initialise</span>
+    <span class="c1"># use exp = AnExperiment(copy=False)</span>
+
+    <span class="c1"># Experiments can inheret from multiple classes:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Multiple Inheritance&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----------------------&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">MultiParentsExperiment</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> Parameters defaults, helps and values are &#39;</span>
+          <span class="s1">&#39;inherited according to python method resolution order &#39;</span>
+          <span class="s1">&#39;(i.e left to right). Note that m has the value &#39;</span>
+          <span class="s1">&#39;defined in Another Experiment&#39;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Registering&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-------------&#39;</span><span class="p">)</span>
+    <span class="c1"># Before being run an experiment needs to be registered</span>
+    <span class="c1"># to a directory</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;/tmp/an_experiment&#39;</span><span class="p">,</span> <span class="s1">&#39;first_experiment&#39;</span><span class="p">,</span>
+                 <span class="n">purpose</span><span class="o">=</span><span class="s1">&#39;A bit of a test of the xmen experiment api&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">GIT, and system information is automatically logged</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="c1"># The parameters of the experiment can no longer be changed</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">exp</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="s1">&#39;cat&#39;</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parameters can no longer be changed!&#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># An experiment can be run either by...</span>
+    <span class="c1"># (1) calling it</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Running (1)&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-------------&#39;</span><span class="p">)</span>
+    <span class="n">exp</span><span class="p">()</span>
+
+    <span class="c1"># (2) using it as a context. Just define a main</span>
+    <span class="c1">#     loop like you normally would</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Running (2)&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-------------&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">exp</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># Inside the experiment context the experiment status is &#39;running&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Once again the experiment state is </span><span class="si">{e.status}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="c1"># Write the main loop just as you normally would&quot;</span>
+        <span class="c1"># using the parameters already defined</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">sum</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="nb">max</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
+        <span class="c1"># Write results to the expeirment just as before</span>
+        <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+    <span class="c1"># All the information about the current experiment is</span>
+    <span class="c1"># automatically saved in the experiments root directory</span>
+    <span class="c1"># for free</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Everything ypu might need to know is logged in </span><span class="si">{exp.directory}</span><span class="s1">/params.yml&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-----------------------------------------------------------------------------------------------&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Note that GIT, and system information is automatically logged</span><span class="se">\n</span><span class="s1">&#39;</span>
+          <span class="s1">&#39;along with the messages&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;/tmp/an_experiment/first_experiment/params.yml&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Regsitering and Configuring from the command line&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------&#39;</span><span class="p">)</span>
+    <span class="c1"># Alternatively configuring and registering an experiment</span>
+    <span class="c1"># can be done from the command line as:</span>
+    <span class="n">exp</span> <span class="o">=</span> <span class="n">AnExperiment</span><span class="p">()</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Regsitering, Configuring and running in a single line!&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;--------------------------------------------------------&#39;</span><span class="p">)</span>
+    <span class="c1"># Or alternatively</span>
+    <span class="c1"># the experiment can be _configured_, _registered_</span>
+    <span class="c1"># and _run_ by including a single line of code:</span>
+    <span class="n">AnExperiment</span><span class="p">()</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+    <span class="c1"># See ``python xmen.tests.experiment --help`` for</span>
+    <span class="c1"># more information</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="xmen-meets-pytorch">
+<h2>Xmen meets Pytorch<a class="headerlink" href="#xmen-meets-pytorch" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dcgan-using-the-functional-api">
+<h3>DCGAN using the functional api<a class="headerlink" href="#dcgan-using-the-functional-api" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;A functional implementation of dcgan&quot;&quot;&quot;</span>
+<span class="c1">#  This program is distributed in the hope that it will be useful,</span>
+<span class="c1">#  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1">#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1">#  GNU General Public License for more details.</span>
+<span class="c1">#  You should have received a copy of the GNU General Public License</span>
+<span class="c1">#   along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#  Copyright (C) 2019  Robert J Weston, Oxford Robotics Institute</span>
+<span class="c1">#</span>
+<span class="c1">#  xmen</span>
+<span class="c1">#  email:   robw@robots.ox.ac.uk</span>
+<span class="c1">#  github: https://github.com/robw4/xmen/</span>
+<span class="c1">#</span>
+<span class="c1">#  This program is free software; you can redistribute it and/or modify</span>
+<span class="c1">#  it under the terms of the GNU General Public License as published by</span>
+<span class="c1">#  the Free Software Foundation; either version 3 of the License, or</span>
+<span class="c1">#  (at your option) any later version.</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Tuple</span>
+<span class="kn">import</span> <span class="nn">xmen</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">torch</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;In order to run this script first add pytorch to the python path&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_datasets</span><span class="p">(</span><span class="n">cy</span><span class="p">,</span> <span class="n">cz</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">ngpus</span><span class="p">,</span> <span class="n">ncpus</span><span class="p">,</span> <span class="n">ns</span><span class="p">,</span> <span class="n">data_root</span><span class="p">,</span> <span class="n">hw</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a dictionary of iterable get_datasets for modes &#39;train&#39; (label image pairs)</span>
+<span class="sd">    and &#39;inference&#39; (just inputs spanning the prediction space)&quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="k">import</span> <span class="n">DataLoader</span>
+    <span class="kn">from</span> <span class="nn">torchvision.datasets.mnist</span> <span class="k">import</span> <span class="n">MNIST</span>
+    <span class="kn">from</span> <span class="nn">torch.distributions</span> <span class="k">import</span> <span class="n">Normal</span>
+    <span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">T</span>
+
+    <span class="k">def</span> <span class="nf">to_target</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">cy</span><span class="p">])</span>
+        <span class="n">Y</span><span class="p">[</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+        <span class="k">return</span> <span class="n">Y</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">cy</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># Generate test samples</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">to_target</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cy</span><span class="p">)])</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">ns</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>  <span class="c1"># Expand across last dim</span>
+        <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># Batch</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">([</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cz</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;train&#39;</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">(</span>
+            <span class="n">MNIST</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                  <span class="n">transform</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="n">hw</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">CenterCrop</span><span class="p">(</span><span class="n">hw</span><span class="p">),</span>
+                     <span class="n">T</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span> <span class="n">T</span><span class="o">.</span><span class="n">Normalize</span><span class="p">([</span><span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">])]),</span>
+                  <span class="n">target_transform</span><span class="o">=</span><span class="n">to_target</span><span class="p">),</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">b</span> <span class="o">*</span> <span class="n">ngpus</span><span class="p">,</span>
+            <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">ncpus</span><span class="p">),</span>
+        <span class="s1">&#39;inference&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="nb">zip</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">z</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)))}</span>  <span class="c1"># Turn into batches</span>
+
+
+<span class="nd">@xmen</span><span class="o">.</span><span class="n">autodoc</span>
+<span class="k">def</span> <span class="nf">dcgan</span><span class="p">(</span>
+    <span class="n">root</span><span class="p">:</span> <span class="n">xmen</span><span class="o">.</span><span class="n">Root</span><span class="p">,</span>  <span class="c1">#</span>
+        <span class="c1"># first argument is always an experiment instance.</span>
+        <span class="c1"># can be unused (specify with _) in python</span>
+        <span class="c1"># syntax practice. can be named whatever depending</span>
+        <span class="c1"># on use case. Eg. logger, root, experiment ...</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>  <span class="c1"># the batch size per gpu</span>
+    <span class="n">hw0</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>  <span class="c1"># the height and width of the image</span>
+    <span class="n">nl</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>  <span class="c1"># the number of levels in the discriminator.</span>
+    <span class="n">data_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;HOME&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;/data/mnist&#39;</span><span class="p">,</span>  <span class="c1"># @p the root data directory</span>
+    <span class="n">cx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">cy</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>  <span class="c1"># the dimensionality of the conditioning vector</span>
+    <span class="n">cf</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span>  <span class="c1"># the number of features after the first conv in the discriminator</span>
+    <span class="n">cz</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>  <span class="c1"># the dimensionality of the noise vector</span>
+    <span class="n">ncpus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>  <span class="c1"># the number of threads to use for data loading</span>
+    <span class="n">ngpus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1"># the number of gpus to run the model on</span>
+    <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>  <span class="c1"># no. of epochs to train for</span>
+    <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0002</span><span class="p">,</span>  <span class="c1"># learning rate</span>
+    <span class="n">betas</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.999</span><span class="p">),</span>  <span class="c1"># the beta parameters for the</span>
+    <span class="c1"># monitoring parameters</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;nn_.*@1e&#39;</span><span class="p">,</span>  <span class="c1"># checkpoint at this modulo string</span>
+    <span class="n">log</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;loss_.*@20s&#39;</span><span class="p">,</span>  <span class="c1"># log scalars</span>
+    <span class="n">sca</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;loss_.*@20s&#39;</span><span class="p">,</span>  <span class="c1"># tensorboard scalars</span>
+    <span class="n">img</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;_x_|x$@20s&#39;</span><span class="p">,</span>  <span class="c1"># tensorboard images</span>
+    <span class="n">nimg</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span>  <span class="c1"># the maximum number of images to display to tensorboard</span>
+    <span class="n">ns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># the number of samples to generate at inference)</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Train a conditional GAN to predict MNIST digits.</span>
+
+<span class="sd">    To viusalise the results run::</span>
+
+<span class="sd">        tensorboard --logdir ...</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">xmen.monitor</span> <span class="k">import</span> <span class="n">Monitor</span><span class="p">,</span> <span class="n">TensorboardLogger</span>
+    <span class="kn">from</span> <span class="nn">xmen.examples.models</span> <span class="k">import</span> <span class="n">weights_init</span><span class="p">,</span> <span class="n">set_requires_grad</span><span class="p">,</span> <span class="n">GeneratorNet</span><span class="p">,</span> <span class="n">DiscriminatorNet</span>
+    <span class="kn">from</span> <span class="nn">torch.distributions</span> <span class="k">import</span> <span class="n">Normal</span>
+    <span class="kn">from</span> <span class="nn">torch.distributions.one_hot_categorical</span> <span class="k">import</span> <span class="n">OneHotCategorical</span>
+    <span class="kn">from</span> <span class="nn">torch.optim</span> <span class="k">import</span> <span class="n">Adam</span>
+    <span class="kn">import</span> <span class="nn">logging</span>
+
+    <span class="n">hw</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">nl</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">hw0</span><span class="p">]</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="s1">&#39;cuda&#39;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">&#39;cpu&#39;</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="s1">&#39;INFO&#39;</span><span class="p">)</span>
+    <span class="c1"># dataset</span>
+    <span class="n">datasets</span> <span class="o">=</span> <span class="n">get_datasets</span><span class="p">(</span>
+        <span class="n">cy</span><span class="p">,</span> <span class="n">cz</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">ngpus</span><span class="p">,</span> <span class="n">ncpus</span><span class="p">,</span> <span class="n">ns</span><span class="p">,</span> <span class="n">data_root</span><span class="p">,</span> <span class="n">hw</span><span class="p">)</span>
+    <span class="c1"># models</span>
+    <span class="n">nn_g</span> <span class="o">=</span> <span class="n">GeneratorNet</span><span class="p">(</span><span class="n">cy</span><span class="p">,</span> <span class="n">cz</span><span class="p">,</span> <span class="n">cx</span><span class="p">,</span> <span class="n">cf</span><span class="p">,</span> <span class="n">hw0</span><span class="p">,</span> <span class="n">nl</span><span class="p">)</span>
+    <span class="n">nn_d</span> <span class="o">=</span> <span class="n">DiscriminatorNet</span><span class="p">(</span><span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">cf</span><span class="p">,</span> <span class="n">hw0</span><span class="p">,</span> <span class="n">nl</span><span class="p">)</span>
+    <span class="n">nn_g</span> <span class="o">=</span> <span class="n">nn_g</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">weights_init</span><span class="p">)</span>
+    <span class="n">nn_d</span> <span class="o">=</span> <span class="n">nn_d</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">weights_init</span><span class="p">)</span>
+    <span class="c1"># distributions</span>
+    <span class="n">pz</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">cz</span><span class="p">]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="n">cz</span><span class="p">]))</span>
+    <span class="n">py</span> <span class="o">=</span> <span class="n">OneHotCategorical</span><span class="p">(</span><span class="n">probs</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="n">cy</span><span class="p">])</span> <span class="o">/</span> <span class="n">cy</span><span class="p">)</span>
+    <span class="c1"># optimisers</span>
+    <span class="n">op_d</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="n">nn_d</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">betas</span><span class="o">=</span><span class="n">betas</span><span class="p">)</span>
+    <span class="n">op_g</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="n">nn_g</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">betas</span><span class="o">=</span><span class="n">betas</span><span class="p">)</span>
+    <span class="c1"># monitor</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">Monitor</span><span class="p">(</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">checkpoint</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">sca</span><span class="o">=</span><span class="n">sca</span><span class="p">,</span> <span class="n">img</span><span class="o">=</span><span class="n">img</span><span class="p">,</span>
+        <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;@20s&#39;</span><span class="p">,</span> <span class="s1">&#39;@1e&#39;</span><span class="p">),</span>
+        <span class="n">message</span><span class="o">=</span><span class="s1">&#39;root@100s&#39;</span><span class="p">,</span>
+        <span class="n">img_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[:</span><span class="nb">min</span><span class="p">(</span><span class="n">nimg</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span>
+        <span class="n">hooks</span><span class="o">=</span><span class="p">[</span><span class="n">TensorboardLogger</span><span class="p">(</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;_xi_$@1e&#39;</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="mi">10</span><span class="p">)])</span>
+
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">m</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">)):</span>
+        <span class="c1"># (1) train</span>
+        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">m</span><span class="p">(</span><span class="n">datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">]):</span>
+            <span class="c1"># process input</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">y</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># discriminator step</span>
+            <span class="n">set_requires_grad</span><span class="p">([</span><span class="n">nn_d</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">op_d</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">pz</span><span class="o">.</span><span class="n">sample</span><span class="p">([</span><span class="n">b</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">b</span><span class="p">,</span> <span class="n">cz</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">_x_</span> <span class="o">=</span> <span class="n">nn_g</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+            <span class="n">loss_d</span> <span class="o">=</span> <span class="n">nn_d</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">nn_d</span><span class="p">((</span><span class="n">_x_</span><span class="o">.</span><span class="n">detach</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">detach</span><span class="p">()),</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">loss_d</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">op_d</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="c1"># generator step</span>
+            <span class="n">op_g</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">py</span><span class="o">.</span><span class="n">sample</span><span class="p">([</span><span class="n">b</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">b</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">pz</span><span class="o">.</span><span class="n">sample</span><span class="p">([</span><span class="n">b</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">b</span><span class="p">,</span> <span class="n">cz</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">_x_</span> <span class="o">=</span> <span class="n">nn_g</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+            <span class="n">set_requires_grad</span><span class="p">([</span><span class="n">nn_d</span><span class="p">],</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">loss_g</span> <span class="o">=</span> <span class="n">nn_d</span><span class="p">((</span><span class="n">_x_</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">loss_g</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">op_g</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="c1"># (2) inference</span>
+        <span class="k">if</span> <span class="s1">&#39;inference&#39;</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">yi</span><span class="p">,</span> <span class="n">zi</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">[</span><span class="s1">&#39;inference&#39;</span><span class="p">]:</span>
+                    <span class="n">yi</span><span class="p">,</span> <span class="n">zi</span> <span class="o">=</span> <span class="n">yi</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">zi</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">_xi_</span> <span class="o">=</span> <span class="n">nn_g</span><span class="p">(</span><span class="n">yi</span><span class="p">,</span> <span class="n">zi</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="dcgan-using-the-class-api">
+<h3>DCGAN using the class api<a class="headerlink" href="#dcgan-using-the-class-api" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;A class implementation of dcgan&quot;&quot;&quot;</span>
+<span class="c1">#  This program is distributed in the hope that it will be useful,</span>
+<span class="c1">#  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1">#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1">#  GNU General Public License for more details.</span>
+<span class="c1">#  You should have received a copy of the GNU General Public License</span>
+<span class="c1">#   along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#  Copyright (C) 2019  Robert J Weston, Oxford Robotics Institute</span>
+<span class="c1">#</span>
+<span class="c1">#  xmen</span>
+<span class="c1">#  email:   robw@robots.ox.ac.uk</span>
+<span class="c1">#  github: https://github.com/robw4/xmen/</span>
+<span class="c1">#</span>
+<span class="c1">#  This program is free software; you can redistribute it and/or modify</span>
+<span class="c1">#  it under the terms of the GNU General Public License as published by</span>
+<span class="c1">#  the Free Software Foundation; either version 3 of the License, or</span>
+<span class="c1">#  (at your option) any later version.</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Tuple</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.distributions</span> <span class="k">import</span> <span class="n">Normal</span>
+<span class="kn">from</span> <span class="nn">xmen.experiment</span> <span class="k">import</span> <span class="n">Experiment</span>
+
+
+<span class="k">class</span> <span class="nc">Dcgan</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Train a conditional GAN to predict MNIST digits.</span>
+
+<span class="sd">    To viusalise the results run::</span>
+
+<span class="sd">        tensorboard --logdir ...</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">tempfile</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span>  <span class="c1"># @p the batch size per gpu</span>
+    <span class="n">hw0</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>  <span class="c1"># @p the height and width of the image</span>
+    <span class="n">nl</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># @p The number of levels in the discriminator.</span>
+    <span class="n">data_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">()</span>  <span class="c1"># @p the root data directory</span>
+    <span class="n">cx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># @p the dimensionality of the image input</span>
+    <span class="n">cy</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># @p the dimensionality of the conditioning vector</span>
+    <span class="n">cf</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span>  <span class="c1"># @p the number of features after the first conv in the discriminator</span>
+    <span class="n">cz</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># @p the dimensionality of the noise vector</span>
+    <span class="n">ncpus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span>  <span class="c1"># @p the number of threads to use for data loading</span>
+    <span class="n">ngpus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># @p the number of gpus to run the model on</span>
+    <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># @p no. of epochs to train for</span>
+    <span class="n">gan</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;lsgan&#39;</span>  <span class="c1"># @p the gan type to use (one of [&#39;vanilla&#39;, &#39;lsgan&#39;])</span>
+    <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0002</span>  <span class="c1"># @p learning rate</span>
+    <span class="n">betas</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.999</span><span class="p">)</span>  <span class="c1"># @p The beta parameters for the</span>
+    <span class="c1"># Monitoring parameters</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;nn_.*@1e&#39;</span>  <span class="c1"># @p</span>
+    <span class="n">log</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;loss_.*@20s&#39;</span>  <span class="c1"># @p log scalars</span>
+    <span class="n">sca</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;loss_.*@20s&#39;</span>  <span class="c1"># @p tensorboard scalars</span>
+    <span class="n">img</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;_x_|x$@20s&#39;</span>  <span class="c1"># @p tensorboard images</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;@20s&#39;</span><span class="p">,</span> <span class="s1">&#39;@1e&#39;</span><span class="p">)</span>  <span class="c1"># @p timing modulos</span>
+    <span class="n">nimg</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span>  <span class="c1"># @p The maximum number of images to display to tensorboard</span>
+    <span class="n">ns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># @p The number of samples to generate at inference</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">hw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="p">[</span><span class="n">d</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">nl</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hw0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s1">&#39;cuda&#39;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">&#39;cpu&#39;</span>
+
+    <span class="k">def</span> <span class="nf">datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a dictionary of iterable get_datasets for modes &#39;train&#39; (label image pairs)</span>
+<span class="sd">        and &#39;inference&#39; (just inputs spanning the prediction space)&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="k">import</span> <span class="n">DataLoader</span>
+        <span class="kn">from</span> <span class="nn">torchvision.datasets.mnist</span> <span class="k">import</span> <span class="n">MNIST</span>
+        <span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">T</span>
+
+        <span class="k">def</span> <span class="nf">to_target</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">])</span>
+            <span class="n">Y</span><span class="p">[</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+            <span class="k">return</span> <span class="n">Y</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="c1"># Generate test samples</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">to_target</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">)])</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ns</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>  <span class="c1"># Expand across last dim</span>
+            <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># Batch</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">([</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;train&#39;</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">(</span>
+                <span class="n">MNIST</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">transform</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hw</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">CenterCrop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hw</span><span class="p">),</span>
+                         <span class="n">T</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span> <span class="n">T</span><span class="o">.</span><span class="n">Normalize</span><span class="p">([</span><span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">])]),</span>
+                      <span class="n">target_transform</span><span class="o">=</span><span class="n">to_target</span><span class="p">),</span>
+                <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngpus</span><span class="p">,</span>
+                <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ncpus</span><span class="p">),</span>
+            <span class="s1">&#39;inference&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span>
+                <span class="nb">zip</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">z</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)))}</span>  <span class="c1"># Turn into batches</span>
+
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build generator, discriminator and optimisers.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">torch.optim</span> <span class="k">import</span> <span class="n">Adam</span>
+        <span class="kn">from</span> <span class="nn">xmen.examples.models</span> <span class="k">import</span> <span class="n">GeneratorNet</span><span class="p">,</span> <span class="n">DiscriminatorNet</span>
+        <span class="n">nn_g</span> <span class="o">=</span> <span class="n">GeneratorNet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hw0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nl</span><span class="p">)</span>
+        <span class="n">op_g</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="n">nn_g</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span> <span class="n">betas</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">betas</span><span class="p">)</span>
+        <span class="n">nn_d</span> <span class="o">=</span> <span class="n">DiscriminatorNet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hw0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nl</span><span class="p">)</span>
+        <span class="n">op_d</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="n">nn_d</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span> <span class="n">betas</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">betas</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">nn_g</span><span class="p">,</span> <span class="n">nn_d</span><span class="p">,</span> <span class="n">op_g</span><span class="p">,</span> <span class="n">op_d</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Train the mnist dataset for a fixed number of epochs running an</span>
+<span class="sd">        inference loop after every epoch.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">xmen.monitor</span> <span class="k">import</span> <span class="n">Monitor</span><span class="p">,</span> <span class="n">TensorboardLogger</span>
+        <span class="kn">from</span> <span class="nn">xmen.examples.models</span> <span class="k">import</span> <span class="n">weights_init</span><span class="p">,</span> <span class="n">set_requires_grad</span>
+        <span class="kn">from</span> <span class="nn">torch.distributions</span> <span class="k">import</span> <span class="n">Normal</span>
+        <span class="kn">from</span> <span class="nn">torch.distributions.one_hot_categorical</span> <span class="k">import</span> <span class="n">OneHotCategorical</span>
+        <span class="c1"># setup</span>
+        <span class="n">datasets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">()</span>
+        <span class="n">pz</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">]))</span>
+        <span class="n">py</span> <span class="o">=</span> <span class="n">OneHotCategorical</span><span class="p">(</span><span class="n">probs</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">)</span>
+        <span class="n">nn_g</span><span class="p">,</span> <span class="n">nn_d</span><span class="p">,</span> <span class="n">op_g</span><span class="p">,</span> <span class="n">op_d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="n">nn_g</span> <span class="o">=</span> <span class="n">nn_g</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">weights_init</span><span class="p">)</span>
+        <span class="n">nn_d</span> <span class="o">=</span> <span class="n">nn_d</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">weights_init</span><span class="p">)</span>
+        <span class="c1"># training loop</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">Monitor</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">checkpoint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">,</span>
+            <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">sca</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sca</span><span class="p">,</span> <span class="n">img</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,</span>
+            <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;@20s&#39;</span><span class="p">,</span> <span class="s1">&#39;@1e&#39;</span><span class="p">),</span>
+            <span class="n">img_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[:</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nimg</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span>
+            <span class="n">hooks</span><span class="o">=</span><span class="p">[</span><span class="n">TensorboardLogger</span><span class="p">(</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;_xi_$@1e&#39;</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="mi">10</span><span class="p">)])</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">m</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">m</span><span class="p">(</span><span class="n">datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">]):</span>
+                <span class="c1"># process input</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span> <span class="n">y</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="c1"># discriminator step</span>
+                <span class="n">set_requires_grad</span><span class="p">([</span><span class="n">nn_d</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="n">op_d</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="n">pz</span><span class="o">.</span><span class="n">sample</span><span class="p">([</span><span class="n">b</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">_x_</span> <span class="o">=</span> <span class="n">nn_g</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+                <span class="n">loss_d</span> <span class="o">=</span> <span class="n">nn_d</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">nn_d</span><span class="p">((</span><span class="n">_x_</span><span class="o">.</span><span class="n">detach</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">detach</span><span class="p">()),</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">loss_d</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+                <span class="n">op_d</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+                <span class="c1"># generator step</span>
+                <span class="n">op_g</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">py</span><span class="o">.</span><span class="n">sample</span><span class="p">([</span><span class="n">b</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="n">pz</span><span class="o">.</span><span class="n">sample</span><span class="p">([</span><span class="n">b</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">_x_</span> <span class="o">=</span> <span class="n">nn_g</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+                <span class="n">set_requires_grad</span><span class="p">([</span><span class="n">nn_d</span><span class="p">],</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">loss_g</span> <span class="o">=</span> <span class="n">nn_d</span><span class="p">((</span><span class="n">_x_</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="n">loss_g</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+                <span class="n">op_g</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="c1"># inference</span>
+            <span class="k">if</span> <span class="s1">&#39;inference&#39;</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">yi</span><span class="p">,</span> <span class="n">zi</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">[</span><span class="s1">&#39;inference&#39;</span><span class="p">]:</span>
+                        <span class="n">yi</span><span class="p">,</span> <span class="n">zi</span> <span class="o">=</span> <span class="n">yi</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span> <span class="n">zi</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                        <span class="n">_xi_</span> <span class="o">=</span> <span class="n">nn_g</span><span class="p">(</span><span class="n">yi</span><span class="p">,</span> <span class="n">zi</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="generative-modelling-with-inheritance">
+<h3>Generative modelling with inheritance<a class="headerlink" href="#generative-modelling-with-inheritance" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Deep generative models with inheritance&quot;&quot;&quot;</span>
+<span class="c1">#  Copyright (C) 2019  Robert J Weston, Oxford Robotics Institute</span>
+<span class="c1">#</span>
+<span class="c1">#  xmen</span>
+<span class="c1">#  email:   robw@robots.ox.ac.uk</span>
+<span class="c1">#  github: https://github.com/robw4/xmen/</span>
+<span class="c1">#</span>
+<span class="c1">#  This program is free software; you can redistribute it and/or modify</span>
+<span class="c1">#  it under the terms of the GNU General Public License as published by</span>
+<span class="c1">#  the Free Software Foundation; either version 3 of the License, or</span>
+<span class="c1">#  (at your option) any later version.</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Tuple</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.distributions</span> <span class="k">import</span> <span class="n">Normal</span>
+<span class="kn">from</span> <span class="nn">xmen.experiment</span> <span class="k">import</span> <span class="n">Experiment</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c1"># ------------------------------------------------------</span>
+<span class="c1"># ---- BASE EXPERIMENTS --------------------------------</span>
+<span class="c1"># ------------------------------------------------------</span>
+<span class="k">class</span> <span class="nc">BaseGenerative</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An abstract class defining parameters and some useful properties common to</span>
+<span class="sd">     both the VAE and cGAN implementations.</span>
+
+<span class="sd">    Inherited classes must overload:</span>
+<span class="sd">    - get_datasets()</span>
+<span class="sd">    - build()</span>
+<span class="sd">    - run()</span>
+
+<span class="sd">    Inherited classes can optionally overload:</span>
+<span class="sd">    - parameter defaults and documentation</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The output size is given as hw0 * 2 ** nl (eg (4, 2) * 2 ** 4 = (64, 32)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span>  <span class="c1"># @p the batch size per gpu</span>
+    <span class="n">hw0</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>  <span class="c1"># @p the height and width of the image</span>
+    <span class="n">nl</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># @p The number of levels in the discriminator.</span>
+    <span class="n">data_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;HOME&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;/data/mnist&#39;</span>  <span class="c1"># @p the root data directory</span>
+    <span class="n">cx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># @p the dimensionality of the image input</span>
+    <span class="n">cy</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># @p the dimensionality of the conditioning vector</span>
+    <span class="n">cf</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span>  <span class="c1"># @p the number of features after the first conv in the discriminator</span>
+    <span class="n">cz</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># @p the dimensionality of the noise vector</span>
+    <span class="n">ncpus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span>  <span class="c1"># @p the number of threads to use for data loading</span>
+    <span class="n">ngpus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># @p the number of gpus to run the model on</span>
+    <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># @p no. of epochs to train for</span>
+    <span class="n">gan</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;lsgan&#39;</span>  <span class="c1"># @p the gan type to use (one of [&#39;vanilla&#39;, &#39;lsgan&#39;])</span>
+    <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0002</span>  <span class="c1"># @p learning rate</span>
+    <span class="n">betas</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.999</span><span class="p">)</span>  <span class="c1"># @p The beta parameters for the</span>
+    <span class="c1"># Monitoring parameters</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;nn_.*@1e&#39;</span>  <span class="c1"># @p</span>
+    <span class="n">log</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;loss_.*@20s&#39;</span>  <span class="c1"># @p log scalars</span>
+    <span class="n">sca</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;loss_.*@20s&#39;</span>  <span class="c1"># @p tensorboard scalars</span>
+    <span class="n">img</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;_x_|x$@20s&#39;</span>  <span class="c1"># @p tensorboard images</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;@20s&#39;</span><span class="p">,</span> <span class="s1">&#39;@1e&#39;</span><span class="p">)</span>  <span class="c1"># @p timing modulos</span>
+    <span class="n">nimg</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span>  <span class="c1"># @p The maximum number of images to display to tensorboard</span>
+
+    <span class="n">test_samples</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Useful properties</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">hw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="p">[</span><span class="n">d</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">nl</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hw0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="s1">&#39;cuda&#39;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">&#39;cpu&#39;</span>
+
+    <span class="k">def</span> <span class="nf">datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+
+<span class="k">class</span> <span class="nc">BaseCVae</span><span class="p">(</span><span class="n">BaseGenerative</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;BaseCVae is an intermediary class defining the model and training loop but not the dataset.</span>
+
+<span class="sd">    Inherited classes should overload:</span>
+<span class="sd">    - dataset()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nlprior</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># @p The number of hidden layers in the prior network</span>
+    <span class="n">w_kl</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># @p The weighting on the KL divergence term</span>
+    <span class="n">ns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># @p The number of samples to generate at inference</span>
+    <span class="n">predictive</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;prior&#39;</span>  <span class="c1"># @p Use either the &#39;prior&#39; or &#39;posterior&#39; predictive at inference</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mi">32</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="s1">&#39;loss.*|log_px|kl_qz_pz@20s&#39;</span>
+    <span class="n">sca</span> <span class="o">=</span> <span class="s1">&#39;loss.*|log_px|kl_qz_pz@20s&#39;</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="s1">&#39;_x_|x$@20s&#39;</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;@10s&#39;</span><span class="p">,</span> <span class="s1">&#39;@1e&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">torch.optim</span> <span class="k">import</span> <span class="n">Adam</span>
+        <span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">chain</span>
+        <span class="kn">from</span> <span class="nn">xmen.examples.torch.models</span> <span class="k">import</span> <span class="n">GeneratorNet</span><span class="p">,</span> <span class="n">PosteriorNet</span><span class="p">,</span> <span class="n">PriorNet</span>
+        <span class="n">nn_gen</span> <span class="o">=</span> <span class="n">GeneratorNet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hw0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nl</span><span class="p">)</span>
+        <span class="n">nn_post</span> <span class="o">=</span> <span class="n">PosteriorNet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hw0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nl</span><span class="p">)</span>
+        <span class="n">nn_prior</span> <span class="o">=</span> <span class="n">PriorNet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlprior</span><span class="p">)</span>
+        <span class="n">opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="n">nn_gen</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">nn_post</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">nn_prior</span><span class="o">.</span><span class="n">parameters</span><span class="p">()),</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">betas</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">nn_gen</span><span class="p">,</span> <span class="n">nn_post</span><span class="p">,</span> <span class="n">nn_prior</span><span class="p">,</span> <span class="n">opt</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">torch.distributions</span> <span class="k">import</span> <span class="n">Normal</span><span class="p">,</span> <span class="n">kl_divergence</span>
+        <span class="kn">from</span> <span class="nn">xmen.monitor</span> <span class="k">import</span> <span class="n">Monitor</span><span class="p">,</span> <span class="n">TensorboardLogger</span>
+        <span class="kn">from</span> <span class="nn">xmen.examples.torch.models</span> <span class="k">import</span> <span class="n">weights_init</span>
+        <span class="c1"># construct model</span>
+        <span class="n">datasets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">()</span>
+        <span class="n">nn_gen</span><span class="p">,</span> <span class="n">nn_post</span><span class="p">,</span> <span class="n">nn_prior</span><span class="p">,</span> <span class="n">opt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="n">nn_gen</span><span class="p">,</span> <span class="n">nn_post</span><span class="p">,</span> <span class="n">nn_prior</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">weights_init</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="n">nn_gen</span><span class="p">,</span> <span class="n">nn_post</span><span class="p">,</span> <span class="n">nn_prior</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngpus</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">nn_gen</span><span class="p">,</span> <span class="n">nn_post</span><span class="p">,</span> <span class="n">nn_prior</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">DataParallel</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="n">nn_gen</span><span class="p">,</span> <span class="n">nn_post</span><span class="p">,</span> <span class="n">nn_prior</span><span class="p">))</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">Monitor</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">checkpoint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">,</span>
+            <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">sca</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sca</span><span class="p">,</span> <span class="n">img</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,</span>
+            <span class="n">img_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[:</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nimg</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span>
+            <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;@20s&#39;</span><span class="p">,</span> <span class="s1">&#39;@1e&#39;</span><span class="p">),</span>
+            <span class="n">hooks</span><span class="o">=</span><span class="p">[</span><span class="n">TensorboardLogger</span><span class="p">(</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;_xi_$@20s&#39;</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ns</span><span class="p">)])</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">m</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">)):</span>
+            <span class="c1"># Training</span>
+            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">m</span><span class="p">(</span><span class="n">datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">]):</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span> <span class="n">y</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="n">qz</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="o">*</span><span class="n">nn_post</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="n">qz</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+                <span class="c1"># Likelihood</span>
+                <span class="n">_x_</span> <span class="o">=</span> <span class="n">nn_gen</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+                <span class="n">px</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="n">_x_</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+                <span class="n">pz</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="o">*</span><span class="n">nn_prior</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">])))</span>
+                <span class="n">log_px</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="n">kl_qz_pz</span> <span class="o">=</span> <span class="n">kl_divergence</span><span class="p">(</span><span class="n">qz</span><span class="p">,</span> <span class="n">pz</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_kl</span> <span class="o">*</span> <span class="n">kl_qz_pz</span> <span class="o">-</span> <span class="n">log_px</span>
+                <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+                <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+                <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="c1"># Inference</span>
+            <span class="k">if</span> <span class="s1">&#39;inference&#39;</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">yi</span><span class="p">,</span> <span class="n">zi</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">[</span><span class="s1">&#39;inference&#39;</span><span class="p">]:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">predictive</span> <span class="o">==</span> <span class="s1">&#39;posterior&#39;</span><span class="p">:</span>
+                            <span class="n">qz</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="o">*</span><span class="n">nn_prior</span><span class="p">(</span><span class="n">yi</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">])))</span>
+                            <span class="n">zi</span> <span class="o">=</span> <span class="n">qz</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+                        <span class="n">_xi_</span> <span class="o">=</span> <span class="n">nn_gen</span><span class="p">(</span><span class="n">yi</span><span class="p">,</span> <span class="n">zi</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">BaseGAN</span><span class="p">(</span><span class="n">BaseGenerative</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;BaseGan is an intermediary class defining the model and training loop but not the dataset.</span>
+
+<span class="sd">    Inherited classes should overload:</span>
+<span class="sd">    - dataset()</span>
+<span class="sd">    - distributions()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># overload previous parameter default (documentation is maintained)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mi">128</span>
+    <span class="c1"># define new parameters</span>
+    <span class="n">ns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># @p The number of samples to generate at inference</span>
+
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build the model from the current configuration&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">torch.optim</span> <span class="k">import</span> <span class="n">Adam</span>
+        <span class="kn">from</span> <span class="nn">xmen.examples.torch.models</span> <span class="k">import</span> <span class="n">GeneratorNet</span><span class="p">,</span> <span class="n">DiscriminatorNet</span>
+        <span class="n">nn_g</span> <span class="o">=</span> <span class="n">GeneratorNet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hw0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nl</span><span class="p">)</span>
+        <span class="n">op_g</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="n">nn_g</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span> <span class="n">betas</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">betas</span><span class="p">)</span>
+        <span class="n">nn_d</span> <span class="o">=</span> <span class="n">DiscriminatorNet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hw0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nl</span><span class="p">)</span>
+        <span class="n">op_d</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="n">nn_d</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span> <span class="n">betas</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">betas</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">nn_g</span><span class="p">,</span> <span class="n">nn_d</span><span class="p">,</span> <span class="n">op_g</span><span class="p">,</span> <span class="n">op_d</span>
+
+    <span class="k">def</span> <span class="nf">distributions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">xmen.monitor</span> <span class="k">import</span> <span class="n">Monitor</span><span class="p">,</span> <span class="n">TensorboardLogger</span>
+        <span class="kn">from</span> <span class="nn">xmen.examples.torch.models</span> <span class="k">import</span> <span class="n">set_requires_grad</span><span class="p">,</span> <span class="n">weights_init</span>
+        <span class="c1"># Get get_datasets</span>
+        <span class="n">datasets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">()</span>
+        <span class="n">py</span><span class="p">,</span> <span class="n">pz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distributions</span><span class="p">()</span>
+        <span class="n">nn_g</span><span class="p">,</span> <span class="n">nn_d</span><span class="p">,</span> <span class="n">op_g</span><span class="p">,</span> <span class="n">op_d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="n">nn_g</span> <span class="o">=</span> <span class="n">nn_g</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">weights_init</span><span class="p">)</span>
+        <span class="n">nn_d</span> <span class="o">=</span> <span class="n">nn_d</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">weights_init</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">Monitor</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">checkpoint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">,</span>
+            <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">sca</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sca</span><span class="p">,</span> <span class="n">img</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,</span>
+            <span class="n">time</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;@20s&#39;</span><span class="p">,</span> <span class="s1">&#39;@1e&#39;</span><span class="p">),</span>
+            <span class="n">img_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[:</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nimg</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span>
+            <span class="n">hooks</span><span class="o">=</span><span class="p">[</span><span class="n">TensorboardLogger</span><span class="p">(</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;_xi_$@1e&#39;</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ns</span><span class="p">)])</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">m</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">m</span><span class="p">(</span><span class="n">datasets</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">]):</span>
+                <span class="c1"># process input</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span> <span class="n">y</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="c1"># discriminator step</span>
+                <span class="n">set_requires_grad</span><span class="p">([</span><span class="n">nn_d</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="n">op_d</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="n">pz</span><span class="o">.</span><span class="n">sample</span><span class="p">([</span><span class="n">b</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">_x_</span> <span class="o">=</span> <span class="n">nn_g</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+                <span class="n">loss_d</span> <span class="o">=</span> <span class="n">nn_d</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">nn_d</span><span class="p">((</span><span class="n">_x_</span><span class="o">.</span><span class="n">detach</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">detach</span><span class="p">()),</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">loss_d</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+                <span class="n">op_d</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+                <span class="c1"># generator step</span>
+                <span class="n">op_g</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">py</span><span class="o">.</span><span class="n">sample</span><span class="p">([</span><span class="n">b</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="n">pz</span><span class="o">.</span><span class="n">sample</span><span class="p">([</span><span class="n">b</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">_x_</span> <span class="o">=</span> <span class="n">nn_g</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+                <span class="n">set_requires_grad</span><span class="p">([</span><span class="n">nn_d</span><span class="p">],</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">loss_g</span> <span class="o">=</span> <span class="n">nn_d</span><span class="p">((</span><span class="n">_x_</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="n">loss_g</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+                <span class="n">op_g</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="c1"># Inference</span>
+            <span class="k">if</span> <span class="s1">&#39;inference&#39;</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">yi</span><span class="p">,</span> <span class="n">zi</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">[</span><span class="s1">&#39;inference&#39;</span><span class="p">]:</span>
+                        <span class="n">yi</span><span class="p">,</span> <span class="n">zi</span> <span class="o">=</span> <span class="n">yi</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span> <span class="n">zi</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                        <span class="n">_xi_</span> <span class="o">=</span> <span class="n">nn_g</span><span class="p">(</span><span class="n">yi</span><span class="p">,</span> <span class="n">zi</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">BaseMnist</span><span class="p">(</span><span class="n">BaseGenerative</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;cDCGAN Training on the MNIST get_datasets&quot;&quot;&quot;</span>
+    <span class="c1"># Update defaults</span>
+    <span class="n">hw0</span><span class="p">,</span> <span class="n">nl</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="mi">3</span>  <span class="c1"># Default size = 32 x 32</span>
+    <span class="n">data_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;HOME&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;/data/mnist&#39;</span>
+    <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">cz</span><span class="p">,</span> <span class="n">cf</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">512</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># Number of samples to generate during inference</span>
+
+    <span class="k">def</span> <span class="nf">datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Configure the get_datasets used for training&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="k">import</span> <span class="n">DataLoader</span>
+        <span class="kn">from</span> <span class="nn">torchvision.datasets.mnist</span> <span class="k">import</span> <span class="n">MNIST</span>
+        <span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">T</span>
+
+        <span class="k">def</span> <span class="nf">to_target</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">])</span>
+            <span class="n">Y</span><span class="p">[</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+            <span class="k">return</span> <span class="n">Y</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">transform</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hw</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">CenterCrop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hw</span><span class="p">),</span>
+             <span class="n">T</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span> <span class="n">T</span><span class="o">.</span><span class="n">Normalize</span><span class="p">([</span><span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">])])</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">to_target</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">)])</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ns</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>  <span class="c1"># Expand across last dim</span>
+            <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># Batch</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">([</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;train&#39;</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">(</span>
+                <span class="n">MNIST</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+                      <span class="n">target_transform</span><span class="o">=</span><span class="n">to_target</span><span class="p">),</span>
+                <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngpus</span><span class="p">,</span>
+                <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ncpus</span><span class="p">),</span>
+            <span class="s1">&#39;inference&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span>
+                <span class="nb">zip</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">z</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)))}</span>  <span class="c1"># Turn into batches</span>
+
+
+<span class="c1"># ------------------------------------------------------</span>
+<span class="c1"># ---- RUNABLE EXPERIMENTS -----------------------------</span>
+<span class="c1"># ------------------------------------------------------</span>
+<span class="k">class</span> <span class="nc">InheritedMnistGAN</span><span class="p">(</span><span class="n">BaseMnist</span><span class="p">,</span> <span class="n">BaseGAN</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Train a cDCGAN on MNIST&quot;&quot;&quot;</span>
+    <span class="n">epochs</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">ncpus</span><span class="p">,</span> <span class="n">ngpus</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mi">128</span>
+
+    <span class="k">def</span> <span class="nf">distributions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate one hot and normal samples&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">torch.distributions</span> <span class="k">import</span> <span class="n">Normal</span>
+        <span class="kn">from</span> <span class="nn">torch.distributions.one_hot_categorical</span> <span class="k">import</span> <span class="n">OneHotCategorical</span>
+        <span class="n">pz</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">cz</span><span class="p">]))</span>
+        <span class="n">py</span> <span class="o">=</span> <span class="n">OneHotCategorical</span><span class="p">(</span><span class="n">probs</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">cy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">py</span><span class="p">,</span> <span class="n">pz</span>
+
+
+<span class="k">class</span> <span class="nc">InheritedMnistVae</span><span class="p">(</span><span class="n">BaseMnist</span><span class="p">,</span> <span class="n">BaseCVae</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Train a conditional VAE on MNIST&quot;&quot;&quot;</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">w_beta</span> <span class="o">=</span> <span class="mf">1.5</span>
+    <span class="n">lr</span> <span class="o">=</span> <span class="mf">0.00005</span>
+    <span class="n">ncpus</span><span class="p">,</span> <span class="n">ngpus</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span>
+
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="class-api.html" class="btn btn-neutral float-right" title="Xmen Experiment Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tutorial.html" class="btn btn-neutral" title="Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Rob Weston.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="_static/jquery.fancybox.min.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+  <script type="text/javascript">
+    $(function(){
+      $('.image-reference').fancybox();
+    })
+  </script>
+
+</body>
+</html>

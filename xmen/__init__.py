@@ -16,8 +16,5 @@
 #  You should have received a copy of the GNU General Public License
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from xmen.experiment import Experiment, Root
-
-
-
-
+from xmen.experiment import Experiment
+from xmen.functional import autodoc, Root

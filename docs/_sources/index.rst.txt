@@ -11,6 +11,7 @@ xmen: fast and reproducible experimentation!
 
    README
    tutorial
+   examples
    class-api
    cheat-sheet
    faq

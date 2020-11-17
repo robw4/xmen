@@ -2,11 +2,14 @@
 API
 ****
 
-Root
-######
+Functional
+###########
 
 .. autoclass:: xmen.experiment.Root()
    :members: directory, message, messages
+
+.. automodule:: xmen.functional
+  :members:
 
 
 Experiment
@@ -31,7 +34,7 @@ Monitor
    
 
 
-Utils
+utils
 ######
 .. automodule:: xmen.utils
 	:members:
@@ -43,3 +46,10 @@ ExperimentManager
    :members:
 
     .. automethod:: __init__
+
+GlobalExperimentManager
+#########################
+.. autoclass:: xmen.config.GlobalExperimentManager
+  :members:
+
+  .. automethod:: __init__

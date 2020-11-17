@@ -258,6 +258,7 @@ optional arguments:
   - `sphinx`
   - `recommonmark`
   - `nbsphinx`
+  - `sphinx_glpi_theme`
 
 ## Author, Issues, Contributions
 - Any issues, file an issue or contact me!

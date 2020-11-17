@@ -1,3 +1,5 @@
+"""Using the class api to define experiments with inheritance."""
+
 from xmen.experiment import Experiment
 import os
 import time
@@ -73,6 +75,7 @@ class AnExperiment(BaseExperiment):
 # Experiments can inheret from multiple classes
 class MultiParentsExperiment(AnotherExperiment, AnExperiment):
     pass
+
 
 if __name__ == '__main__':
     # documentation is automatically added to the class

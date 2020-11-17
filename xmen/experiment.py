@@ -645,22 +645,3 @@ class Experiment(object, metaclass=TypedMeta):
         lines += ['  ' + f'{k}: {v}' for k, v in params.items()]
         return '\n'.join(lines)
 
-
-class Root(Experiment):
-    """The first argument passed to a functional experiment and principally used to root an experiment instance to a
-    particular directory::
-
-
-        def functional_experiment(root: Root, ...):
-            with open(root.directory, 'w') as f:
-                f.write('Running experiment)
-
-            root.message({'time': time.time()})
-
-    Note:
-        Root is nothing more than Experiment with a different name. Whilst principally offering exactly the same
-        functionality, primarily the purpose of Root is to expose the directory property and messaging protocol of
-        the Experiment class to functional experiment definitions. However, there is nothing stopping the user
-        form using the full functionality of the Experiment class if they wish. Please consult the Experiment class
-        documentation in this case.
-    """

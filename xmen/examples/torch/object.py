@@ -1,14 +1,4 @@
-#  Copyright (C) 2019  Robert J Weston, Oxford Robotics Institute
-#
-#  xmen
-#  email:   robw@robots.ox.ac.uk
-#  github: https://github.com/robw4/xmen/
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 3 of the License, or
-#  (at your option) any later version.
-#
+"""A class implementation of dcgan"""
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -25,8 +15,6 @@
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 3 of the License, or
 #  (at your option) any later version.
-import sys
-sys.path.append('/home/robw/xmen/python')
 
 from typing import Tuple
 import torch
@@ -39,10 +27,8 @@ class Dcgan(Experiment):
 
     To viusalise the results run::
 
-        tensorboard
+        tensorboard --logdir ...
 
-    Note:
-        The output size is given as hw0 * 2 ** nl (eg (4, 2) * 2 ** 4 = (64, 32)
     """
     import tempfile
     b: int = 128  # @p the batch size per gpu

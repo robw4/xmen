@@ -16,7 +16,6 @@
 #  You should have received a copy of the GNU General Public License
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-import sys
 import re
 
 import xmen.manager
@@ -390,6 +389,7 @@ class GlobalExperimentManager(object):
         return df, prefix
 
     def add_experiment(self, module, name):
+        """Add a python experiment ``name`` defined in ``module`` either as a class or function."""
         import stat
         from xmen.utils import get_run_script
         script = get_run_script(module, name)

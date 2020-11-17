@@ -1,4 +1,4 @@
-"""Functional experiment example"""
+"""A functional implementation of dcgan"""
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -56,8 +56,9 @@ def get_datasets(cy, cz, b, ngpus, ncpus, ns, data_root, hw, **kwargs):
             zip(y.unsqueeze(0), z.unsqueeze(0)))}  # Turn into batches
 
 
+@xmen.autodoc
 def dcgan(
-    root: xmen.Experiment,  #
+    root: xmen.Root,  #
         # first argument is always an experiment instance.
         # can be unused (specify with _) in python
         # syntax practice. can be named whatever depending
@@ -83,15 +84,12 @@ def dcgan(
     nimg: int = 64,  # the maximum number of images to display to tensorboard
     ns: int = 5  # the number of samples to generate at inference)
 ):
-    """A function dcgan example found at xmen.examples.functional.
+    """Train a conditional GAN to predict MNIST digits.
 
-    see
-    > xmen dcgan --help
-    for more options.
+    To viusalise the results run::
 
-    To visualise results run
-    > tensorboard --logdir $ROOT
-    where $ROOT is the path the experiment was linked to (eg. using xmen -x $ROOT)
+        tensorboard --logdir ...
+
     """
     from xmen.monitor import Monitor, TensorboardLogger
     from xmen.examples.models import weights_init, set_requires_grad, GeneratorNet, DiscriminatorNet

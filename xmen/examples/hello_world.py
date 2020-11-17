@@ -16,11 +16,12 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
-from xmen import Experiment, Root
+import xmen
 
 
+@xmen.autodoc
 def hello_world(
-    root: Root,   # experiments are assigned a root before being executed
+    root: xmen.Root,   # experiments are assigned a root before being executed
     a: str = 'Hello',  # the first
     # argument
     b: str = 'World'   # the second argument
@@ -29,14 +30,14 @@ def hello_world(
     defining experiments through the functional experiment api"""
     print(f'{a}  {b}')
 
-    ...  #  Whatever other experiment code you want
+    ...     # Whatever other experiment code you want
 
     with open(root.directory + '/out.txt', 'w') as f:
         f.write(f'{a} {b}')
     root.message({'a': a, 'b': b})
 
 
-class HelloWorld(Experiment):
+class HelloWorld(xmen.Experiment):
     """A hello world experiment designed to demonstrate
     defining experiments through the class experiment api"""
     # Parameters

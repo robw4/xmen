@@ -1,4 +1,4 @@
-"""A multi"""
+"""Deep generative models with inheritance"""
 #  Copyright (C) 2019  Robert J Weston, Oxford Robotics Institute
 #
 #  xmen
