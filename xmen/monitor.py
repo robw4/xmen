@@ -1,21 +1,4 @@
 #  Copyright (C) 2019  Robert J Weston, Oxford Robotics Institute
-#
-#  xmen
-#  email:   robw@robots.ox.ac.uk
-#  github: https://github.com/robw4/xmen/
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 3 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License
-#   along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
 #  xmen
 #  email:   robw@robots.ox.ac.uk
 #  github: https://github.com/robw4/xmen/
@@ -47,6 +30,35 @@ BRIEF = {"step": "s", "epoch": "e", "era": "er", "eon": "eo", "supereon": "se"}
 IDX = {c: i for i, c in enumerate(TRIGGERS)}
 
 
+class Spec(object):
+    def __init__(self, spec):
+        assert isinstance(spec, str), 'invalid specification found'
+        regex, steps, trigger = None, None, None
+        if '@' in spec:
+            parts = spec.split('@')
+            regex, string = parts
+            if regex == '':
+                regex = None
+            steps = re.search('[0-9]+', string)
+            assert steps is not None, f'No steps found in {spec}'
+            steps = steps.group()
+            trigger = {}
+            for k, v in BRIEF.items():
+                trigger[k] = k
+                trigger[v] = k
+            trig_key = string.split(steps)[1]
+            trigger = trigger.get(trig_key, None)
+            assert trigger is not None, f'Invalid or no trigger specified in {spec}'
+        else:
+            regex = spec
+        self.regex = regex
+        self.modulo = int(steps) if steps is not None else None
+        self.trigger = trigger
+
+    def __str__(self):
+        return f'{self.regex if self.regex is not None else ""}@{self.modulo}{self.trigger}'
+
+
 def read_modulo_string(string):
     assert isinstance(string, str)
     parts = string.split('@')
@@ -68,16 +80,12 @@ class LastStep(Exception):
         self.step = step
 
 
-class Hook(object):
-    def __init__(self, regex=None, modulo=None, trigger='step'):
-        if '@' in regex:
-           regex, modulo, trigger = read_modulo_string(regex)
-        self.regex = regex
-        self.modulo = modulo
-        self.trigger = trigger
-        if trigger not in TRIGGERS:
-            raise NotImplementedError(f'Trigger {trigger} is not in {TRIGGERS}')
-
+class Hook(Spec):
+    """A base class defining a variable passing protocol with the Monitor class. Ever time the monitors count is
+    divisible by ``modulo`` for a particular ``trigger`` then the hook is passed all the variables matching ``regex``
+    from the current stack. Users therefore define hooks by overloading the hooks __call__ method (with the same
+    call signature).
+    """
     def __call__(self, var_dict, monitor):
         raise NotImplementedError('All methods must implement the call method')
 
@@ -161,13 +169,13 @@ class EarlyStopper(Hook):
 
 
 class Checkpointer(Hook):
-    def __init__(self, regex='.*', modulo=None, trigger='step', to_keep=None, expand=True):
-        super(Checkpointer, self).__init__(regex, modulo, trigger)
+    def __init__(self, spec, to_keep=None, expand=True):
+        super(Checkpointer, self).__init__(spec)
         self.to_keep = to_keep
         self._checkpoint_buffer = {}
         self.expand = expand
 
-    def __call__(self, model_dict, monitor):
+    def __call__(self, var_dict, monitor):
         import torch
         from xmen.utils import get_version
         saved = []
@@ -175,15 +183,15 @@ class Checkpointer(Hook):
         if self.expand:
             pops = []
             updates = {}
-            for k, v in model_dict.items():
+            for k, v in var_dict.items():
                 if isinstance(v, dict):
                     pops.append(k)
                     updates.update({k + '_' + kk: vv for kk, vv in v.items()})
             for p in pops:
-                model_dict.pop(p)
-                model_dict.update(updates)
+                var_dict.pop(p)
+                var_dict.update(updates)
 
-        for k, v in model_dict.items():
+        for k, v in var_dict.items():
             if hasattr(v, 'state_dict'):
                 # Save directory
                 save_dir = os.path.join(monitor.directory, 'checkpoints', k)
@@ -217,21 +225,150 @@ class Checkpointer(Hook):
 
 
 class XmenMessenger(Hook):
-    def __init__(self, exp, regex, modulo=None, trigger=None, keep='latest', leader=None, expand=False, prepend=None):
+    """A hook for logging messages with an ``xmen.Experiment`` object.
+
+        Example 1::
+
+            from xmen import Experiment
+            from xmen.monitor import Monitor
+
+            messenger = XmenMessenger('y.*->ex.*@10s')   # log all variables matching the loss to experiments matching ex
+            m = Monitor(hooks=[messenger])
+            y1, y2 = 0, 0
+            ex1, ex2 = Experiment(), Experiment()
+            ex1.register('/tmp', 'ex1')
+            ex2.register('/tmp', 'ex2')
+            for i in m(range(40)):
+                y1 += 1
+                y2 += 2
+                if i % 10 == 1:
+                    print(', '.join(
+                        [f"ex1: {k} = {ex1.messages.get(k, None)}" for k in ('y1', 'y2')] +
+                        [f"ex2: {k} = {ex1.messages.get(k, None)}" for k in ('y1', 'y2')]))
+
+            # Output
+            # ex1: y1 = None, ex1: y2 = None, ex2: y1 = None, ex2: y2 = None
+            # ex1: y1 = 10, ex1: y2 = 20, ex2: y1 = 10, ex2: y2 = 20
+            # ex1: y1 = 20, ex1: y2 = 40, ex2: y1 = 20, ex2: y2 = 40
+            # ex1: y1 = 30, ex1: y2 = 60, ex2: y1 = 30, ex2: y2 = 60
+
+
+        Example 2::
+
+            from xmen import Experiment
+            from xmen.monitor import Monitor
+
+            ex = Experiment()
+            ex.register('/tmp', 'ex')
+            m = Monitor(
+                hooks=[
+                    XmenMessenger('^y$|^i$->^ex$@10s', keep='min', leader='^y$')])
+
+            x = -50
+            for i in m(range(100)):
+                x += 1
+                y = x ** 2
+                if i % 10 == 1:
+                    print([ex.messages.get(k, None) for k in ('i', 'y')])
+
+            # Output
+            # [None, None]
+            # [9, 1600]
+            # [19, 900]
+            # [29, 400]
+            # [39, 100]
+            # [49, 0]
+            # [49, 0]
+            # [49, 0]
+            # [49, 0]
+            # [49, 0]
+
+        Example 3::
+
+            from xmen import Experiment
+            from xmen.monitor import Monitor
+
+            ex = Experiment()
+            ex.register('/tmp', 'ex')
+            m = Monitor(
+                hooks=[
+                    XmenMessenger('z->^ex$@10s', keep='min', leader='y', expand=True)])
+
+            z = {'x': 5, 'y': 10}
+            for i in m(range(100)):
+                z['i'] = i
+                z['x'] += 1
+                z['y'] = z['x'] ** 2
+                if i % 10 == 1:
+                    print([ex.messages.get(k, None) for k in ('i', 'y', 'x')])
+
+            # [None, None, None]
+            # [9, 225, 15]
+            # [9, 225, 15]
+            # [9, 225, 15]
+            # [9, 225, 15]
+            # [9, 225, 15]
+            # [9, 225, 15]
+            # [9, 225, 15]
+            # [9, 225, 15]
+            # [9, 225, 15]
+
+        Example 4::
+
+            from xmen import Experiment
+            from xmen.monitor import Monitor
+
+            ex = Experiment()
+            ex.register('/tmp', 'ex')
+            m = Monitor(
+                hooks=[
+                    XmenMessenger('z->^ex$@10s', keep='min', leader='z_y', expand=True, prepend=True)])
+
+
+            z = {'x': 5, 'y': 10}
+            for i in m(range(100)):
+                z['i'] = i
+                z['x'] += 1
+                z['y'] = z['x'] ** 2
+                if i % 10 == 1:
+                    print([ex.messages.get(k, None) for k in ('z_i', 'z_y', 'z_x')])
+
+            # same output as above
+    """
+
+    def __init__(self, spec, keep='latest', leader=None, expand=False, prepend=None):
+        """
+        Args:
+            spec (Spec): hook specification in the form either ``{log_regex}->{exp_regex}@{modulo}{trigger}`` or
+                ``{exp_regex}@{modulo}{trigger}`` where ``exp_regex`` is the experiments to message and ``log_regex`` are
+                additional messages to log with the experiment. In the second case only timing and step information
+                will be logged
+            keep (str): One of ['latest', 'max', 'min'] in the case of message collision with each experiment
+            leader (regex): If leader is not None then messages will be logged according to ``keep`` as judged by
+                the variable in var_dict which matches ``leader``.
+            expand: If a dictionary variable with K keys matches ``log_regex`` then it is converted to K variables with
+                names corresponding to the keys in dict if ``expand==True``.
+            prepend: If prepend is ``True`` then in the case above the name of each variable will be
+                prepended by the dict variable name. eg. each variable will be called '{name}_{k}'.
+        """
         assert keep in ['max', 'min', 'latest']
-        self.experiments = exp
         self.keep = keep
         self.expand = expand
         self.leader = leader
         self.prepend = prepend
-        if regex not in ['', '^$', None]:
-            exp += '|' + regex
-        super(XmenMessenger, self).__init__(regex=exp, modulo=modulo, trigger=trigger)
+        self.log = r''
+
+        if '->' in spec:
+            self.log, spec = spec.split('->')
+            spec = self.log + '|' + spec
+
+        super(XmenMessenger, self).__init__(spec)
 
     def __call__(self, var_dict, monitor):
+        """Leave messages, timing and step information with experiments"""
         from xmen.experiment import Experiment
-        # Get and remove experiments from var_dict
-        results = zip(*[(k, var_dict[k]) for k in var_dict if re.match(self.experiments, k) is not None])
+        # get and remove experiments from var_dict
+        results = zip(*[(k, var_dict[k]) for k in var_dict if re.match(self.log, k) is None])
         results = list(results)
         if len(results) == 2:
             names, experiments = results
@@ -259,7 +396,6 @@ class XmenMessenger(Hook):
 
             if self.leader is not None:
                 leader = [k for k in var_dict if re.match(self.leader, k) is not None][0]
-
             if isinstance(e, Experiment):
                 e.message(monitor.summary(verbose=1))
                 e.message(var_dict, keep=self.keep, leader=leader)
@@ -268,6 +404,7 @@ class XmenMessenger(Hook):
 
 
 class Timer(Hook):
+    """A simple timing hook used to log any timers setup by the experiment monitor"""
     def __call__(self, var_dict, monitor):
         s = monitor.summary(verbose=1)
         keys = [k for k in s if k not in BRIEF.values() and k != 'last']
@@ -275,14 +412,50 @@ class Timer(Hook):
 
 
 class Logger(Hook):
-    # Logging options
-    def __init__(self, regex=None, modulo=None, format='', trigger='step', timings=False, process_func=None):
-        super(Logger, self).__init__(regex=regex, modulo=modulo, trigger=trigger)
+    """A simple logging hook used to log variables to stdout.
+
+    Example::
+
+        from xmen.monitor import Monitor, Logger
+
+        m = Monitor(
+            hooks=[
+                Logger('x@2s', process_func=lambda x: '|'.join(x)),
+                Logger('y@1e', format='.5f')])
+
+        x = ['cat', 'dog']
+        y = 0.
+        for _ in m(range(3)):
+            for i in m(range(5)):
+                y += i
+
+        # [01:17PM 18/11/20 0/3 2/15]: x = cat|do
+        # [01:17PM 18/11/20 0/3 4/15]: x = cat|do
+        # [01:17PM 18/11/20 1/3]: y = 10.0000
+        # [01:17PM 18/11/20 1/3 6/15]: x = cat|do
+        # [01:17PM 18/11/20 1/3 8/15]: x = cat|do
+        # [01:17PM 18/11/20 1/3 10/15]: x = cat|do
+        # [01:17PM 18/11/20 2/3]: y = 20.0000
+        # [01:17PM 18/11/20 2/3 12/15]: x = cat|do
+        # [01:17PM 18/11/20 2/3 14/15]: x = cat|do
+        # [01:17PM 18/11/20 3/3]: y = 30.0000
+
+    """
+    def __init__(self, spec, format='', process_func=None):
+        """
+        Args:
+            spec (Spec): a specification string of the form "{regex}@{modulo}{trigger}". Variables matching
+                ``regex`` will be logged when ``trigger`` % ``modulo`` == 0.
+            format (str): a format string used as f"{var:format}" for logging string variables
+            process_func (callable): used to convert variables to a string for logging to stdout. Format will be
+                applied after.
+        """
+        super(Logger, self).__init__(spec)
         self.format = format
-        self.timings = timings
         self.process_func = process_func
 
     def __call__(self, var_dict, monitor, *args, format=None, process_func=None):
+        """Log variables to standard out"""
         s = monitor.summary(verbose=1)
         triggers = [k for k in s if k in BRIEF.values()]
         elems = [f'{s["last"]}']
@@ -302,19 +475,55 @@ class Logger(Hook):
             if process_func is not None:
                 v = process_func(v)
             string += f' {v:{format}}'
-        logging.info(string)
+        print(string)
 
 
 class TensorboardLogger(Hook):
-    def __init__(self, type, regex, modulo=None, trigger='step', process_func=None, prefix='',
-                 image_n=None, scalar_reduce=True, prepend=True, **options):
-        super(TensorboardLogger, self).__init__(regex, modulo, trigger)
-        self.process_func = process_func
+    """A hook for logging tensorboard summaries. Currently 'image', 'scalar', 'histogram', 'figure', 'video', 'text',
+    'pr_curve', 'mesh' are all supported.
+
+    Before being passed to the summary writer each variable is processes as follows:
+
+        1) First all variables are passed to ``fn`` (if supplied).
+        2) Variables of type list or dict with length K will be expanded to give K variables. The name of each
+            variable will be the list name postpended with its index or the dictionary name postpended with its key.
+        3) If the summary type is image or scalar then some additional processing will be performed:
+             - For scalars if variables are not already scalar variables they will be converted by calling var.mean()
+             - For images the variable must be either a 3D [C, H, W] or 4D [B, C, H, W] tensor. Tensors are converted
+                to images of shape [C, H, W]:
+                - if the variable is 3D it will be converted to 4D
+                - the variable is then converted to an image using ``torchvision.utils.make_grid``. Additional options
+                    can be passed to ``torchvision.utils.make_grid`` using the ``options`` parameter. Available options
+                    include:
+                         - ``'nrow' # images per row``
+                         - ``'padding'``
+                         - ``'normalize'``
+                         - ``'range'``
+                         - ``'scale_each'``
+                         - ``'pad_value'``
+                        (see torchvision.utils.make_grid for more info)
+
+    Note:
+        Tensorboard does not allow summaries to have the same name. If you want to leave to different types
+        of summary for the same variable then you will need to use the `prefix` argument.
+
+    """
+    def __init__(self, type, spec, fn=None, prefix='', prepend=True, **options):
+        """
+        Args:
+            type (str): The type of tensorboard summary to log. Should be one of
+                ['image', 'scalar', 'histogram', 'figure', 'video', 'text', 'pr_curve', 'mesh']
+            spec (str): A string in the form ``"{regex}@{modulo}{trigger}"``. tensorbaord summaries will be logged
+                for all variables matching ``regex`` when ``monitor.{trigger} % modulo == 0`
+            fn (callable): A function used to convert each variable to a summary
+            prefix (str): prepend all summaries with this string
+            prepend (bool): If true prepend dictionary variable names with the dictionary name.
+            **options: Keyword arguments passed to ``torchvision.utils.make_grid``
+        """
+        super(TensorboardLogger, self).__init__(spec)
+        self.fn = fn
         self.type = type
         self.prefix = prefix
-        self.image_n = image_n
-        self.scalar_reduce = scalar_reduce
-        self.n_images = 1
         self.prepend = prepend
         if type not in ['image', 'scalar', 'histogram', 'figure', 'video', 'text', 'pr_curve', 'mesh']:
             raise NotImplementedError("Only image and scalar summaries are currently supported.")
@@ -328,15 +537,15 @@ class TensorboardLogger(Hook):
 
             if not os.path.join(monitor.directory, 'summaries'):
                 os.makedirs(os.path.join(monitor.directory, 'summaries'))
+            from torch.utils.tensorboard import SummaryWriter
             tb_writer = tb.SummaryWriter(os.path.join(monitor.directory, 'summaries'))
             monitor.log(f'saved tb {self.type} summaries for {list(var_dict.keys())} at {monitor.directory}')
             # print(monitor.directory, 'summaries')
             for k, v in var_dict.items():
-                v = v.detach().clone()
                 k = self.prefix + k
                 if v is not None:
-                    if self.process_func is not None:
-                        v = self.process_func(v)
+                    if self.fn is not None:
+                        v = self.fn(v)
                     add_summary = getattr(tb_writer, 'add_' + self.type)
                     if isinstance(v, dict):
                         for kk, vv in v.items():
@@ -354,32 +563,40 @@ class TensorboardLogger(Hook):
             tb_writer.close()
 
     def make_compatible(self, v):
+        """Convert the variable v to a valid input for the summary writer"""
         import torch
         import numpy as np
         from torchvision.utils import make_grid
+        if hasattr(v, 'detach') and hasattr(v, 'clone'):
+            v = v.detach().clone()
         if self.type == 'image':
+            if isinstance(v, np.ndarray):
+                v = torch.as_tensor(v)
             options = {'nrow', 'padding', 'normalize', 'range', 'scale_each', 'pad_value'}
             make_grid_params = {'normalize': True, 'scale_each': True}
             make_grid_params.update(
                 {k: v for k, v in self.options.items() if k in options})
             if len(v.shape) == 4:
-                if self.image_n is not None:
-                    v = v[:self.image_n]
                 v = make_grid(v.float(), **make_grid_params)
             elif len(v.shape) == 3:
                 # Make images a grid if batched and normalise each
                 v = make_grid([v], **make_grid_params)
-        if self.type == 'scalar' and self.scalar_reduce:
+        if self.type == 'scalar':
             if isinstance(v, (torch.Tensor, np.ndarray)) and len(v.shape) > 0:
                 v = v.mean()
         return v
 
-    def get_summary_writer(self, v, tb_writer):
-        return
-
 
 class StopWatch(object):
+    """A simple timer class"""
     def __init__(self, name, length=None, time_format='.4f', date_format='%j %H:%M:%S'):
+        """
+        Args:
+            name (str): the name of the stopwatch
+            length (int): the number of steps to time for (can be None)
+            time_format (str): display timings in this format
+            date_format (str): display date in this format
+        """
         self.name = name
         self.start_time = time.time()
         self.average = 0.
@@ -392,10 +609,12 @@ class StopWatch(object):
         self.reference = 0.
 
     def start(self):
+        """Start the stop watch"""
         self.reference = time.time()
         return self
 
     def stop(self):
+        """Stop the stopwatch"""
         now_time = time.time()
         self.delta = now_time - self.reference
         self.average += (self.delta - self.average) / (self.n + 1)
@@ -403,14 +622,19 @@ class StopWatch(object):
         return self
 
     def projected(self, n_more=None):
+        """Get projected time to completion. If ``n_more is None`` then the time to completion will be inferred
+        from ``length``. As a result at least of one of ``n_more`` or ``length`` must be set"""
+        assert n_more is not None or self.length is not None, 'One of n_more or length must be set'
         if n_more is None:
             n_more = (self.length - self.n)
         return self.average * n_more
 
     def wall_time(self):
+        """The time since the experiment started in seconds"""
         return time.time() - self.start_time
 
     def __repr__(self):
+        """String representation"""
         string = f'{self.name} {self.delta:{self._t_fmt}}secs ({self.average:{self._t_fmt}} avg)'
         if self.length is not None:
             string += ' wall ' + time.strftime(self._date_fmt,  time.gmtime(time.time() - self.start_time))
@@ -489,49 +713,61 @@ def load(load_dir, step=None, attempt=True, **modules):
 
 
 class Monitor(object):
+    """Automate tracking, logging and saving of experiments.
+
+    Logging / checkpointing is configured through arguments of the form ``f'{regex}@{modulo}{trigger}'``.
+    Any variables in the local scope of the monitor which match the
+    specified regular expression will be logged / checkpointed every modulo steps of the trigger. Triggers are
+    incremented either manually (using the ``inc`` method) or automatically using nested iterators
+    (see example). Supported triggers include ["step", "epoch", "era", "eon", "supereon"] or their
+    abbreviations ["s", "e", "er", "eo", "se"].
+
+    Alongside the built in logging / checkpointing options, more sophisticated cases can be configured
+    through user defined hooks. If a hook is passed with modulo == None it can instead be triggered manually
+    as ``monitor.to_hooks()``. Manual logging and checkpoint are also supported as
+    ``monitor.log(...)`` and ``monitor.checkpoint(...)``"""
+
     def __init__(self, directory=None, *,
                  # User defined hooks (either) modulo or not modulo
                  hooks=[],
                  # Default saving for parameters
                  checkpoint=None, checkpoints_to_keep=None,
+                 #  type, spec, fn=None, prefix='', prepend=True, **options
                  log=None,
-                 img=None, img_fn=None, img_n=None,
-                 sca=None, sca_fn=None,
-                 time=('@100s', '@1e', '@1er', '@1eo', '@1se'),
-                 message=tuple(f'self@100{t}' for t in TRIGGERS),
+                 img=None, img_fn=None, img_pref='', img_prep=True, img_options={},
+                 sca=None, sca_fn=None, sca_pref='', sca_prep=True,
+                 hist=None, hist_fn=None, hist_pref='', hist_prep=True,
+                 fig=None, fig_fn=None, fig_pref='', fig_prep=True,
+                 txt=None, txt_fn=None, txt_pref='', txt_prep=True,
+                 vid=None, vid_fn=None, vid_pref='', vid_prep=True,
+                 time=(),
+                 message=(),
                  limit=None):
-        """Automate tracking, logging and saving of experiments.
-
-        Logging / checkpointing is configured through arguments of the form ``f'{regex}@{modulo}{trigger}'``.
-        Any variables in the local scope of the monitor which match the
-        specified regular expression will be logged / checkpointed every modulo steps of the trigger. Triggers are
-        incremented either manually (using the ``inc`` method) or automatically using nested iterators
-        (see example). Supported triggers include ["step", "epoch", "era", "eon", "supereon"] or their
-        abbreviations ["s", "e", "er", "eo", "se"].
-
-        Alongside the built in logging / checkpointing options, more sophisticated cases can be configured
-        through user defined hooks. If a hook is passed with modulo == None it can instead be triggered manually
-        as ``monitor.to_hooks()``. Manual logging and checkpoint are also supported as
-        ``monitor.log(...)`` and ``monitor.checkpoint(...)``
-
+        """
         Args:
             directory: A path to store checkpoints / logs in (required for checkpointing and tensorboard logging
                 otherwise optional)
             checkpoint: checkpoint specified torch.Module objects
             log: log specified objects on triggers to stdout
-            img: log as tensorboard images
-            img_fn: Apply this function to each variable before logging as images
-            sca: log as tensorboard scalars
-            sca_fn: Apply this function to each variable before logging as scalars
+            sca: scalar tensorboard summaries
+            img: image tensorboard summaries
+            hist: histogram tensorboard summaries
+            fig: figure tensorbord summaries
+            txt: text tensorboard summaries
+            vid: video tensorboard summaries
             time: log timing statistics at these frequencies
             hooks: A list of user specified hooks conforming the the ``Hook`` api.
             message: summarise the current state of the experiment at these frequencies using the xmen.Experiment api.
 
-        Example::
+         Each tensorboard summary can be configured with `..._fn`, `..._pref` and `..._prep` parmameters which are
+         passed to ``TensorboardLogger`. See ``TensorboardLogger`` for more info.
+
+
+        Example 1::
 
             nn, opt, dataset = ..., ...
 
-            em = Monitor(
+            m = Monitor(
                 directory,
                 checkpoint=('model@1e', 'opt@100s'),   # Checkpoint the model once per epoch and opt every 100 steps
                 log='^loss$@100s',   # Log the loss to stdout every 100 steps
@@ -543,8 +779,8 @@ class Monitor(object):
             # The only modification needed to the training loop are the em calls.
             # Nested loops corresponds to different triggers from inside out
             # we have ["step" or "s", "epoch" or "e", "era" or "er", "eon" or "eo", "supereon" or "se"]
-            for epoch in em(range(10)):
-                for x, y in em(datset):
+            for epoch in m(range(10)):
+                for x, y in m(datset):
                     _y_ = model(x)
                     opt.zero_grad()
                     loss = loss_fn(y, _y_)
@@ -561,6 +797,49 @@ class Monitor(object):
             em.load(step=5*len(ds), model)
             # The step and epoch will be updated
             print(em.step, em.epoch)
+
+        Example 2::
+
+            from xmen.monitor import Monitor
+            import numpy as np
+            import torch
+            import os
+            import matplotlib.pyplot as plt
+            from torchvision.datasets.mnist import MNIST
+            from torch.utils.data import DataLoader
+            import torchvision.transforms as T
+
+            plt.style.use('ggplot')
+            ds = DataLoader(MNIST(os.getenv("HOME") + '/data/mnist', download=True,
+                  transform=T.Compose(
+                      [T.Resize([64, 64]), T.CenterCrop([64, 64]),
+                       T.ToTensor(), T.Normalize([0.5], [0.5])])), 8)
+
+            m = Monitor(
+                directory='/tmp/tb_5',
+                sca=['^z$|^X$@10s', '^a|^x$@5s'],
+                img=['^mnist@10s', '^mnist@5s'], img_fn=[lambda x: x[:2], lambda x: x[:5]], img_pref=['2', '5'],
+                hist='Z@1s',
+                fig='fig@10s',
+                txt='i@5s', txt_fn=lambda x: f'Hello at step {x}',
+                vid='^mnist@10s', vid_fn=lambda x: (x.unsqueeze(0) - x.min()) / (x.max() - x.min())
+            )
+
+            # variables
+            x = 0.
+            a = [1, 2]
+            z = {'x': 5, 'y': 10}
+            for i, (mnist, _) in m(zip(range(31), ds)):
+                # plot a figure
+                fig = plt.figure(figsize=[10, 5])
+                plt.plot(np.linspace(0, 1000), np.cos(np.linspace(0, 1000) * i))
+                # random tensor
+                Z = torch.randn([10, 3, 64, 64]) * i / 100
+                # scalars
+                x = (i - 15) ** 2
+                z['i'] = i
+                z['x'] += 1
+                z['y'] = z['x'] ** 2
 
         """
         # Hooks work in both manual and modulo mode
@@ -579,63 +858,57 @@ class Monitor(object):
             if not isinstance(checkpoint, (list, tuple)):
                 checkpoint = [checkpoint]
             for c in checkpoint:
-                regex, modulo, trigger = read_modulo_string(c)
-                self.hooks.append(Checkpointer(modulo=modulo, regex=regex, trigger=trigger,
-                                               to_keep=checkpoints_to_keep))
+                self.hooks.append(Checkpointer(c, to_keep=checkpoints_to_keep))
 
         if log is not None:
             if not isinstance(log, (list, tuple)):
                 log = [log]
             for l in log:
-                regex, modulo, trigger = read_modulo_string(l)
-                self.hooks.append(Logger(modulo=modulo, regex=regex, trigger=trigger))
+                self.hooks.append(Logger(l))
 
-        if isinstance(sca, bool) and sca:
-            # This allows scalars to follow log
-            sca = log
-        if sca is not None:
-            if not isinstance(sca, (list, tuple)):
-                sca = [sca]
-            for s in sca:
-                regex, modulo, trigger = read_modulo_string(s)
-                self.hooks.append(
-                    TensorboardLogger(regex=regex, modulo=modulo, trigger=trigger,
-                                      type='scalar', process_func=sca_fn))
-
-        if img is not None:
-            if not isinstance(img, (list, tuple)):
-                img = [img]
-            for i in img:
-                regex, modulo, trigger = read_modulo_string(i)
-                self.hooks.append(
-                    TensorboardLogger(regex=regex, modulo=modulo, trigger=trigger,
-                                      type='image', process_func=img_fn, image_n=img_n))
+        # tensorboard summaries
+        kinds = {'sca': 'scalar', 'img': 'image', 'hist': 'histogram',
+                 'fig': 'figure', 'txt': 'text', 'vid': 'video'}
+        for k in kinds:
+            kind = locals()[k]
+            if kind is not None:
+                options = {}
+                if k == 'img':
+                    options = locals()[k + '_options']
+                fn = locals()[k + '_fn']
+                pref = locals()[k + '_pref']
+                prep = locals()[k + '_prep']
+                if not isinstance(kind, (list, tuple)):
+                    kind = [kind]
+                if not isinstance(fn, (list, tuple)):
+                    fn = tuple([fn] * len(kind))
+                if not isinstance(pref, (list, tuple)):
+                    pref = tuple([pref] * len(kind))
+                if not isinstance(prep, (list, tuple)):
+                    prep = tuple([prep] * len(kind))
+                msg = f"Either one fn, pref and prep or one for each '{kind}' must be set"
+                assert all(len(f) == len(kind) for f in (fn, pref, prep)), msg
+                for c, f, pr, pre in zip(kind, fn, pref, prep):
+                    self.hooks.append(TensorboardLogger(kinds[k], c, fn=f, prefix=pr, prepend=pre, **options))
 
         if time is not None:
             if not isinstance(time, (list, tuple)):
                 time = [time]
             for t in time:
-                _, modulo, trigger = read_modulo_string(t)
-                self.hooks.append(Timer(regex=r'^$', modulo=modulo, trigger=trigger))
+                self.hooks.append(Timer(t))
         if message is not None:
             if not isinstance(message, (list, tuple)):
                 message = [message]
             for m in message:
-                if '->' in m:
-                    # regex->exps@modulo
-                    regex, m = m.split('->')
-                else:
-                    regex = ''
-                exp, modulo, trigger = read_modulo_string(m)
-                self.hooks.append(XmenMessenger(exp=exp, regex=regex, modulo=modulo, trigger=trigger))
+                self.hooks.append(XmenMessenger(m))
         # Add user hooks
         self.n_user_hooks = len(hooks)
         self.hooks.extend(hooks)
 
         # -- Use Logger and Check pointer for manual logging
         # These special hooks are always available
-        self._logger = Logger(regex=r'.*', timings=False)
-        self._checkpointer = Checkpointer(regex='r.*', to_keep=checkpoints_to_keep)
+        self._logger = Logger(r'.*')
+        self._checkpointer = Checkpointer(r'.*', to_keep=checkpoints_to_keep)
 
     @property
     def supereon(self):

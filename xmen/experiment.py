@@ -488,26 +488,17 @@ class Experiment(object, metaclass=TypedMeta):
             (if possible) then string thereafter.
 
         """
+
         if self._root is not None:
             # Add leader to messages group
             if leader is not None:
-                best_leader = self.compare(leader, messages[leader], keep)[0]
-            else:
-                best_leader = False
-
-            for k, v in messages.items():
-                best_current, v = self.compare(k, v, keep)
-                best = best_leader if leader is not None else best_current
-                # Convert type
-                if not isinstance(v, (str, float, int)):
-                    try:
-                        v = float(v)
-                    except (ValueError, TypeError):
-                        v = str(v)
-                        pass
-                # Update message
+                best = self.compare(leader, messages[leader], keep)[0]
                 if best:
-                    self._messages.update({k: v})
+                    self._messages.update({k: self.convert_type(v) for k, v in messages.items()})
+            else:
+                for k, v in messages.items():
+                    if self.compare(k, v, keep)[0]:
+                        self._messages.update({k: self.convert_type(v)})
             self._to_yaml()
 
     @staticmethod
