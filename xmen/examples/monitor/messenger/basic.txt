@@ -1,0 +1,26 @@
+# output
+ex1: y1 = None, ex1: y2 = None, ex2: y1 = None, ex2: y2 = None
+[06:00PM 18/11/20 10/40]: Left messages ['y1', 'y2'] with ex1 at /tmp/ex1
+[06:00PM 18/11/20 10/40]: Left messages ['y1', 'y2'] with ex2 at /tmp/ex2
+ex1: y1 = 10, ex1: y2 = 20, ex2: y1 = 10, ex2: y2 = 20
+[06:00PM 18/11/20 20/40]: Left messages ['y1', 'y2'] with ex1 at /tmp/ex1
+[06:00PM 18/11/20 20/40]: Left messages ['y1', 'y2'] with ex2 at /tmp/ex2
+ex1: y1 = 20, ex1: y2 = 40, ex2: y1 = 20, ex2: y2 = 40
+[06:00PM 18/11/20 30/40]: Left messages ['y1', 'y2'] with ex1 at /tmp/ex1
+[06:00PM 18/11/20 30/40]: Left messages ['y1', 'y2'] with ex2 at /tmp/ex2
+ex1: y1 = 30, ex1: y2 = 60, ex2: y1 = 30, ex2: y2 = 60
+[06:00PM 18/11/20 40/40]: Left messages ['y1', 'y2'] with ex1 at /tmp/ex1
+[06:00PM 18/11/20 40/40]: Left messages ['y1', 'y2'] with ex2 at /tmp/ex2
+
+All Messages
+last 06:00PM 18/11/20
+s 40/40
+wall 0:00:00.682972
+end 0:00:00
+next 0:00:00
+step 0:00:00.000007
+m_step 0:00:00.000013
+load 0:00:00.000005
+m_load 0:00:00.000005
+y1 40
+y2 80

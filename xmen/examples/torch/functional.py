@@ -119,10 +119,10 @@ def dcgan(
     op_g = Adam(nn_g.parameters(), lr=lr, betas=betas)
     # monitor
     m = Monitor(
-        root.directory, checkpoint=checkpoint,
+        root.directory, ckpt=checkpoint,
         log=log, sca=sca, img=img,
         time=('@20s', '@1e'),
-        message='root@100s',
+        msg='root@100s',
         img_fn=lambda x: x[:min(nimg, x.shape[0])],
         hooks=[TensorboardLogger('image', '_xi_$@1e', nrow=10)])
 

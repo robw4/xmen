@@ -1,7 +1,6 @@
 
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -170,6 +169,7 @@
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -180,6 +180,7 @@
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
  | <a href="#X"><strong>X</strong></a>
  
 </div>
@@ -192,8 +193,6 @@
         <li><a href="api.html#xmen.experiment.Experiment.__init__">(xmen.experiment.Experiment method)</a>
 </li>
         <li><a href="api.html#xmen.manager.ExperimentManager.__init__">(xmen.manager.ExperimentManager method)</a>
-</li>
-        <li><a href="api.html#xmen.monitor.Monitor.__init__">(xmen.monitor.Monitor method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -217,6 +216,8 @@
       <li><a href="api.html#xmen.manager.ExperimentManager.check_initialised">check_initialised() (xmen.manager.ExperimentManager method)</a>
 </li>
       <li><a href="api.html#xmen.monitor.Monitor.checkpoint">checkpoint() (xmen.monitor.Monitor method)</a>
+</li>
+      <li><a href="api.html#xmen.monitor.Checkpointer">Checkpointer (class in xmen.monitor)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -246,10 +247,12 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#xmen.experiment.Experiment">Experiment (class in xmen.experiment)</a>
+      <li><a href="api.html#xmen.monitor.EarlyStopper">EarlyStopper (class in xmen.monitor)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.experiment.Experiment">Experiment (class in xmen.experiment)</a>
+</li>
       <li><a href="api.html#xmen.manager.ExperimentManager">ExperimentManager (class in xmen.manager)</a>
 </li>
   </ul></td>
@@ -295,6 +298,14 @@
   </ul></td>
 </tr></table>
 
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.monitor.Hook">Hook (class in xmen.monitor)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -328,6 +339,8 @@
 </li>
       <li><a href="api.html#xmen.monitor.Monitor.log">log() (xmen.monitor.Monitor method)</a>
 </li>
+      <li><a href="api.html#xmen.monitor.Logger">Logger (class in xmen.monitor)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -336,10 +349,23 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.experiment.Experiment.main">main() (xmen.experiment.Experiment method)</a>
 </li>
+      <li><a href="api.html#xmen.monitor.TensorboardLogger.make_compatible">make_compatible() (xmen.monitor.TensorboardLogger method)</a>
+</li>
       <li><a href="api.html#xmen.experiment.Experiment.message">message() (xmen.experiment.Experiment method)</a>
 </li>
       <li><a href="api.html#xmen.experiment.Experiment.messages">messages() (xmen.experiment.Experiment property)</a>
 </li>
+      <li>
+    module
+
+      <ul>
+        <li><a href="api.html#module-xmen.functional">xmen.functional</a>
+</li>
+        <li><a href="api.html#module-xmen.monitor">xmen.monitor</a>
+</li>
+        <li><a href="api.html#module-xmen.utils">xmen.utils</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.monitor.Monitor.modulo">modulo() (xmen.monitor.Monitor method)</a>
@@ -370,6 +396,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.monitor.StopWatch.projected">projected() (xmen.monitor.StopWatch method)</a>
+</li>
       <li><a href="api.html#xmen.experiment.Experiment.purpose">purpose() (xmen.experiment.Experiment property)</a>
 </li>
   </ul></td>
@@ -406,11 +434,17 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.manager.ExperimentManager.save_params">save_params() (xmen.manager.ExperimentManager method)</a>
 </li>
+      <li><a href="api.html#xmen.monitor.StopWatch.start">start() (xmen.monitor.StopWatch method)</a>
+</li>
       <li><a href="api.html#xmen.experiment.Experiment.status">status() (xmen.experiment.Experiment property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.experiment.Experiment.stdout_to_txt">stdout_to_txt() (xmen.experiment.Experiment method)</a>
+</li>
+      <li><a href="api.html#xmen.monitor.StopWatch.stop">stop() (xmen.monitor.StopWatch method)</a>
+</li>
+      <li><a href="api.html#xmen.monitor.StopWatch">StopWatch (class in xmen.monitor)</a>
 </li>
       <li><a href="api.html#xmen.monitor.Monitor.summary">summary() (xmen.monitor.Monitor method)</a>
 </li>
@@ -420,12 +454,16 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#xmen.experiment.Experiment.to_defaults">to_defaults() (xmen.experiment.Experiment method)</a>
+      <li><a href="api.html#xmen.monitor.TensorboardLogger">TensorboardLogger (class in xmen.monitor)</a>
 </li>
-      <li><a href="api.html#xmen.monitor.Monitor.to_hooks">to_hooks() (xmen.monitor.Monitor method)</a>
+      <li><a href="api.html#xmen.monitor.Timer">Timer (class in xmen.monitor)</a>
+</li>
+      <li><a href="api.html#xmen.experiment.Experiment.to_defaults">to_defaults() (xmen.experiment.Experiment method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.monitor.Monitor.to_hooks">to_hooks() (xmen.monitor.Monitor method)</a>
+</li>
       <li><a href="api.html#xmen.experiment.Experiment.to_root">to_root() (xmen.experiment.Experiment method)</a>
 </li>
       <li><a href="api.html#xmen.utils.TypedMeta">TypedMeta (class in xmen.utils)</a>
@@ -455,16 +493,41 @@
   </ul></td>
 </tr></table>
 
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.monitor.StopWatch.wall_time">wall_time() (xmen.monitor.StopWatch method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="X">X</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#module-xmen.functional">xmen.functional (module)</a>
+      <li>
+    xmen.functional
+
+      <ul>
+        <li><a href="api.html#module-xmen.functional">module</a>
 </li>
+      </ul></li>
+      <li>
+    xmen.monitor
+
+      <ul>
+        <li><a href="api.html#module-xmen.monitor">module</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#module-xmen.monitor">xmen.monitor (module)</a>
+      <li>
+    xmen.utils
+
+      <ul>
+        <li><a href="api.html#module-xmen.utils">module</a>
 </li>
-      <li><a href="api.html#module-xmen.utils">xmen.utils (module)</a>
+      </ul></li>
+      <li><a href="api.html#xmen.monitor.XmenMessenger">XmenMessenger (class in xmen.monitor)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -517,6 +580,7 @@
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
       <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
       <script type="text/javascript" src="_static/jquery.fancybox.min.js"></script>
 
   

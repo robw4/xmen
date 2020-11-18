@@ -1,0 +1,22 @@
+# output
+[None, None]
+[06:04PM 18/11/20 10/100]: Left messages ['i', 'y'] with ex at /tmp/ex
+[9, 1600]
+[06:04PM 18/11/20 20/100]: Left messages ['i', 'y'] with ex at /tmp/ex
+[19, 900]
+[06:04PM 18/11/20 30/100]: Left messages ['i', 'y'] with ex at /tmp/ex
+[29, 400]
+[06:04PM 18/11/20 40/100]: Left messages ['i', 'y'] with ex at /tmp/ex
+[39, 100]
+[06:04PM 18/11/20 50/100]: Left messages ['i', 'y'] with ex at /tmp/ex
+[49, 0]
+[06:04PM 18/11/20 60/100]: Left messages ['i', 'y'] with ex at /tmp/ex
+[49, 0]
+[06:04PM 18/11/20 70/100]: Left messages ['i', 'y'] with ex at /tmp/ex
+[49, 0]
+[06:04PM 18/11/20 80/100]: Left messages ['i', 'y'] with ex at /tmp/ex
+[49, 0]
+[06:04PM 18/11/20 90/100]: Left messages ['i', 'y'] with ex at /tmp/ex
+[49, 0]
+[06:04PM 18/11/20 100/100]: Left messages ['i', 'y'] with ex at /tmp/ex
+

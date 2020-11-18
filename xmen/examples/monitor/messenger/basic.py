@@ -1,16 +1,14 @@
-"""leaving multiple messages with the experiment manager"""
+"""automatic messaging"""
 from xmen import Experiment
-from xmen.monitor import Monitor, XmenMessenger
+from xmen.monitor import Monitor
 
-# define experiments
+# register some experiments
 ex1, ex2 = Experiment(), Experiment()
 ex1.register('/tmp', 'ex1')
 ex2.register('/tmp', 'ex2')
 
 # setup monitor
-m = Monitor(hooks=[
-    # log all variables matching the loss to experiments matching ex
-    XmenMessenger('y.*->ex.*@10s')])
+m = Monitor(msg='y.*->ex.*@10s')
 
 y1, y2 = 0, 0
 for i in m(range(40)):  # monitor loop
@@ -26,3 +24,7 @@ for i in m(range(40)):  # monitor loop
 print('\nAll Messages')
 for k, v in ex1.messages.items():
     print(k, v)
+
+
+
+

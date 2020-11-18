@@ -112,7 +112,7 @@ class BaseCVae(BaseGenerative):
             nn_gen, nn_post, nn_prior = (torch.nn.DataParallel(n) for n in (
                 nn_gen, nn_post, nn_prior))
         m = Monitor(
-            self.directory, checkpoint=self.checkpoint,
+            self.directory, ckpt=self.checkpoint,
             log=self.log, sca=self.sca, img=self.img,
             img_fn=lambda x: x[:min(self.nimg, x.shape[0])],
             time=('@20s', '@1e'),
@@ -177,7 +177,7 @@ class BaseGAN(BaseGenerative):
         nn_g = nn_g.to(self.device).float().apply(weights_init)
         nn_d = nn_d.to(self.device).float().apply(weights_init)
         m = Monitor(
-            self.directory, checkpoint=self.checkpoint,
+            self.directory, ckpt=self.checkpoint,
             log=self.log, sca=self.sca, img=self.img,
             time=('@20s', '@1e'),
             img_fn=lambda x: x[:min(self.nimg, x.shape[0])],

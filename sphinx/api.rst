@@ -23,12 +23,6 @@ Experiment
 
 Monitor
 ########
-.. autoclass:: xmen.monitor.Monitor
-	:members:
-	:show-inheritance:
-
-   	.. automethod:: __init__
-
 .. automodule:: xmen.monitor
    :members:
    

@@ -21,7 +21,7 @@ from setuptools import setup
 
 setup(
     name='xmen',
-    version='0.2.1',
+    version='0.2.2',
     description='Experiment management libraries for fast, reproducible, remote and local experimentation',
     author='Rob Weston',
     author_email='robw@robots.ox.ac.uk',

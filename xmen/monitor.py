@@ -479,29 +479,33 @@ class Logger(Hook):
 
 
 class TensorboardLogger(Hook):
-    """A hook for logging tensorboard summaries. Currently 'image', 'scalar', 'histogram', 'figure', 'video', 'text',
-    'pr_curve', 'mesh' are all supported.
+    """A hook for logging tensorboard summaries. Currently ``image``, ``scalar``, ``histogram``, ``figure``,
+    ``video``, ``text``, ``pr_curve``, ``mesh`` are all supported.
 
     Before being passed to the summary writer each variable is processes as follows:
 
-        1) First all variables are passed to ``fn`` (if supplied).
-        2) Variables of type list or dict with length K will be expanded to give K variables. The name of each
-            variable will be the list name postpended with its index or the dictionary name postpended with its key.
-        3) If the summary type is image or scalar then some additional processing will be performed:
-             - For scalars if variables are not already scalar variables they will be converted by calling var.mean()
-             - For images the variable must be either a 3D [C, H, W] or 4D [B, C, H, W] tensor. Tensors are converted
-                to images of shape [C, H, W]:
-                - if the variable is 3D it will be converted to 4D
-                - the variable is then converted to an image using ``torchvision.utils.make_grid``. Additional options
-                    can be passed to ``torchvision.utils.make_grid`` using the ``options`` parameter. Available options
-                    include:
-                         - ``'nrow' # images per row``
-                         - ``'padding'``
-                         - ``'normalize'``
-                         - ``'range'``
-                         - ``'scale_each'``
-                         - ``'pad_value'``
-                        (see torchvision.utils.make_grid for more info)
+        1. First all variables are passed to ``fn`` (if supplied).
+        2. Variables of type list or dict with length K will be expanded to give K variables. The name of each variable
+           will be the list name postpended with its index or the dictionary name postpended with its key.
+        3. If the summary type is image or scalar then some additional processing will be performed:
+
+            1. For scalars if variables are not already scalar variables they will be converted by calling var.mean()
+            2. For images the variable must be either a 3D [C, H, W] or 4D [B, C, H, W] tensor. Tensors are converted
+               to images of shape [C, H, W]:
+            3. if the variable is 3D it will be converted to 4D
+            4. the variable is then converted to an image using ``torchvision.utils.make_grid``. Additional options
+               can be passed to ``torchvision.utils.make_grid`` using the ``options`` parameter. Available options
+               include:
+
+                - ``'nrow' # images per row``
+                - ``'padding'``
+                - ``'normalize'``
+                - ``'range'``
+                - ``'scale_each'``
+                - ``'pad_value'``
+                (see torchvision.utils.make_grid for more info)
+
+
 
     Note:
         Tensorboard does not allow summaries to have the same name. If you want to leave to different types
@@ -731,9 +735,8 @@ class Monitor(object):
                  # User defined hooks (either) modulo or not modulo
                  hooks=[],
                  # Default saving for parameters
-                 checkpoint=None, checkpoints_to_keep=None,
-                 #  type, spec, fn=None, prefix='', prepend=True, **options
-                 log=None,
+                 ckpt=None, ckpt_keep=None,
+                 log=None, log_fn=None, log_format=None,
                  img=None, img_fn=None, img_pref='', img_prep=True, img_options={},
                  sca=None, sca_fn=None, sca_pref='', sca_prep=True,
                  hist=None, hist_fn=None, hist_pref='', hist_prep=True,
@@ -741,13 +744,14 @@ class Monitor(object):
                  txt=None, txt_fn=None, txt_pref='', txt_prep=True,
                  vid=None, vid_fn=None, vid_pref='', vid_prep=True,
                  time=(),
-                 message=(),
+                 msg=None, msg_keep='latest', msg_leader=None, msg_expand=False, msg_prep=None,
                  limit=None):
         """
         Args:
             directory: A path to store checkpoints / logs in (required for checkpointing and tensorboard logging
                 otherwise optional)
-            checkpoint: checkpoint specified torch.Module objects
+            ckpt: checkpoint specified torch.Module objects
+            ckpt_keep: number of checkpoints to keep
             log: log specified objects on triggers to stdout
             sca: scalar tensorboard summaries
             img: image tensorboard summaries
@@ -757,7 +761,7 @@ class Monitor(object):
             vid: video tensorboard summaries
             time: log timing statistics at these frequencies
             hooks: A list of user specified hooks conforming the the ``Hook`` api.
-            message: summarise the current state of the experiment at these frequencies using the xmen.Experiment api.
+            msg: summarise the current state of the experiment at these frequencies using the xmen.Experiment api.
 
          Each tensorboard summary can be configured with `..._fn`, `..._pref` and `..._prep` parmameters which are
          passed to ``TensorboardLogger`. See ``TensorboardLogger`` for more info.
@@ -854,17 +858,27 @@ class Monitor(object):
         self.limit = read_modulo_string(limit)[1:] if limit is not None else None
 
         # -- Add modulo hooks to hooks
-        if checkpoint is not None:
-            if not isinstance(checkpoint, (list, tuple)):
-                checkpoint = [checkpoint]
-            for c in checkpoint:
-                self.hooks.append(Checkpointer(c, to_keep=checkpoints_to_keep))
+        if ckpt is not None:
+            if not isinstance(ckpt, (list, tuple)):
+                ckpt = [ckpt]
+            if not isinstance(ckpt_keep, (list, tuple)):
+                ckpt_keep = tuple([ckpt_keep] * len(ckpt))
+            warn = f"Either one fn, pref and prep or one for each '{ckpt_keep}' must be set"
+            assert all(len(f) == len(ckpt) for f in (ckpt_keep, )), warn
+            for c, k in zip(ckpt, ckpt_keep):
+                self.hooks.append(Checkpointer(c, to_keep=k))
 
         if log is not None:
             if not isinstance(log, (list, tuple)):
                 log = [log]
-            for l in log:
-                self.hooks.append(Logger(l))
+            if not isinstance(log_fn, (list, tuple)):
+                log_fn = tuple([log_fn] * len(log))
+            if not isinstance(log_format, (list, tuple)):
+                log_format = tuple([log_format] * len(log))
+            warn = f"Either one fn, pref and prep or one for each '{log}' must be set"
+            assert all(len(f) == len(log) for f in (log_fn, log_format)), warn
+            for l, f, fmt in zip(log, log_fn, log_format):
+                self.hooks.append(Logger(l, fmt, f))
 
         # tensorboard summaries
         kinds = {'sca': 'scalar', 'img': 'image', 'hist': 'histogram',
@@ -886,8 +900,8 @@ class Monitor(object):
                     pref = tuple([pref] * len(kind))
                 if not isinstance(prep, (list, tuple)):
                     prep = tuple([prep] * len(kind))
-                msg = f"Either one fn, pref and prep or one for each '{kind}' must be set"
-                assert all(len(f) == len(kind) for f in (fn, pref, prep)), msg
+                warn = f"Either one fn, pref and prep or one for each '{kind}' must be set"
+                assert all(len(f) == len(kind) for f in (fn, pref, prep)), warn
                 for c, f, pr, pre in zip(kind, fn, pref, prep):
                     self.hooks.append(TensorboardLogger(kinds[k], c, fn=f, prefix=pr, prepend=pre, **options))
 
@@ -896,11 +910,21 @@ class Monitor(object):
                 time = [time]
             for t in time:
                 self.hooks.append(Timer(t))
-        if message is not None:
-            if not isinstance(message, (list, tuple)):
-                message = [message]
-            for m in message:
-                self.hooks.append(XmenMessenger(m))
+        if msg is not None:
+            if not isinstance(msg, (list, tuple)):
+                msg = [msg]
+            if not isinstance(msg_keep, (list, tuple)):
+                msg_keep = tuple([msg_keep] * len(msg))
+            if not isinstance(msg_leader, (list, tuple)):
+                msg_leader = tuple([msg_leader] * len(msg))
+            if not isinstance(msg_prep, (list, tuple)):
+                msg_prep = tuple([msg_prep] * len(msg))
+            if not isinstance(msg_expand, (list, tuple)):
+                msg_expand = tuple([msg_expand] * len(msg))
+            warn = f"Either one fn, pref and prep or one for each '{msg}' must be set"
+            assert all(len(f) == len(msg) for f in (msg_keep, msg_leader, msg_expand, msg_prep)), warn
+            for m, k, l, ex, pr in zip(msg, msg_keep, msg_leader, msg_expand, msg_prep):
+                self.hooks.append(XmenMessenger(m, k, l, ex, pr))
         # Add user hooks
         self.n_user_hooks = len(hooks)
         self.hooks.extend(hooks)
@@ -908,7 +932,7 @@ class Monitor(object):
         # -- Use Logger and Check pointer for manual logging
         # These special hooks are always available
         self._logger = Logger(r'.*')
-        self._checkpointer = Checkpointer(r'.*', to_keep=checkpoints_to_keep)
+        self._checkpointer = Checkpointer(r'.*', to_keep=ckpt_keep)
 
     @property
     def supereon(self):

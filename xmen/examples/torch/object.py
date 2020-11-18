@@ -115,7 +115,7 @@ class Dcgan(Experiment):
         nn_d = nn_d.to(self.device).float().apply(weights_init)
         # training loop
         m = Monitor(
-            self.directory, checkpoint=self.checkpoint,
+            self.directory, ckpt=self.checkpoint,
             log=self.log, sca=self.sca, img=self.img,
             time=('@20s', '@1e'),
             img_fn=lambda x: x[:min(self.nimg, x.shape[0])],
