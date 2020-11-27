@@ -323,15 +323,25 @@ b: Planet
 <ul>
 <li><p>Full documentation (including the python API) can be found <a class="reference external" href="https://robw4.github.io/xmen/">here</a></p></li>
 <li><p>Several example experiment definitions can be found in <code class="docutils literal notranslate"><span class="pre">xmen.examples</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── examples
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>xmen.examples
+├── hello_world.py
+├── inheritance.py
+├── monitor
 │   ├── __init__.py
-│   ├── hello_world.py      # basic xmen experiments defined using the functional and class apis
-│   ├── inheritance.py      # basic inheritance example
-│   └── torch               # several examples of more complicated experiments in pytorch
-│       ├── __init__.py
-│       ├── functional.py   # a functional dcgan implementation
-│       ├── inheritance.py  # a object-orientated experiments with inheritance
-│       └── object.py       # a object-orientated object-orientated
+│   ├── checkpoint.py
+│   ├── logger.py
+│   ├── messenger
+│   │   ├── __init__.py
+│   │   ├── basic.py
+│   │   ├── expand.py
+│   │   ├── leader.py
+│   │   └── prepend.py
+│   └── tb_monitor.py
+└── torch
+    ├── functional.py
+    ├── inheritance.py
+    ├── models.py
+    └── object.py
 </pre></div>
 </div>
 <p>The following experiments are defined</p>

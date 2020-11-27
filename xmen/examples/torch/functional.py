@@ -91,7 +91,7 @@ def dcgan(
         tensorboard --logdir ...
 
     """
-    from xmen.monitor import Monitor, TensorboardLogger
+    from xmen.monitor import TorchMonitor, TensorboardLogger
     from xmen.examples.models import weights_init, set_requires_grad, GeneratorNet, DiscriminatorNet
     from torch.distributions import Normal
     from torch.distributions.one_hot_categorical import OneHotCategorical
@@ -118,7 +118,7 @@ def dcgan(
     op_d = Adam(nn_d.parameters(), lr=lr, betas=betas)
     op_g = Adam(nn_g.parameters(), lr=lr, betas=betas)
     # monitor
-    m = Monitor(
+    m = TorchMonitor(
         root.directory, ckpt=checkpoint,
         log=log, sca=sca, img=img,
         time=('@20s', '@1e'),

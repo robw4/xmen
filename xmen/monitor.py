@@ -506,7 +506,6 @@ class TensorboardLogger(Hook):
                 (see torchvision.utils.make_grid for more info)
 
 
-
     Note:
         Tensorboard does not allow summaries to have the same name. If you want to leave to different types
         of summary for the same variable then you will need to use the `prefix` argument.
@@ -717,138 +716,86 @@ def load(load_dir, step=None, attempt=True, **modules):
 
 
 class Monitor(object):
-    """Automate tracking, logging and saving of experiments.
+    """Automate tracking and logging of experiments.
 
-    Logging / checkpointing is configured through arguments of the form ``f'{regex}@{modulo}{trigger}'``.
+    Configured through arguments of the form ``f'{regex}@{modulo}{trigger}'``.
     Any variables in the local scope of the monitor which match the
-    specified regular expression will be logged / checkpointed every modulo steps of the trigger. Triggers are
+    specified regular expression will be logged every modulo steps of the trigger. Triggers are
     incremented either manually (using the ``inc`` method) or automatically using nested iterators
     (see example). Supported triggers include ["step", "epoch", "era", "eon", "supereon"] or their
     abbreviations ["s", "e", "er", "eo", "se"].
 
-    Alongside the built in logging / checkpointing options, more sophisticated cases can be configured
-    through user defined hooks. If a hook is passed with modulo == None it can instead be triggered manually
-    as ``monitor.to_hooks()``. Manual logging and checkpoint are also supported as
-    ``monitor.log(...)`` and ``monitor.checkpoint(...)``"""
+    If a hook is passed with modulo == None it can instead be triggered manually
+    as ``monitor.to_hooks()``.
 
-    def __init__(self, directory=None, *,
-                 # User defined hooks (either) modulo or not modulo
-                 hooks=[],
-                 # Default saving for parameters
-                 ckpt=None, ckpt_keep=None,
-                 log=None, log_fn=None, log_format=None,
-                 img=None, img_fn=None, img_pref='', img_prep=True, img_options={},
-                 sca=None, sca_fn=None, sca_pref='', sca_prep=True,
-                 hist=None, hist_fn=None, hist_pref='', hist_prep=True,
-                 fig=None, fig_fn=None, fig_pref='', fig_prep=True,
-                 txt=None, txt_fn=None, txt_pref='', txt_prep=True,
-                 vid=None, vid_fn=None, vid_pref='', vid_prep=True,
+    Example::
+
+        from xmen import Experiment
+        from xmen.monitor import Monitor
+
+        X = Experiment(..., ...)
+
+        a, b, c, d, e, f = 0, 0, 0, 0, 0, 0
+
+
+        def identity(x):
+            return x
+
+
+        def mult(x):
+            return 10 * x
+
+
+        m = Monitor(
+            log=('a|b@2s', 'b@1e', 'c@1er', "d|e@1eo", "e@1se"),
+            log_fn=(mult, identity, identity, identity, identity),
+            log_format='.3f',
+            msg='a->X@1s',
+            time=('@2s', '@1e'),
+            limit='@20s')
+        for _ in m(range(2)):
+            for _ in m(range(2)):
+                for _ in m(range(3)):
+                    for _ in m(range(4)):
+                        for _ in m(range(5)):
+                            a += 1
+                        b += 1
+                    c += 1
+                d += 1
+            e += 1
+    
+    """
+    def __init__(self, *, hooks=[],
+                 log=None, log_fn=None, log_format='',
                  time=(),
                  msg=None, msg_keep='latest', msg_leader=None, msg_expand=False, msg_prep=None,
                  limit=None):
         """
         Args:
-            directory: A path to store checkpoints / logs in (required for checkpointing and tensorboard logging
-                otherwise optional)
-            ckpt: checkpoint specified torch.Module objects
-            ckpt_keep: number of checkpoints to keep
-            log: log specified objects on triggers to stdout
-            sca: scalar tensorboard summaries
-            img: image tensorboard summaries
-            hist: histogram tensorboard summaries
-            fig: figure tensorbord summaries
-            txt: text tensorboard summaries
-            vid: video tensorboard summaries
-            time: log timing statistics at these frequencies
-            hooks: A list of user specified hooks conforming the the ``Hook`` api.
-            msg: summarise the current state of the experiment at these frequencies using the xmen.Experiment api.
+            hooks (Iterable[Hook]): User defined hooks used to extend the functionality of the Monitor class inheriting
+                from ``Hook``.
+            log (str, Iterable[str]): A modulo string of the form ``"f{regex}"`` or ``"{regex}@{steps}s"`` (or list of)
+                giving the variables to log @ a particular logging frequency to stdout.
+            log_fn (Callable,  Iterable[Callable]): Converts the variable into a string for logging.
+            log_format (str,  Iterable[str]): A format used to format a string as ``f"{string}:{format}"``
+            time (str,  Iterable[str]): A string of the form ``f"@{steps}"`` to log timing statistics at (or list of for different
+                triggers).
+            msg (str,  Iterable[str]): A modulo string of the form ``"{regex}->{exp_regex}@{steps}s"`` (or list of)
+                giving the variables to log as messages with the experiments matching ``exp_regex``.
+            msg_keep (str, Iterable[str]): One of ['latest', 'max', 'min'] giving the protocol to use on message collision
+            msg_leader (str, Iterable[str]): A regex to a single variable. If supplied then this variable will be treated as the leader
+                and all other variables will be logged only if the keep condition is met for the leader
+            msg_expand (bool, Iterable[str]): If True then dictionary variables with K keys will be expanded to give K variables
+            msg_prep (bool, Iterable[str]): If True then each variable in the dictionary will be prepended by the dictionary name.
+            limit (str,  Iterable[str]): A modulo string of the form ``f"@{modulo}{triger}" used to limit the number of iterations of
+                an experiment at a particular trigger level. This is useful if an experiment is restarted for
+                example.
 
-         Each tensorboard summary can be configured with `..._fn`, `..._pref` and `..._prep` parmameters which are
-         passed to ``TensorboardLogger`. See ``TensorboardLogger`` for more info.
-
-
-        Example 1::
-
-            nn, opt, dataset = ..., ...
-
-            m = Monitor(
-                directory,
-                checkpoint=('model@1e', 'opt@100s'),   # Checkpoint the model once per epoch and opt every 100 steps
-                log='^loss$@100s',   # Log the loss to stdout every 100 steps
-                img='^x$@1000s', sca=('^loss$@100s', 'eval_.*@1e'), time=('@100s')     # Log to tensorboard
-                time=('@100s', ),   # Generate timing statistics every 100 steps
-                hooks=[  # Custom hooks are also supported
-                    MyVeryOwnHook(...)])
-
-            # The only modification needed to the training loop are the em calls.
-            # Nested loops corresponds to different triggers from inside out
-            # we have ["step" or "s", "epoch" or "e", "era" or "er", "eon" or "eo", "supereon" or "se"]
-            for epoch in m(range(10)):
-                for x, y in m(datset):
-                    _y_ = model(x)
-                    opt.zero_grad()
-                    loss = loss_fn(y, _y_)
-                    loss.backward()
-                    loss.step()
-                    em.log('Manual Logging is also supported')
-                eval_1, eval_2 = eval(model, ds)
-
-            # Steps and epoch have been incremented
-            assert em.step == len(ds) * 10
-            assert em.epoch == 10
-
-            # Lets reload the model at the 5th epoch
-            em.load(step=5*len(ds), model)
-            # The step and epoch will be updated
-            print(em.step, em.epoch)
-
-        Example 2::
-
-            from xmen.monitor import Monitor
-            import numpy as np
-            import torch
-            import os
-            import matplotlib.pyplot as plt
-            from torchvision.datasets.mnist import MNIST
-            from torch.utils.data import DataLoader
-            import torchvision.transforms as T
-
-            plt.style.use('ggplot')
-            ds = DataLoader(MNIST(os.getenv("HOME") + '/data/mnist', download=True,
-                  transform=T.Compose(
-                      [T.Resize([64, 64]), T.CenterCrop([64, 64]),
-                       T.ToTensor(), T.Normalize([0.5], [0.5])])), 8)
-
-            m = Monitor(
-                directory='/tmp/tb_5',
-                sca=['^z$|^X$@10s', '^a|^x$@5s'],
-                img=['^mnist@10s', '^mnist@5s'], img_fn=[lambda x: x[:2], lambda x: x[:5]], img_pref=['2', '5'],
-                hist='Z@1s',
-                fig='fig@10s',
-                txt='i@5s', txt_fn=lambda x: f'Hello at step {x}',
-                vid='^mnist@10s', vid_fn=lambda x: (x.unsqueeze(0) - x.min()) / (x.max() - x.min())
-            )
-
-            # variables
-            x = 0.
-            a = [1, 2]
-            z = {'x': 5, 'y': 10}
-            for i, (mnist, _) in m(zip(range(31), ds)):
-                # plot a figure
-                fig = plt.figure(figsize=[10, 5])
-                plt.plot(np.linspace(0, 1000), np.cos(np.linspace(0, 1000) * i))
-                # random tensor
-                Z = torch.randn([10, 3, 64, 64]) * i / 100
-                # scalars
-                x = (i - 15) ** 2
-                z['i'] = i
-                z['x'] += 1
-                z['y'] = z['x'] ** 2
-
-        """
-        # Hooks work in both manual and modulo mode
+        Note:
+            All variables ``ckpt_keep``, ``msg_leader``,
+            ``msg_expand`` and ``msg_prep`` can be supplied as a single or as a list of entries, one for each set of
+            variables matching each modulo string in each case."""
         self.hooks = []
-        self.directory = directory
         self.triggers = {k: 0 for k in TRIGGERS}
         self.log_regex = None
         self.timers = {}
@@ -856,17 +803,6 @@ class Monitor(object):
         self._limit_reached = False
 
         self.limit = read_modulo_string(limit)[1:] if limit is not None else None
-
-        # -- Add modulo hooks to hooks
-        if ckpt is not None:
-            if not isinstance(ckpt, (list, tuple)):
-                ckpt = [ckpt]
-            if not isinstance(ckpt_keep, (list, tuple)):
-                ckpt_keep = tuple([ckpt_keep] * len(ckpt))
-            warn = f"Either one fn, pref and prep or one for each '{ckpt_keep}' must be set"
-            assert all(len(f) == len(ckpt) for f in (ckpt_keep, )), warn
-            for c, k in zip(ckpt, ckpt_keep):
-                self.hooks.append(Checkpointer(c, to_keep=k))
 
         if log is not None:
             if not isinstance(log, (list, tuple)):
@@ -879,31 +815,6 @@ class Monitor(object):
             assert all(len(f) == len(log) for f in (log_fn, log_format)), warn
             for l, f, fmt in zip(log, log_fn, log_format):
                 self.hooks.append(Logger(l, fmt, f))
-
-        # tensorboard summaries
-        kinds = {'sca': 'scalar', 'img': 'image', 'hist': 'histogram',
-                 'fig': 'figure', 'txt': 'text', 'vid': 'video'}
-        for k in kinds:
-            kind = locals()[k]
-            if kind is not None:
-                options = {}
-                if k == 'img':
-                    options = locals()[k + '_options']
-                fn = locals()[k + '_fn']
-                pref = locals()[k + '_pref']
-                prep = locals()[k + '_prep']
-                if not isinstance(kind, (list, tuple)):
-                    kind = [kind]
-                if not isinstance(fn, (list, tuple)):
-                    fn = tuple([fn] * len(kind))
-                if not isinstance(pref, (list, tuple)):
-                    pref = tuple([pref] * len(kind))
-                if not isinstance(prep, (list, tuple)):
-                    prep = tuple([prep] * len(kind))
-                warn = f"Either one fn, pref and prep or one for each '{kind}' must be set"
-                assert all(len(f) == len(kind) for f in (fn, pref, prep)), warn
-                for c, f, pr, pre in zip(kind, fn, pref, prep):
-                    self.hooks.append(TensorboardLogger(kinds[k], c, fn=f, prefix=pr, prepend=pre, **options))
 
         if time is not None:
             if not isinstance(time, (list, tuple)):
@@ -932,7 +843,6 @@ class Monitor(object):
         # -- Use Logger and Check pointer for manual logging
         # These special hooks are always available
         self._logger = Logger(r'.*')
-        self._checkpointer = Checkpointer(r'.*', to_keep=ckpt_keep)
 
     @property
     def supereon(self):
@@ -1027,8 +937,10 @@ class Monitor(object):
 
         for hook in self.hooks:
             if hook.modulo is not None and self.modulo(trigger, hook.modulo) and hook.trigger == trigger:
-                matches = {
-                    k: v for k, v in possible_vars.items() if re.match(hook.regex, k) is not None}
+                matches = {}
+                if hook.regex is not None:
+                    matches = {
+                        k: v for k, v in possible_vars.items() if re.match(hook.regex, k) is not None}
                 hook(matches, self)
 
     def to_hooks(self, **kwargs):
@@ -1055,22 +967,6 @@ class Monitor(object):
         if exclude_1st:
             is_trigger = is_trigger and self.triggers[trigger] > 0
         return is_trigger
-
-    def checkpoint(self, **kwargs):
-        """Checkpoint the torch.nn objects with step and epoch passed as ``name==variable_to_save``"""
-        self._checkpointer(kwargs, self)
-
-    def load(self, directory=None, step=None, attempt=True, update_triggers=True, **modules):
-        """Load the torch torch.nn objects passed as name=variable_to_load,
-        from the directory and reset the state of the em (if update_triggers == True). If attempt == False then an
-        Exception will be raised if either the directory does not contain checkpoints corresponding to modules.
-        """
-        if directory is None:
-            directory = os.path.join(self.directory, 'checkpoints')
-        modules, triggers = load(directory, step=step, attempt=attempt, **modules)
-        if update_triggers:
-            self.triggers.update(triggers)
-        return modules
 
     def summary(self, verbose=0):
         """Summarise the current state of the experiment monitor"""
@@ -1119,7 +1015,7 @@ class Monitor(object):
             length[:len(total)] = total[1:]
 
             for i, (trigger, timer) in enumerate([(k, self.timers[k]) for k in reversed(TRIGGERS) if k in self.timers]):
-                step_timer, load_timer = timer['step'], timer['load']
+                step_timer = timer['step']
                 val = f'{int(self.triggers[trigger])}'
                 if step_timer.length is not None:
                     val += f'/{int(length[i])}'
@@ -1129,17 +1025,26 @@ class Monitor(object):
             if verbose:
                 # Get trigger with highest precedance
                 trigger, timer = [(k, self.timers[k]) for k in TRIGGERS if k in self.timers][0]
-                step_timer, load_timer = timer['step'], timer['load']
-                if step_timer.delta != 0.:
+                step_timer, load_timer = timer['step'], timer.get('load', None)
+                if load_timer is not None:
+                    if step_timer.delta != 0.:
+                        if step_timer.length is not None:
+                            timings.update(
+                                {'next': to_date(
+                                    (step_timer.average + load_timer.average) * (step_timer.length - step_timer.n))})
+                        timings.update(
+                            {'step': to_date(step_timer.delta),
+                             'm_step': to_date(step_timer.average),
+                             'load': to_date(load_timer.delta),
+                             'm_load': to_date(load_timer.average)})
+                else:
                     if step_timer.length is not None:
                         timings.update(
                             {'next': to_date(
-                                (step_timer.average + load_timer.average) * (step_timer.length - step_timer.n))})
+                                step_timer.average * (step_timer.length - step_timer.n))})
                     timings.update(
                         {'step': to_date(step_timer.delta),
-                         'm_step': to_date(step_timer.average),
-                         'load': to_date(load_timer.delta),
-                         'm_load': to_date(load_timer.average)})
+                         'm_step': to_date(step_timer.average)})
             summaries.update({'wall': to_date(wall)})
             if left is not None:
                 summaries.update({'end': to_date(left)})
@@ -1154,5 +1059,242 @@ class Monitor(object):
         return string
 
 
+class TorchMonitor(Monitor):
+    """Automate tracking, logging and saving of experiments with additional
+    hooks for logging to tensorboard and checkpointing of experiments.
+
+    Manual logging and checkpoint are also supported as
+    ``monitor.log(...)`` and ``monitor.checkpoint(...)``"""
+
+    def __init__(self, directory=None, *,
+                 # User defined hooks (either) modulo or not modulo
+                 hooks=[],
+                 # Default saving for parameters
+                 ckpt=None, ckpt_keep=None,
+                 log=None, log_fn=None, log_format='',
+                 img=None, img_fn=None, img_pref='', img_prep=True, img_options={},
+                 sca=None, sca_fn=None, sca_pref='', sca_prep=True,
+                 hist=None, hist_fn=None, hist_pref='', hist_prep=True,
+                 fig=None, fig_fn=None, fig_pref='', fig_prep=True,
+                 txt=None, txt_fn=None, txt_pref='', txt_prep=True,
+                 vid=None, vid_fn=None, vid_pref='', vid_prep=True,
+                 time=(),
+                 msg=None, msg_keep='latest', msg_leader=None, msg_expand=False, msg_prep=None,
+                 limit=None):
+        """
+        Args:
+            directory (str): The directory used to log checkpoints in
+            hooks (Iterable[Hook]): User defined hooks used to extend the functionality of the Monitor class
+            ckpt (str, Iterable[str]): A modulo string of the form ``"f{regex}"`` or ``"{regex}@{steps}s"`` (or list of)
+                giving the variables to checkpoint @ a particular logging frequency to stdout. The regex much match
+                objects inheriting form torch.Module.
+            ckpt_keep (int, Iterable[int]): The number of checkpoints to keep. The most recent checkpoints will be kept. If None
+                then all checkpoints will be kept.
+            log (str, Iterable[str]): A modulo string of the form ``"f{regex}"`` or ``"{regex}@{steps}s"`` (or list of)
+                giving the variables to log @ a particular logging frequency to stdout.
+            log_fn (Callable, Iterable[Callable]): Converts the variable into a string for logging.
+            log_format (str, Iterable[str]): A format used to format a string as ``f"{string}:{format}"``
+            time (str, Iterable[str]): A string of the form ``f"@{steps}"`` to log timing statistics at (or list of for different
+                triggers).
+            img (str, Iterable[str]): A modulo string of the form ``"f{regex}"`` or ``"{regex}@{steps}s"`` (or list of)
+                giving the variables to add as tensorboard images @ a particular logging frequency.
+            img_fn (Callable, Iterable[Callable]): Converts the variable into an image of shape [B, C, H, W] or [C, H, W] for tensorboard.
+                See TensorBoardLogger for more details in terms of automatic-processing. If ``img`` is a list then
+                ``img_fn`` can also be passed as list with a callable for each entry in ``img`` or can be passed as
+                a single callable used for all entries.
+            img_pref (str, Iterable[str]): Prefix all summaries in tensorboard with this string
+            img_prep (bool, Iterable[bool]): If True then dictionary variables will be prepended by the name of the dictionary
+            img (str, Iterable[str]): A modulo string of the form ``"{regex}@{steps}s"`` (or list of)
+                giving the variables to add as tensorboard scalars @ a particular logging frequency.
+            sca_fn (Callable, Iterable[Callable]): Converts the variable into a scalar for tensorboard.
+                See TensorBoardLogger for more details in terms of automatic-processing. If ``sca`` is a list then
+                ``sca_fn`` can also be passed as list with a callable for each entry in ``sca`` or can be passed as
+                a single callable used for all entries.
+            sca_pref (str, Iterable[str]): Prefix all summaries in tensorboard with this string
+            sca_prep (bool, Iterable[bool]): If True then dictionary variables will be prepended by the name of the dictionary
+            hist (str, Iterable[str]): A modulo string of the form ``"{regex}@{steps}s"`` (or list of)
+                giving the variables to add as tensorboard histograms @ a particular logging frequency.
+                If no logging frequency is supplied then any variable logged in the experiment which matches
+                ``regex`` will be logged to tensorboard each time it is passed to the logger.
+                This is useful for logging variables at the end of an epoch for example.
+            hist_fn (Callable, Iterable[Callable]): Preprocess variable before logging to tensorboard.
+                If ``hist`` is a list then ``hist_fn`` can also be passed as list with a callable for each entry in
+                ``hist`` or can be passed as a single callable used for all entries.
+            hist_pref (str, Iterable[str]): Prefix all summaries in tensorboard with this string
+            hist_prep (bool, Iterable[bool]): If True then dictionary variables will be prepended by the name of the dictionary
+            fig (str, Iterable[str]): A modulo string of the form or ``"{regex}@{steps}s"`` (or list of)
+                giving the variables to add as tensorboard figures @ a particular logging frequency.
+            fig_fn (Callable, Iterable[Callable]): Preprocess variable before logging to tensorboard into a plt.figure().
+                If ``fig`` is a list then ``fig_fn`` can also be passed as list with a callable for each entry in
+                ``fig`` or can be passed as a single callable used for all entries.
+            fig_pref (str, Iterable[str]): Prefix all summaries in tensorboard with this string
+            fig_prep (bool, Iterable[bool]): If True then dictionary variables will be prepended by the name of the dictionary
+            txt (str): A modulo string of the form ``"{regex}@{steps}s"`` (or list of)
+                giving the variables to add as tensorboard text @ a particular logging frequency.
+            txt_fn (Callable, Iterable[Callable]): Preprocess variable before logging to tensorboard.
+                If ``txt`` is a list then ``txt_fn`` can also be passed as list with a callable for each entry in
+                ``txt`` or can be passed as a single callable used for all entries.
+            txt_pref (str, Iterable[str]): Prefix all summaries in tensorboard with this string
+            txt_prep (bool, Iterable[bool]): If True then dictionary variables will be prepended by the name of the dictionary
+            vid (str, Iterable[str]): A modulo string of the form ``"{regex}@{steps}s"`` (or list of)
+                giving the variables to add as tensorboard videos @ a particular logging frequency.
+            vid_fn (Callable, Iterable[Callable]): Preprocess variable to a tensor of shape [B, T, C, H, W] before logging to tensorboard.
+                If ``vid`` is a list then ``vid_fn`` can also be passed as list with a callable for each entry in
+                ``vid`` or can be passed as a single callable used for all entries.
+            vid_pref (str, Iterable[str]): Prefix all summaries in tensorboard with this string
+            vid_prep (bool, Iterable[bool]): If True then dictionary variables will be prepended by the name of the dictionary
+            msg (str, Iterable[str]): A modulo string of the form ``"{regex}->{exp_regex}@{steps}s"`` (or list of)
+                giving the variables to log as messages with the experiments matching ``exp_regex``.
+            msg_keep (str, Iterable[str]): One of ['latest', 'max', 'min'] giving the protocol to use on message collision
+            msg_leader (str, Iterable[str]): A regex to a single variable. If supplied then this variable will be treated as the leader
+                and all other variables will be logged only if the keep condition is met for the leader
+            msg_expand (bool, Iterable[bool]): If True then dictionary variables with K keys will be expanded to give K variables
+            msg_prep (bool, Iterable[bool]): If True then each variable in the dictionary will be prepended by the dictionary name.
+            limit (str): A modulo string of the form ``f"@{modulo}{triger}" used to limit the number of iterations of
+                an experiment at a particular trigger level. This is useful if an experiment is restarted for
+                example.
+
+        Note:
+            All variables  `..._fn`, `..._pref` and `..._prep` as well as ``ckpt_keep`` and ``msg_leader``,
+            ``msg_expand`` and ``msg_prep`` can be supplied as a single or as a list of entries, one for each set of
+            variables matching each modulo string in each case.
 
 
+        Example 1::
+
+            nn, opt, dataset = ..., ...
+
+            m = Monitor(
+                directory,
+                checkpoint=('model@1e', 'opt@100s'),   # Checkpoint the model once per epoch and opt every 100 steps
+                log='^loss$@100s',   # Log the loss to stdout every 100 steps
+                img='^x$@1000s', sca=('^loss$@100s', 'eval_.*@1e'), time=('@100s')     # Log to tensorboard
+                time=('@100s', ),   # Generate timing statistics every 100 steps
+                hooks=[  # Custom hooks are also supported
+                    MyVeryOwnHook(...)])
+
+            # The only modification needed to the training loop are the em calls.
+            # Nested loops corresponds to different triggers from inside out
+            # we have ["step" or "s", "epoch" or "e", "era" or "er", "eon" or "eo", "supereon" or "se"]
+            for epoch in m(range(10)):
+                for x, y in m(datset):
+                    _y_ = model(x)
+                    opt.zero_grad()
+                    loss = loss_fn(y, _y_)
+                    loss.backward()
+                    loss.step()
+                    em.log('Manual Logging is also supported')
+                eval_1, eval_2 = eval(model, ds)
+
+            # Steps and epoch have been incremented
+            assert em.step == len(ds) * 10
+            assert em.epoch == 10
+
+            # Lets reload the model at the 5th epoch
+            em.load(step=5*len(ds), model)
+            # The step and epoch will be updated
+            print(em.step, em.epoch)
+
+        Example 2::
+
+            from xmen.monitor import Monitor
+            import numpy as np
+            import torch
+            import os
+            import matplotlib.pyplot as plt
+            from torchvision.datasets.mnist import MNIST
+            from torch.utils.data import DataLoader
+            import torchvision.transforms as T
+
+            plt.style.use('ggplot')
+            ds = DataLoader(MNIST(os.getenv("HOME") + '/data/mnist', download=True,
+                  transform=T.Compose(
+                      [T.Resize([64, 64]), T.CenterCrop([64, 64]),
+                       T.ToTensor(), T.Normalize([0.5], [0.5])])), 8)
+
+            m = Monitor(
+                directory='/tmp/tb_5',
+                sca=['^z$|^X$@10s', '^a|^x$@5s'],
+                img=['^mnist@10s', '^mnist@5s'], img_fn=[lambda x: x[:2], lambda x: x[:5]], img_pref=['2', '5'],
+                hist='Z@1s',
+                fig='fig@10s',
+                txt='i@5s', txt_fn=lambda x: f'Hello at step {x}',
+                vid='^mnist@10s', vid_fn=lambda x: (x.unsqueeze(0) - x.min()) / (x.max() - x.min())
+            )
+
+            # variables
+            x = 0.
+            a = [1, 2]
+            z = {'x': 5, 'y': 10}
+            for i, (mnist, _) in m(zip(range(31), ds)):
+                # plot a figure
+                fig = plt.figure(figsize=[10, 5])
+                plt.plot(np.linspace(0, 1000), np.cos(np.linspace(0, 1000) * i))
+                # random tensor
+                Z = torch.randn([10, 3, 64, 64]) * i / 100
+                # scalars
+                x = (i - 15) ** 2
+                z['i'] = i
+                z['x'] += 1
+                z['y'] = z['x'] ** 2
+
+        """
+        super().__init__(hooks=hooks, log=log, log_fn=log_fn, log_format=log_format, time=time,
+                         msg=msg, msg_keep=msg_keep, msg_leader=msg_leader, msg_expand=msg_expand, msg_prep=msg_prep,
+                         limit=limit)
+
+        self.directory = directory
+
+        # -- Add modulo hooks to hooks
+        if ckpt is not None:
+            if not isinstance(ckpt, (list, tuple)):
+                ckpt = [ckpt]
+            if not isinstance(ckpt_keep, (list, tuple)):
+                ckpt_keep = tuple([ckpt_keep] * len(ckpt))
+            warn = f"Either one fn, pref and prep or one for each '{ckpt_keep}' must be set"
+            assert all(len(f) == len(ckpt) for f in (ckpt_keep, )), warn
+            for c, k in zip(ckpt, ckpt_keep):
+                self.hooks.append(Checkpointer(c, to_keep=k))
+
+        # tensorboard summaries
+        kinds = {'sca': 'scalar', 'img': 'image', 'hist': 'histogram',
+                 'fig': 'figure', 'txt': 'text', 'vid': 'video'}
+        for k in kinds:
+            kind = locals()[k]
+            if kind is not None:
+                options = {}
+                if k == 'img':
+                    options = locals()[k + '_options']
+                fn = locals()[k + '_fn']
+                pref = locals()[k + '_pref']
+                prep = locals()[k + '_prep']
+                if not isinstance(kind, (list, tuple)):
+                    kind = [kind]
+                if not isinstance(fn, (list, tuple)):
+                    fn = tuple([fn] * len(kind))
+                if not isinstance(pref, (list, tuple)):
+                    pref = tuple([pref] * len(kind))
+                if not isinstance(prep, (list, tuple)):
+                    prep = tuple([prep] * len(kind))
+                warn = f"Either one fn, pref and prep or one for each '{kind}' must be set"
+                assert all(len(f) == len(kind) for f in (fn, pref, prep)), warn
+                for c, f, pr, pre in zip(kind, fn, pref, prep):
+                    self.hooks.append(TensorboardLogger(kinds[k], c, fn=f, prefix=pr, prepend=pre, **options))
+
+        self._checkpointer = Checkpointer(r'.*', to_keep=ckpt_keep)
+
+    def checkpoint(self, **kwargs):
+        """Checkpoint the torch.nn objects with step and epoch passed as ``name==variable_to_save``"""
+        self._checkpointer(kwargs, self)
+
+    def load(self, directory=None, step=None, attempt=True, update_triggers=True, **modules):
+        """Load the torch torch.nn objects passed as name=variable_to_load,
+        from the directory and reset the state of the em (if update_triggers == True). If attempt == False then an
+        Exception will be raised if either the directory does not contain checkpoints corresponding to modules.
+        """
+        if directory is None:
+            directory = os.path.join(self.directory, 'checkpoints')
+        modules, triggers = load(directory, step=step, attempt=attempt, **modules)
+        if update_triggers:
+            self.triggers.update(triggers)
+        return modules

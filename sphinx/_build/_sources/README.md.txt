@@ -134,16 +134,26 @@ optional arguments:
 - Full documentation (including the python API) can be found [here](https://robw4.github.io/xmen/)
 - Several example experiment definitions can be found in ``xmen.examples``:
     ```
-    ├── examples
+    xmen.examples
+    ├── hello_world.py
+    ├── inheritance.py
+    ├── monitor
     │   ├── __init__.py
-    │   ├── hello_world.py      # basic xmen experiments defined using the functional and class apis
-    │   ├── inheritance.py      # basic inheritance example
-    │   └── torch               # several examples of more complicated experiments in pytorch
-    │       ├── __init__.py
-    │       ├── functional.py   # a functional dcgan implementation
-    │       ├── inheritance.py  # a object-orientated experiments with inheritance
-    │       └── object.py       # a object-orientated object-orientated
-    ```
+    │   ├── checkpoint.py
+    │   ├── logger.py
+    │   ├── messenger
+    │   │   ├── __init__.py
+    │   │   ├── basic.py
+    │   │   ├── expand.py
+    │   │   ├── leader.py
+    │   │   └── prepend.py
+    │   └── tb_monitor.py
+    └── torch
+        ├── functional.py
+        ├── inheritance.py
+        ├── models.py
+        └── object.py
+  ```
   The following experiments are defined
   ```python
   from xmen.examples import hello_world, HelloWorld  # simple examples

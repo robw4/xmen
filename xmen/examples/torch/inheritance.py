@@ -100,7 +100,7 @@ class BaseCVae(BaseGenerative):
 
     def run(self):
         from torch.distributions import Normal, kl_divergence
-        from xmen.monitor import Monitor, TensorboardLogger
+        from xmen.monitor import TorchMonitor, TensorboardLogger
         from xmen.examples.torch.models import weights_init
         # construct model
         datasets = self.datasets()
@@ -111,7 +111,7 @@ class BaseCVae(BaseGenerative):
         if self.ngpus > 1:
             nn_gen, nn_post, nn_prior = (torch.nn.DataParallel(n) for n in (
                 nn_gen, nn_post, nn_prior))
-        m = Monitor(
+        m = TorchMonitor(
             self.directory, ckpt=self.checkpoint,
             log=self.log, sca=self.sca, img=self.img,
             img_fn=lambda x: x[:min(self.nimg, x.shape[0])],
@@ -168,7 +168,7 @@ class BaseGAN(BaseGenerative):
     def distributions(self): raise NotImplementedError
 
     def run(self):
-        from xmen.monitor import Monitor, TensorboardLogger
+        from xmen.monitor import TorchMonitor, TensorboardLogger
         from xmen.examples.torch.models import set_requires_grad, weights_init
         # Get get_datasets
         datasets = self.datasets()
@@ -176,7 +176,7 @@ class BaseGAN(BaseGenerative):
         nn_g, nn_d, op_g, op_d = self.build()
         nn_g = nn_g.to(self.device).float().apply(weights_init)
         nn_d = nn_d.to(self.device).float().apply(weights_init)
-        m = Monitor(
+        m = TorchMonitor(
             self.directory, ckpt=self.checkpoint,
             log=self.log, sca=self.sca, img=self.img,
             time=('@20s', '@1e'),

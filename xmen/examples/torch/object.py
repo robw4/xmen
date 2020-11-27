@@ -102,7 +102,7 @@ class Dcgan(Experiment):
     def run(self):
         """Train the mnist dataset for a fixed number of epochs running an
         inference loop after every epoch."""
-        from xmen.monitor import Monitor, TensorboardLogger
+        from xmen.monitor import TorchMonitor, TensorboardLogger
         from xmen.examples.models import weights_init, set_requires_grad
         from torch.distributions import Normal
         from torch.distributions.one_hot_categorical import OneHotCategorical
@@ -114,7 +114,7 @@ class Dcgan(Experiment):
         nn_g = nn_g.to(self.device).float().apply(weights_init)
         nn_d = nn_d.to(self.device).float().apply(weights_init)
         # training loop
-        m = Monitor(
+        m = TorchMonitor(
             self.directory, ckpt=self.checkpoint,
             log=self.log, sca=self.sca, img=self.img,
             time=('@20s', '@1e'),

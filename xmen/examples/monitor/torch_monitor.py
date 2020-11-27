@@ -1,5 +1,5 @@
 """automatic tensorboard logging"""
-from xmen.monitor import Monitor
+from xmen.monitor import TorchMonitor
 import numpy as np
 import torch
 import os
@@ -14,7 +14,7 @@ ds = DataLoader(MNIST(os.getenv("HOME") + '/data/mnist', download=True,
           [T.Resize([64, 64]), T.CenterCrop([64, 64]),
            T.ToTensor(), T.Normalize([0.5], [0.5])])), 8)
 
-m = Monitor(
+m = TorchMonitor(
     directory='/tmp/tb',
     sca=['^z$|^X$@10s', '^a|^x$@5s'],
     img=['^mnist@10s', '^mnist@5s'], img_fn=[lambda x: x[:2], lambda x: x[:5]], img_pref=['2', '5'],

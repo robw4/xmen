@@ -36,7 +36,7 @@ copyright = '2019, Rob Weston'
 author = 'Rob Weston'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1'
+release = '0.2.3'
 
 autoclass_content = 'class'
 autodoc_default_options = {
@@ -52,6 +52,7 @@ autodoc_default_options = {
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
     'recommonmark',
     'nbsphinx'
 ]
@@ -92,3 +93,4 @@ html_theme_options = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+viewcode_follow_imported_members = True

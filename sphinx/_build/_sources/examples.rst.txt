@@ -15,29 +15,23 @@ A little more detail
 .. literalinclude:: examples/inheritance.py
 
 
-The Monitor Helper
+The Monitor Class
 ###################
-The ``MonitorHelper`` class is designed to facilitate easy logging and checkpointing of experiements. All the examples in this section can be found in ``xmen.examples.monitor`` and can in python as::
+The ``Monitor`` class is designed to facilitate easy logging of experiements. All the examples in this section can be found in ``xmen.examples.monitor`` and can in python as::
 	
 	python -m xmen.examples.monitor.logger
-	python -m xmen.examples.monitor.checkpoint
 	python -m xmen.examples.monitor.messenger.basic
 	python -m xmen.examples.monitor.messenger.leader
-	python -m xmen.examples.monitor.tb_monitor
+	python -m xmen.examples.monitor.full
 
 
-Automatic Logging
+Logging
 ------------------
 .. literalinclude:: examples/monitor/logger.py
 .. literalinclude:: examples/monitor/logger.txt
 
-Automatic Checkpointing
-------------------------
-.. literalinclude:: examples/monitor/checkpoint.py
-.. literalinclude:: examples/monitor/checkpoint.txt
 
-
-Automatic Messaging
+Messaging
 --------------------
 
 Messgaging Multiple Experiments
@@ -46,16 +40,36 @@ Messgaging Multiple Experiments
 .. literalinclude:: examples/monitor/messenger/basic.py
 .. literalinclude:: examples/monitor/messenger/basic.txt
 
-With a leader
-..............
+Using a leader
+................
 .. literalinclude:: examples/monitor/messenger/leader.py
 .. literalinclude:: examples/monitor/messenger/leader.txt
 
 
+A Full example
+----------------
+.. literalinclude:: examples/monitor/full.py
+.. literalinclude:: examples/monitor/full.txt
+
+
+The TorchMonitor Class
+########################
+The ``TorchMonitor`` class adds to the functionality of ``Monitor`` also allowing torch modules to be automatically saved and variables to be logged to tensorboard.
+
+
+python -m xmen.examples.monitor.torch_monitor
+	python -m xmen.examples.monitor.checkpoint
+
+Automatic Checkpointing
+------------------------
+.. literalinclude:: examples/monitor/checkpoint.py
+.. literalinclude:: examples/monitor/checkpoint.txt
+
+
 Tensorboard Logging
 --------------------
-.. literalinclude:: examples/monitor/tb_monitor.py
-.. literalinclude:: examples/monitor/tb_monitor.sh
+.. literalinclude:: examples/monitor/torch_monitor.py
+.. literalinclude:: examples/monitor/torch_monitor.sh
 
 .. image:: /tb_scalar.png
     :alt: Test
@@ -63,8 +77,8 @@ Tensorboard Logging
 .. image:: /tb_img.png
     :alt: Test
 
-Xmen meets Pytorch
-###################
+Pytorch experiments with Xmen
+##############################
 All examples in this section are defined in ``xmen.examples.torch`` and can be run from the commandline using the ``xmen`` command line interface; just add them using ``xmen --add`` (if they are not already).  Pytorch will need to be installed in order to run these examples.
 
 DCGAN using the functional api
@@ -80,3 +94,9 @@ DCGAN using the class api
 Generative modelling with inheritance
 --------------------------------------
 .. literalinclude:: examples/torch/inheritance.py
+
+
+Xmen Meets Pytorch Lightning
+##############################
+.. literalinclude:: examples/torch/lightning.py
+
