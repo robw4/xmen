@@ -25,7 +25,7 @@ from xmen.config import GlobalExperimentManager
 from xmen.manager import ExperimentManager, InvalidExperimentRoot
 
 DESCRIPTION = r"""
-||||||||||||||||||||||||||| WELCOME TO ||||||||||||||||||||||||||||
+||||||||||||||||||||||||||| WELCOME TO |||||||||||||||||||||||||||
 ||                                                              ||
 ||          &@&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&@&%          ||    
 ||         *@&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&         ||    

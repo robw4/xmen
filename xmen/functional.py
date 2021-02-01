@@ -38,6 +38,7 @@ def read_comments(fn):
     src = '('.join(inspect.getsource(fn).split('(')[1:])
 
     lines = []
+    params = {}
     for i, k in enumerate(signature.parameters):
         p = signature.parameters[k]
 
@@ -98,7 +99,9 @@ def read_comments(fn):
                 help_string_wrapped[i] = textwrap.indent(help_string_wrapped[i], ' ' * (4 + (i > 0) * 2))
 
             lines += ['\n'.join(help_string_wrapped)]
-    return '\n'.join(lines)
+            params[p.name] = (default, ty, help.strip() if help is not None else None, help_string, fn.__name__)
+
+    return '\n'.join(lines), params
 
 
 def functional_experiment(fn):
@@ -121,6 +124,7 @@ def functional_experiment(fn):
     cls = type(fn.__name__, (Experiment,), {})
     # Add parameters and get helps from the function definition
     signature = inspect.signature(fn)
+    docs, params = read_comments(fn)
     for i, k in enumerate(signature.parameters):
         p = signature.parameters[k]
 
@@ -132,12 +136,15 @@ def functional_experiment(fn):
             # Add attribute to class
             setattr(cls, p.name, default)
 
+    # add parameters to _params
+    cls._params = {**cls._params, **params}
+
     # Add parameters to __doc__ of the function
     cls.__doc__ = ''
     if fn.__doc__ is not None:
         cls.__doc__ = fn.__doc__
     if not hasattr(fn, 'autodocs'):
-        cls.__doc__ += '\n\nParameters:\n' + read_comments(fn)
+        cls.__doc__ += '\n\nParameters:\n' + docs
     cls.fn = (fn.__module__, fn.__name__)
 
     # generate run method from the function
@@ -151,7 +158,7 @@ def functional_experiment(fn):
 
 def autodoc(func):
     """A decorator used to add parameter comments to the docstring of func."""
-    _docs = read_comments(func)
+    _docs, _ = read_comments(func)
     if func.__doc__ is None:
         func.__doc__ = ''
     func.__doc__ += '\n\nParameters:\n'
