@@ -886,7 +886,7 @@ tree /tmp/checkpoint
     <span class="n">sca</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;loss_.*@20s&#39;</span><span class="p">,</span>  <span class="c1"># tensorboard scalars</span>
     <span class="n">img</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;_x_|x$@20s&#39;</span><span class="p">,</span>  <span class="c1"># tensorboard images</span>
     <span class="n">nimg</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span>  <span class="c1"># the maximum number of images to display to tensorboard</span>
-    <span class="n">ns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># the number of samples to generate at inference)</span>
+    <span class="n">ns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># the number of samples to load_and_generate at inference)</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Train a conditional GAN to predict MNIST digits.</span>
 
@@ -1018,7 +1018,7 @@ tree /tmp/checkpoint
     <span class="n">img</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;_x_|x$@20s&#39;</span>  <span class="c1"># @p tensorboard images</span>
     <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;@20s&#39;</span><span class="p">,</span> <span class="s1">&#39;@1e&#39;</span><span class="p">)</span>  <span class="c1"># @p timing modulos</span>
     <span class="n">nimg</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span>  <span class="c1"># @p The maximum number of images to display to tensorboard</span>
-    <span class="n">ns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># @p The number of samples to generate at inference</span>
+    <span class="n">ns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># @p The number of samples to load_and_generate at inference</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">hw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="p">[</span><span class="n">d</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">nl</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hw0</span><span class="p">]</span>
@@ -1200,7 +1200,7 @@ tree /tmp/checkpoint
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">nlprior</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># @p The number of hidden layers in the prior network</span>
     <span class="n">w_kl</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># @p The weighting on the KL divergence term</span>
-    <span class="n">ns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># @p The number of samples to generate at inference</span>
+    <span class="n">ns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># @p The number of samples to load_and_generate at inference</span>
     <span class="n">predictive</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;prior&#39;</span>  <span class="c1"># @p Use either the &#39;prior&#39; or &#39;posterior&#39; predictive at inference</span>
     <span class="n">b</span> <span class="o">=</span> <span class="mi">32</span>
     <span class="n">log</span> <span class="o">=</span> <span class="s1">&#39;loss.*|log_px|kl_qz_pz@20s&#39;</span>
@@ -1274,7 +1274,7 @@ tree /tmp/checkpoint
     <span class="c1"># overload previous parameter default (documentation is maintained)</span>
     <span class="n">b</span> <span class="o">=</span> <span class="mi">128</span>
     <span class="c1"># define new parameters</span>
-    <span class="n">ns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># @p The number of samples to generate at inference</span>
+    <span class="n">ns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># @p The number of samples to load_and_generate at inference</span>
 
     <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Build the model from the current configuration&quot;&quot;&quot;</span>
@@ -1339,7 +1339,7 @@ tree /tmp/checkpoint
     <span class="n">hw0</span><span class="p">,</span> <span class="n">nl</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="mi">3</span>  <span class="c1"># Default size = 32 x 32</span>
     <span class="n">data_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;HOME&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;/data/mnist&#39;</span>
     <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">cz</span><span class="p">,</span> <span class="n">cf</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">512</span>
-    <span class="n">ns</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># Number of samples to generate during inference</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># Number of samples to load_and_generate during inference</span>
 
     <span class="k">def</span> <span class="nf">datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Configure the get_datasets used for training&quot;&quot;&quot;</span>

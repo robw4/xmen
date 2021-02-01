@@ -123,7 +123,9 @@ class Trainer(pl.Trainer):
         if self._dont_reduce:
             metrics.update({
                 'n_steps': len(self.train_dataloader) if self.train_dataloader is not None else None,
-                'n_epochs': self.max_epochs})
+                'n_epochs': self.max_epochs,
+                'epoch': self.current_epoch
+            })
             return metrics
         else:
             return super().metrics_to_scalars(metrics)

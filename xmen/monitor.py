@@ -179,49 +179,51 @@ class Checkpointer(Hook):
         import torch
         from xmen.utils import get_version
         saved = []
+        if monitor.directory is None:
+            monitor.log(f'WARNING: Cannot checkpoint {list(var_dict.keys())} as monitor does not have a directory')
+        else:
+            if self.expand:
+                pops = []
+                updates = {}
+                for k, v in var_dict.items():
+                    if isinstance(v, dict):
+                        pops.append(k)
+                        updates.update({k + '_' + kk: vv for kk, vv in v.items()})
+                for p in pops:
+                    var_dict.pop(p)
+                    var_dict.update(updates)
 
-        if self.expand:
-            pops = []
-            updates = {}
             for k, v in var_dict.items():
-                if isinstance(v, dict):
-                    pops.append(k)
-                    updates.update({k + '_' + kk: vv for kk, vv in v.items()})
-            for p in pops:
-                var_dict.pop(p)
-                var_dict.update(updates)
+                if hasattr(v, 'state_dict'):
+                    # Save directory
+                    save_dir = os.path.join(monitor.directory, 'checkpoints', k)
 
-        for k, v in var_dict.items():
-            if hasattr(v, 'state_dict'):
-                # Save directory
-                save_dir = os.path.join(monitor.directory, 'checkpoints', k)
+                    # Create directory if it doesn't exist
+                    if not os.path.exists(save_dir):
+                        os.makedirs(save_dir)
 
-                # Create directory if it doesn't exist
-                if not os.path.exists(save_dir):
-                    os.makedirs(save_dir)
+                    # Get PATHS in file if buffer is not loaded
+                    if k not in self._checkpoint_buffer:
+                        files = glob.glob(os.path.join(save_dir, '*'))
+                        # Order files in ascending order by step (note sort must be used on int)
+                        if len(files) != 0:
+                            _, files = zip(*sorted([(int(os.path.splitext(os.path.split(ff)[-1])[0]), ff) for ff in files]))
+                        self._checkpoint_buffer[k] = list(files)
 
-                # Get PATHS in file if buffer is not loaded
-                if k not in self._checkpoint_buffer:
-                    files = glob.glob(os.path.join(save_dir, '*'))
-                    # Order files in ascending order by step (note sort must be used on int)
-                    if len(files) != 0:
-                        _, files = zip(*sorted([(int(os.path.splitext(os.path.split(ff)[-1])[0]), ff) for ff in files]))
-                    self._checkpoint_buffer[k] = list(files)
-
-                if len(self._checkpoint_buffer[k]) == self.to_keep:
-                    file = self._checkpoint_buffer[k].pop(0)
-                    os.remove(file)
-                self._checkpoint_buffer[k].append(os.path.join(save_dir, f'{monitor.step}.pt'))
-                save_dict = {k: v for k, v in monitor.triggers.items() if v != 0.}
-                save_dict.update({
-                    'version': get_version(cls=type(v)),
-                    'date': datetime.datetime.now().strftime("%I:%M%p %B %d, %Y"),
-                    'state_dict': v.state_dict()})
-                torch.save(save_dict, self._checkpoint_buffer[k][-1])
-                saved.append(k)
-            else:
-                warnings.warn(f'Value for key = {k} does not have a state_dict')
-        monitor.log(f'saved {saved} at {monitor.directory}')
+                    if len(self._checkpoint_buffer[k]) == self.to_keep:
+                        file = self._checkpoint_buffer[k].pop(0)
+                        os.remove(file)
+                    self._checkpoint_buffer[k].append(os.path.join(save_dir, f'{monitor.step}.pt'))
+                    save_dict = {k: v for k, v in monitor.triggers.items() if v != 0.}
+                    save_dict.update({
+                        'version': get_version(cls=type(v)),
+                        'date': datetime.datetime.now().strftime("%I:%M%p %B %d, %Y"),
+                        'state_dict': v.state_dict()})
+                    torch.save(save_dict, self._checkpoint_buffer[k][-1])
+                    saved.append(k)
+                else:
+                    warnings.warn(f'Value for key = {k} does not have a state_dict')
+            monitor.log(f'saved {saved} at {monitor.directory}')
 
 
 class XmenMessenger(Hook):
@@ -367,40 +369,44 @@ class XmenMessenger(Hook):
     def __call__(self, var_dict, monitor):
         """Leave messages, timing and step information with experiments"""
         from xmen.experiment import Experiment
-        # get and remove experiments from var_dict
-        results = zip(*[(k, var_dict[k]) for k in var_dict if re.match(self.log, k) is None])
-        results = list(results)
-        if len(results) == 2:
-            names, experiments = results
+
+        if monitor.directory is None:
+            monitor.log(f'WARNING: Cannot log {list(var_dict.keys())} as monitor does not have a directory')
         else:
-            return
+            # get and remove experiments from var_dict
+            results = zip(*[(k, var_dict[k]) for k in var_dict if re.match(self.log, k) is None])
+            results = list(results)
+            if len(results) == 2:
+                names, experiments = results
+            else:
+                return
 
-        for k in names:
-            var_dict.pop(k)
+            for k in names:
+                var_dict.pop(k)
 
-        if self.expand:
-            # Expand dictionaries in var_dict
-            pop, add = [], {}
-            for k, v in var_dict.items():
-                if isinstance(v, dict):
-                    p = '' if self.prepend is None else k + '_'
-                    add.update({p + kk: vv for kk, vv in v.items()})
-                    pop.append(k)
-            for p in pop:
-                var_dict.pop(p)
-            var_dict.update(add)
+            if self.expand:
+                # Expand dictionaries in var_dict
+                pop, add = [], {}
+                for k, v in var_dict.items():
+                    if isinstance(v, dict):
+                        p = '' if self.prepend is None else k + '_'
+                        add.update({p + kk: vv for kk, vv in v.items()})
+                        pop.append(k)
+                for p in pop:
+                    var_dict.pop(p)
+                var_dict.update(add)
 
-        for e, name in zip(experiments, names):
-            # Get leader
-            leader, best_leader = None, False
+            for e, name in zip(experiments, names):
+                # Get leader
+                leader, best_leader = None, False
 
-            if self.leader is not None:
-                leader = [k for k in var_dict if re.match(self.leader, k) is not None][0]
-            if isinstance(e, Experiment):
-                e.message(monitor.summary(verbose=1))
-                e.message(var_dict, keep=self.keep, leader=leader)
-                keys = list(var_dict.keys())
-                monitor.log(f'Left messages {keys if keys != [] else ""} with {name} at {e.directory}')
+                if self.leader is not None:
+                    leader = [k for k in var_dict if re.match(self.leader, k) is not None][0]
+                if isinstance(e, Experiment):
+                    e.message(monitor.summary(verbose=1))
+                    e.message(var_dict, keep=self.keep, leader=leader)
+                    keys = list(var_dict.keys())
+                    monitor.log(f'Left messages {keys if keys != [] else ""} with {name} at {e.directory}')
 
 
 class Timer(Hook):
@@ -538,32 +544,36 @@ class TensorboardLogger(Hook):
                 warnings.filterwarnings('ignore', category=FutureWarning, append=True)
                 import torch.utils.tensorboard as tb
 
-            if not os.path.join(monitor.directory, 'summaries'):
-                os.makedirs(os.path.join(monitor.directory, 'summaries'))
-            from torch.utils.tensorboard import SummaryWriter
-            tb_writer = tb.SummaryWriter(os.path.join(monitor.directory, 'summaries'))
-            monitor.log(f'saved tb {self.type} summaries for {list(var_dict.keys())} at {monitor.directory}')
-            # print(monitor.directory, 'summaries')
-            for k, v in var_dict.items():
-                k = self.prefix + k
-                if v is not None:
-                    if self.fn is not None:
-                        v = self.fn(v)
-                    add_summary = getattr(tb_writer, 'add_' + self.type)
-                    if isinstance(v, dict):
-                        for kk, vv in v.items():
-                            vv = self.make_compatible(vv)
-                            p = k + '_' if self.prepend else ''
-                            add_summary(p + kk, vv, global_step=monitor.step)
-                    elif isinstance(v, (list, tuple)):
-                        for i, vv in enumerate(v):
-                            vv = self.make_compatible(vv)
-                            add_summary(k + '_' + str(i), vv, global_step=monitor.step)
-                    else:
-                        v = self.make_compatible(v)
-                        add_summary(k, v, global_step=monitor.step)
-            tb_writer.flush()
-            tb_writer.close()
+            if monitor.directory is None:
+                monitor.log(f'WARNING: Cannot log {list(var_dict.keys())} to tensorboard as '
+                            f'monitor does not have a directory')
+            else:
+                if not os.path.join(monitor.directory, 'summaries'):
+                    os.makedirs(os.path.join(monitor.directory, 'summaries'))
+                from torch.utils.tensorboard import SummaryWriter
+                tb_writer = tb.SummaryWriter(os.path.join(monitor.directory, 'summaries'))
+                monitor.log(f'saved tb {self.type} summaries for {list(var_dict.keys())} at {monitor.directory}')
+                # print(monitor.directory, 'summaries')
+                for k, v in var_dict.items():
+                    k = self.prefix + k
+                    if v is not None:
+                        if self.fn is not None:
+                            v = self.fn(v)
+                        add_summary = getattr(tb_writer, 'add_' + self.type)
+                        if isinstance(v, dict):
+                            for kk, vv in v.items():
+                                vv = self.make_compatible(vv)
+                                p = k + '_' if self.prepend else ''
+                                add_summary(p + kk, vv, global_step=monitor.step)
+                        elif isinstance(v, (list, tuple)):
+                            for i, vv in enumerate(v):
+                                vv = self.make_compatible(vv)
+                                add_summary(k + '_' + str(i), vv, global_step=monitor.step)
+                        else:
+                            v = self.make_compatible(v)
+                            add_summary(k, v, global_step=monitor.step)
+                tb_writer.flush()
+                tb_writer.close()
 
     def make_compatible(self, v):
         """Convert the variable v to a valid input for the summary writer"""
@@ -1293,7 +1303,12 @@ class TorchMonitor(Monitor):
         Exception will be raised if either the directory does not contain checkpoints corresponding to modules.
         """
         if directory is None:
-            directory = os.path.join(self.directory, 'checkpoints')
+            if self.directory is None:
+                self.log(f'WARNING: Cannot load as monitor does not have a directory')
+                return {}
+            else:
+                directory = os.path.join(self.directory, 'checkpoints')
+
         modules, triggers = load(directory, step=step, attempt=attempt, **modules)
         if update_triggers:
             self.triggers.update(triggers)

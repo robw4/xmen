@@ -18,13 +18,11 @@
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-import os
 import datetime
 import argparse
 from typing import Optional, Dict, List, Any
 import signal
 import io
-import abc
 
 from argparse import RawTextHelpFormatter
 from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recursive_print_lines, TypedMeta, MultiOut
@@ -39,8 +37,8 @@ helps = {
               'other flags and can be used in combination with --to_root, --to_defaults, and --register',
     'root': 'Generate a run script and defaults.yml file for interfacing with xgent',
     'debug': 'Run experiment in debug mode. The experiments debug will be called before registering.',
-    'txt': 'Also log stdout and stderr to an out.txt file. Enabled by default'
-}
+    'txt': 'Also log stdout and stderr to an out.txt file. Enabled by default',
+    'restart': 'Restart the experiment'}
 
 import textwrap
 for k in helps:
@@ -64,7 +62,7 @@ experiment_parser.add_argument('--to_root', '-r', type=str, default=None, help=h
 # optional extras
 experiment_parser.add_argument('--debug', '-d', default=None, action='store_true', help=helps['debug'])
 experiment_parser.add_argument('--to_txt', '-t', default=None, action='store_true', help=helps['txt'])
-
+experiment_parser.add_argument('--restart', '-f', default=None, action='store_true', help=helps['restart'])
 _SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta']
 
 
@@ -121,6 +119,7 @@ class Experiment(object, metaclass=TypedMeta):
             self._messages: Dict[Any, Any] = {}  # @p Messages left by the experiment
             self._version: Optional[Dict[Any, Any]] = None   # @p Experiment version information. See `get_version`
             self._meta: Optional[Dict] = None    # @p The global configuration for the experiment manager
+            self._notes: Dict[str, str] = {}     # @p Notes attached to the experiment
             # self._origin: Optional[str] = None    # @p The path the experiment was initially registered at
             self._specials: List[str] = _SPECIALS
             self._helps: Optional[Dict] = None
@@ -175,6 +174,11 @@ class Experiment(object, metaclass=TypedMeta):
     def version(self):
         """A dictionary giving the version information for the experiment"""
         return self._version
+
+    @property
+    def notes(self):
+        """A dictionary containing the notes attached to the experiment"""
+        return self._notes
 
     @root.setter
     def root(self, value):
@@ -298,46 +302,54 @@ class Experiment(object, metaclass=TypedMeta):
         self.__dict__.update(params)
         self._created = datetime.datetime.now().strftime(DATE_FORMAT)
 
-    def register(self, root, name, purpose='', force=True, same_names=100, generate_script=False,
-                 header=None):
+    def register(self, root, name, purpose='', force=True, same_names=100, generate_script=False, restart=False):
         """Register an experiment to an experiment directory. Its status will be updated to ``registered``. If an
         experiment called ``name`` exists in ``root`` and ``force==True`` then name will be appended with an int
         (eg. ``{name}_0``) until a unique name is found in ``root``. If ``force==False`` a ``ValueError`` will be raised.
+
+        If restart is also passed, and an experiment called name also exists, then the experiment will be loaded
+        from the params.yml file found in ``'{root}/{name}'``.
 
         Raises:
             ValueError: if ``{root}/{name}`` already contains a ``params.yml`` file
         """
         folder = os.path.join(root, name)
-        if os.path.exists(os.path.join(folder, 'params.yml')):
-            i = 0
-            if force:
-                while i < same_names:
-                    if not os.path.exists(os.path.join(folder + '_' + str(i), 'params.yml')):
-                        folder += '_' + str(i)
-                        name += '_' + str(i)
-                        break
-                    i += 1
-            elif i == same_names or not force:
-                raise ValueError(f'Experiment folder {os.path.join(root, name)} already contains a params.yml file. '
-                                 f'An Experiment cannot be created in an already existing experiment folder')
+        exists = os.path.exists(os.path.join(folder, 'params.yml'))
+        if not restart or (restart and not exists):
+            if exists:
+                i = 0
+                if force:
+                    while i < same_names:
+                        if not os.path.exists(os.path.join(folder + '_' + str(i), 'params.yml')):
+                            folder += '_' + str(i)
+                            name += '_' + str(i)
+                            break
+                        i += 1
+                elif i == same_names or not force:
+                    raise ValueError(f'Experiment folder {os.path.join(root, name)} already contains a params.yml file. '
+                                     f'An Experiment cannot be created in an already existing experiment folder')
+            # Make the folder if it does not exist
+            if not os.path.isdir(folder):
+                os.makedirs(folder)
 
-        # Make the folder if it does not exist
-        if not os.path.isdir(folder):
-            os.makedirs(folder)
+            # Generate a script.sh in each folder that can be used to run the experiment
+            if generate_script:
+                script = self.get_run_script(type='individual')
+                with open(os.path.join(self.root, self.name, 'run.sh'), 'w') as f:
+                    f.write(script)
 
-        # Generate a script.sh in each folder that can be used to run the experiment
-        if generate_script:
-            script = self.get_run_script(type='individual')
-            with open(os.path.join(self.root, self.name, 'run.sh'), 'w') as f:
-                f.write(script)
-
-        self.update_version()  # Get new version information
-        self.update_meta()   # Get the newest meta information
-        self._root = root
-        self._name = name
-        self._purpose = purpose
-        self._status = 'registered'
-        self._to_yaml()
+            self.update_version()  # Get new version information
+            self.update_meta()   # Get the newest meta information
+            self._root = root
+            self._name = name
+            self._purpose = purpose
+            self._status = 'registered'
+            self._to_yaml()
+        else:
+            self.from_yml(os.path.join(folder, 'params.yml'))
+            if self.status != 'registered':
+                self._status = 'registered'
+                self._to_yaml()
 
     def get_run_script(self, type='set', shell='/usr/bin/env python3', comment='#'):
         assert type in ['set', 'indiviual'], 'Only types "set" and "individual" are currently supported.'
@@ -511,6 +523,16 @@ class Experiment(object, metaclass=TypedMeta):
                 pass
         return v
 
+    def note(self, txt, rm=False):
+        if not rm:
+            now = datetime.datetime.now().strftime(DATE_FORMAT)
+            self._notes[now] = txt
+        else:
+            for k in list(self._notes.keys()):
+                if txt.strip() == self._notes[k].strip():
+                    self._notes.pop(k)
+        self._to_yaml()
+
     def compare(self, k, v, keep='latest'):
         assert keep in ['max', 'min', 'latest']
         cur = self.messages.get(k, None)
@@ -573,7 +595,7 @@ class Experiment(object, metaclass=TypedMeta):
                 else:
                     name = os.path.basename(os.path.normpath(args.execute))
                     root = os.path.dirname(os.path.normpath(args.execute))
-                    self.register(root, name)
+                    self.register(root, name, restart=args.restart)
             else:
                 self.detach()
         return args

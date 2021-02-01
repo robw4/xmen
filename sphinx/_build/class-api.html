@@ -199,7 +199,7 @@ div.nboutput.container div[class*=highlight] pre {
     border: none;
     padding: 0 0;
     margin: 0;
-    box-shadow: none;
+    generate_borders-shadow: none;
 }
 
 /* avoid gaps between output lines */
@@ -701,7 +701,7 @@ class AnExperiment(BaseExperiment)
  |      Generate a ``defaults.yml`` file and ``script.sh`` file in ``root_dir``.
  |
  |      Args:
- |          root_dir (str): A path to the root directory in which to generate a script.sh and defaults.yml to
+ |          root_dir (str): A path to the root directory in which to load_and_generate a script.sh and defaults.yml to
  |              run the experiment.
  |
  |  update(self, kwargs)

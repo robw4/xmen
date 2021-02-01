@@ -47,3 +47,8 @@ class HelloWorld(xmen.Experiment):
     def run(self):
         print(f'{self.a} {self.b}!')
         self.message({'a': self.a, 'b': self.b})
+
+
+if __name__ == '__main__':
+    from xmen.functional import functional_experiment
+    Exp, _ = functional_experiment(hello_world)

@@ -399,7 +399,7 @@ experiment called <code class="docutils literal notranslate"><span class="pre">n
 <dd><p>Generate a <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file and <code class="docutils literal notranslate"><span class="pre">script.sh</span></code> file in <code class="docutils literal notranslate"><span class="pre">root_dir</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>root_dir</strong> (<em>str</em>) – A path to the root directory in which to generate a script.sh and defaults.yml to
+<dd class="field-odd"><p><strong>root_dir</strong> (<em>str</em>) – A path to the root directory in which to load_and_generate a script.sh and defaults.yml to
 run the experiment.</p>
 </dd>
 </dl>
@@ -1405,7 +1405,7 @@ and the Experiment classes.</p>
 <dl class="py class">
 <dt id="xmen.utils.TypedMeta">
 <em class="property">class </em><code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">TypedMeta</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">bases</span></em>, <em class="sig-param"><span class="n">attr_dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/xmen/utils.html#TypedMeta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmen.utils.TypedMeta" title="Permalink to this definition">¶</a></dt>
-<dd><p>A meta class helper used to generate automatic doc strings generated from typed class definitions. This allows
+<dd><p>A meta class helper used to load_and_generate automatic doc strings generated from typed class definitions. This allows
 the docstrings to be defined inside the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> body instead of inside the doc string iradicating the need
 to type attributes twice:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MyClass</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">TypedMeta</span><span class="p">):</span>
@@ -1575,7 +1575,7 @@ each will be updated automatically provided ``path`` is within a git repository.
 <blockquote>
 <div><div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">Experiment</span></code> objects are able to automatically generate script.sh files that look like this:</p>
+<p><code class="docutils literal notranslate"><span class="pre">Experiment</span></code> objects are able to automatically load_and_generate script.sh files that look like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
 # File generated on the 06:34PM September 13, 2019
 # GIT:
