@@ -29,7 +29,7 @@ setup(
         'console_scripts':
             [
                 # 'xmen=xmen.app._xmen:main',
-                'xgent=xmen.app._xgent:main'
+                'xmen=xmen.app._xgent:main'
             ]},
     install_requires=[
             'ruamel.yaml>=0.16.10',

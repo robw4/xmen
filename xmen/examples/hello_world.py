@@ -1,4 +1,7 @@
-"""Basic Examples"""
+"""Basic Examples.
+
+
+"""
 #  Copyright (C) 2019  Robert J Weston, Oxford Robotics Institute
 #
 #  xmen
@@ -50,6 +53,15 @@ class HelloWorld(xmen.Experiment):
 
 
 if __name__ == '__main__':
+    # optionally expose the command line interface if you
+    # would like to run the experiment as a python script
     from xmen.functional import functional_experiment
+    # generate experiment from function definition if defined
+    # using the functional experiment (this step is not needed if
+    # the experiment is defined as a class)
     Exp = functional_experiment(hello_world)
+    # every experiment inherits main() allowing the experiment
+    # to be configured and run from the command line.
     Exp().main()
+    # try...
+    # >> python -m xmen.examples.hello_world --help
