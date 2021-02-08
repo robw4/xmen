@@ -44,19 +44,18 @@
       Parameters:
           a: str=Hello ~ the first argument
           b: str=World ~ the second argument
-    # execute
-    # Initialise Experiment Set
+    # initialise experient folder
     >>> xmen init -n HelloWorld -r .
-    # Register Experiments
+    # register experiments
     >>> xmen register -u "{a: Hello | Bye, b: World | Planet}"
-    # Visulaise
+    # visulaise
     >>> xgent list -ds -p ".*"
        root               name      status              created      a       b
     0  exps   a=Hello__b=World  registered  2020-09-04-18-36-12  Hello   World
     1  exps  a=Hello__b=Planet  registered  2020-09-04-18-36-11  Hello  Planet
     2  exps     a=Bye__b=World  registered  2020-09-04-18-36-11    Bye   World
     3  exps    a=Bye__b=Planet  registered  2020-09-04-18-36-10    Bye  Planet
-    # Run
+    # run
     >>> xmen run "*" bash
     >>> xmen run "*" screen -dm bash
     >>> xmen run "*" docker ...
@@ -74,30 +73,61 @@ Alternatively, clone the repo and then run pip if you also want access to the ex
 >>> pip install ~/xmen/python
 >>> xmen
 ```
-```
-usage: xman [-h] [--list] [--add MODULE NAME MODULE NAME] [--remove REMOVE] [name [name ...]] ...
 
-||||||||||||||||||||||||| WELCOME TO ||||||||||||||||||||||||||
-||                                                           ||
-||    \\\  ///  |||\\        //|||  |||||||||  |||\\   |||   ||
-||     \\\///   |||\\\      ///|||  |||        |||\\\  |||   ||
-||      ||||    ||| \\\    /// |||  ||||||     ||| \\\ |||   ||
-||     ///\\\   |||  \\\  ///  |||  |||        |||  \\\|||   ||
-||    ///  \\\  |||   \\\///   |||  |||||||||  |||   \\|||   ||
-||                                                           ||
-|||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION ||||||||||||
+```
+usage: xmen [-h]
+            {python,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
+            ...
+
+||||||||||||||||||||||||||| WELCOME TO |||||||||||||||||||||||||||
+||                                                              ||
+||          &@&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&@&%          ||
+||         *@&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&         ||
+||          &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&          ||
+||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&          ||
+||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#          ||
+||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&.          ||
+||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.          ||
+||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*          ||
+||           @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@          ||
+||   #&@@@@@&%&&&&&&&@@@@@@@@@@@@@@@@@@@@@@@@@&&&&&&&&@@@@@@&#  ||
+||  /#%%%%%%%%%&&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&&%%&%%%%%%#  ||
+||   &%&&&&&&&&&&&@@@@@@@@@@@@@@@@@@@@@@@@@@@&&@&&&&&&&&&&&&&   ||
+||     (@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&.    ||
+||      ...,*/#%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&##(*,...      ||
+||                                                              ||
+||    \\\  ///  |||\\        //|||  |||||||||  |||\\   |||      ||
+||     \\\///   |||\\\      ///|||  |||        |||\\\  |||      ||
+||      ||||    ||| \\\    /// |||  ||||||     ||| \\\ |||      ||
+||     ///\\\   |||  \\\  ///  |||  |||        |||  \\\|||      ||
+||    ///  \\\  |||   \\\///   |||  |||||||||  |||   \\|||      ||
+||                                                              ||
+||                      %@@,     (@@/                           ||
+||                     @@@@@@@@@@@@@@@@@@@@@                    ||
+||        @@        @@@@@@@@@@@@@@@@@@@@@@@@@@/        @#       ||
+||       @@#     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#     @@       ||
+||        @@@@@@@@@@@@@@@@@@@@@@@.@@@@@@@@@@@@@@@@@@@@@@.       ||
+||           ,@@@@@@@@@@@@@@@%       @@@@@@@@@@@@@@@@           ||
+||                                                              ||
+|||||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION |||||||||||||
 
 positional arguments:
-  name                  The name of the experiment to run
-  flags                 Python flags (pass --help for more info)
+  {python,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
+    python              Python interface
+    config              View / edit the global configuration
+    init                Initialise an experiment set
+    register            Register a set of experiments
+    run                 Run experiments matching glob in experiment set that have not yetbeen run.
+    note                add notes to an experiment
+    reset               Reset an experiment to registered status
+    unlink              Unlink experiments from experiment set
+    clean               Remove unlinked experiments (DESTRUCTIVE)
+    rm                  Remove an experiment set (DESTRUCTIVE)
+    relink              Relink experiments to global configuration or to a set root
+    list                list experiments to screen
 
 optional arguments:
-  -h, --help            show this help message and exit
-  --list, -l            List available python experiments
-  --add MODULE NAME MODULE NAME
-                        Add a python Experiment class or run script (it must already be on PYTHONPATH)
-  --remove REMOVE, -r REMOVE
-                        Remove a python experiment (passed by Name)
+  -h, --help            show this help message and exi
 ```
 
 ## Tutorials, Examples, Documentation
@@ -147,59 +177,6 @@ optional arguments:
 - For command line help run
   ```
   >> xmen --help
-  usage: xmen [-h]
-            {python,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
-            ...
-
-    ||||||||||||||||||||||||||| WELCOME TO |||||||||||||||||||||||||||
-    ||                                                              ||
-    ||          &@&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&@&%          ||
-    ||         *@&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&         ||
-    ||          &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&          ||
-    ||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&          ||
-    ||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#          ||
-    ||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&.          ||
-    ||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.          ||
-    ||           &@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*          ||
-    ||           @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@          ||
-    ||   #&@@@@@&%&&&&&&&@@@@@@@@@@@@@@@@@@@@@@@@@&&&&&&&&@@@@@@&#  ||
-    ||  /#%%%%%%%%%&&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&&%%&%%%%%%#  ||
-    ||   &%&&&&&&&&&&&@@@@@@@@@@@@@@@@@@@@@@@@@@@&&@&&&&&&&&&&&&&   ||
-    ||     (@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&.    ||
-    ||      ...,*/#%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&##(*,...      ||
-    ||                                                              ||
-    ||    \\\  ///  |||\\        //|||  |||||||||  |||\\   |||      ||
-    ||     \\\///   |||\\\      ///|||  |||        |||\\\  |||      ||
-    ||      ||||    ||| \\\    /// |||  ||||||     ||| \\\ |||      ||
-    ||     ///\\\   |||  \\\  ///  |||  |||        |||  \\\|||      ||
-    ||    ///  \\\  |||   \\\///   |||  |||||||||  |||   \\|||      ||
-    ||                                                              ||
-    ||                      %@@,     (@@/                           ||
-    ||                     @@@@@@@@@@@@@@@@@@@@@                    ||
-    ||        @@        @@@@@@@@@@@@@@@@@@@@@@@@@@/        @#       ||
-    ||       @@#     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#     @@       ||
-    ||        @@@@@@@@@@@@@@@@@@@@@@@.@@@@@@@@@@@@@@@@@@@@@@.       ||
-    ||           ,@@@@@@@@@@@@@@@%       @@@@@@@@@@@@@@@@           ||
-    ||                                                              ||
-    |||||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION |||||||||||||
-    
-    positional arguments:
-      {python,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
-        python              Python interface
-        config              View / edit the global configuration
-        init                Initialise an experiment set
-        register            Register a set of experiments
-        run                 Run experiments matching glob in experiment set that have not yetbeen run.
-        note                add notes to an experiment
-        reset               Reset an experiment to registered status
-        unlink              Unlink experiments from experiment set
-        clean               Remove unlinked experiments (DESTRUCTIVE)
-        rm                  Remove an experiment set (DESTRUCTIVE)
-        relink              Relink experiments to global configuration or to a set root
-        list                list experiments to screen
-    
-    optional arguments:
-      -h, --help            show this help message and exit
   ```
 
 ## Dependencies
@@ -208,7 +185,7 @@ optional arguments:
   - `ruamel.yaml`
   - `git-python`
   - `pandas`
-- Monior Dependencies:
+- Monitor Dependencies:
   - ``pytorch``
   - ``tensorboard``
 - Documentation:

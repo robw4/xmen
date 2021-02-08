@@ -216,7 +216,10 @@ class GlobalExperimentManager(object):
                             params = em.load_defaults()
 
                         # remove notes (_notes will be removed from version 0.2.5)
-                        params.pop('_notes')
+                        try:
+                            params.pop('_notes')
+                        except KeyError:
+                            pass
 
                         # Find experiments who's parameters match all conditions
                         if param_match is not None:
@@ -371,7 +374,10 @@ class GlobalExperimentManager(object):
             display['status'] = table.pop('_status')
         # Add version information to table
         versions = table.pop('_version')
-        display['commit'] = [version.get('git', {}).get('commit', None) for version in versions]
+
+        git_keys = ['local', 'remote', 'commit', 'branch']
+        for k in git_keys:
+            display[k] = [version.get('git', {}).get(k, None) for version in versions]
 
         # Add messages to table
         encountered = []
@@ -393,7 +399,7 @@ class GlobalExperimentManager(object):
         else:
             display_keys = [v for v in ('root', 'name') if v in display]
             if display_git:
-                display_keys += ['commit']
+                display_keys += git_keys
             if display_status:
                 display_keys += ['status']
             if display_date:

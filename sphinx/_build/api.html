@@ -307,12 +307,6 @@ Mutable attributes will no longer be shared.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="xmen.experiment.Experiment.notes">
-<em class="property">property </em><code class="sig-name descname">notes</code><a class="headerlink" href="#xmen.experiment.Experiment.notes" title="Permalink to this definition">¶</a></dt>
-<dd><p>A dictionary containing the notes attached to the experiment</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="xmen.experiment.Experiment.root">
 <em class="property">property </em><code class="sig-name descname">root</code><a class="headerlink" href="#xmen.experiment.Experiment.root" title="Permalink to this definition">¶</a></dt>
 <dd><p>The root directory to which the experiment belongs</p>
@@ -1127,7 +1121,7 @@ e.g:</p>
 
 <dl class="function">
 <dt id="xmen.utils.get_meta">
-<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_meta</code><span class="sig-paren">(</span><em class="sig-param">get_platform=True</em>, <em class="sig-param">get_cpu=False</em>, <em class="sig-param">get_memory=False</em>, <em class="sig-param">get_disk=False</em>, <em class="sig-param">get_slurm=False</em>, <em class="sig-param">get_conda=False</em>, <em class="sig-param">get_network=False</em>, <em class="sig-param">get_gpu=False</em>, <em class="sig-param">get_environ=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/xmen/utils.html#get_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmen.utils.get_meta" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">xmen.utils.</code><code class="sig-name descname">get_meta</code><span class="sig-paren">(</span><em class="sig-param">get_platform=True</em>, <em class="sig-param">get_cpu=True</em>, <em class="sig-param">get_memory=True</em>, <em class="sig-param">get_disk=False</em>, <em class="sig-param">get_slurm=False</em>, <em class="sig-param">get_conda=False</em>, <em class="sig-param">get_network=False</em>, <em class="sig-param">get_gpu=False</em>, <em class="sig-param">get_environ=False</em>, <em class="sig-param">live=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/xmen/utils.html#get_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmen.utils.get_meta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get Meta information for the system</p>
 </dd></dl>
 

@@ -315,11 +315,12 @@
         <span class="k">return</span> <span class="n">fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
 
     <span class="bp">cls</span><span class="o">.</span><span class="n">run</span> <span class="o">=</span> <span class="n">run</span>
-    <span class="k">return</span> <span class="bp">cls</span><span class="p">,</span> <span class="kc">None</span></div>
+    <span class="k">return</span> <span class="bp">cls</span></div>
 
 
 <div class="viewcode-block" id="autodoc"><a class="viewcode-back" href="../../api.html#xmen.functional.autodoc">[docs]</a><span class="k">def</span> <span class="nf">autodoc</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A decorator used to add parameter comments to the docstring of func.&quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
     <span class="n">_docs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">read_comments</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">func</span><span class="o">.</span><span class="vm">__doc__</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">func</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>

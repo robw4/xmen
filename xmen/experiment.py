@@ -462,7 +462,6 @@ class Experiment(object, metaclass=TypedMeta):
         def _sigusr1_handler(signum, handler):
             raise TimeoutException()
         signal.signal(signal.SIGUSR1, _sigusr1_handler)
-
         meta = get_meta(
             get_platform=True, get_cpu=True, get_memory=True, get_disk=True,
             get_slurm=True, get_conda=SAVE_CONDA, get_network=True, get_gpu=True,
@@ -473,6 +472,7 @@ class Experiment(object, metaclass=TypedMeta):
         yaml.default_flow_style = False
         if conda is not None:
             with open(os.path.join(self.directory, 'environment.yml'), 'w') as f:
+                print(os.path.join(self.directory, 'environment.yml'))
                 yaml.dump(conda, f)
         with open(os.path.join(self.directory, 'meta.yml'), 'w') as f:
             yaml.dump(meta, f)

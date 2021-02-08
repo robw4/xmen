@@ -1,0 +1,340 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Cheat Sheet &mdash; xmen 0.2.3 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/jquery.fancybox.min.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/glpi.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="xmen 0.2.3 documentation" href="index.html"/>
+        <link rel="next" title="FAQ" href="faq.html"/>
+        <link rel="prev" title="Xmen Experiment Classes" href="class-api.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> xmen
+          
+
+          
+          </a>
+
+          
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">Xmen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="class-api.html">Xmen Experiment Classes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Cheat Sheet</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#xmen">xmen</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xgent">xgent</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">xmen</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Cheat Sheet</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/cheat-sheet.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="faq.html" class="btn btn-neutral float-right" title="FAQ" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="class-api.html" class="btn btn-neutral" title="Xmen Experiment Classes" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="cheat-sheet">
+<h1>Cheat Sheet<a class="headerlink" href="#cheat-sheet" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="xmen">
+<h2>xmen<a class="headerlink" href="#xmen" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>xmen --help <span class="c1"># get help</span>
+xmen --add xmen.examples.hello_world HelloWorld  <span class="c1"># add a new python experiment (must be on path)</span>
+xmen --list  <span class="c1"># list current experiments</span>
+xmen HelloWorld <span class="c1"># display experiemnt docs</span>
+xmen HelloWorld --help <span class="c1"># get help with running the experiment</span>
+xmen HelloWorld <span class="o">[</span>--debug<span class="o">]</span> <span class="o">[</span>-u <span class="s2">&quot;{lr: 0.01}&quot;</span><span class="o">]</span> -x <span class="s2">&quot;/tmp/my_exp&quot;</span>  <span class="c1"># execute an experiment at &quot;/tmp/my_exp&quot;</span>
+xmen HelloWorld <span class="o">[</span>-u <span class="s2">&quot;/path/to/params.yml&quot;</span><span class="o">]</span> -x <span class="s2">&quot;/tmp/my_exp&quot;</span>  <span class="c1"># execute an experiment using parameters in a params.uml file</span>
+xmen --remove HelloWorld <span class="c1"># remove experiment from the xmen interface (non-destructive)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="xgent">
+<h2>xgent<a class="headerlink" href="#xgent" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># config - global configuration</span>
+xgent config --enable_prompt  <span class="c1"># turn prompting on (recommended)</span>
+xgent config --disable_prompt  <span class="c1"># turn prompting off</span>
+xgent config --clean  <span class="c1"># remove experiments from config that no longer exist</span>
+xgent config -H /path/to/header.txt  <span class="c1"># update header prepended to each run script</span>
+xgent config --list  <span class="c1"># list the current configuration</span>
+
+<span class="c1"># init - initialise an experiment set</span>
+xgent init -n HelloWorld  <span class="c1"># from a python experiment in the current dirctory</span>
+xgent init -n HelloWorld -r mnist_gann <span class="c1"># at folder relative to cwd</span>
+xgent init -s /path/to/script.sh -d /path/to/defaults.yml  <span class="c1"># from a script and defaults</span>
+
+<span class="c1"># register - register experiments for running</span>
+xgent register -u <span class="s2">&quot;{lr: 1e-2 | 1e-3, epochs: 10}&quot;</span> <span class="c1"># experiments from parameter combinations</span>
+xgent register -u <span class="s2">&quot;{lr: 1e-2}&quot;</span> -x <span class="m">10</span>  <span class="c1"># register 10 experiments with the same configiration</span>
+xgent register <span class="o">[</span>-u <span class="s2">&quot;{lr: 1e-2}&quot;</span> <span class="o">]</span> -n <span class="nb">test</span> <span class="c1"># register an experiment named test</span>
+
+<span class="c1"># run</span>
+xgent run <span class="s2">&quot;*&quot;</span> bash <span class="c1"># run all experiments iteratively matching glob and with default status</span>
+xgent run <span class="s2">&quot;lr=0.0001&quot;</span> bash   <span class="c1"># run a particular experiment</span>
+xgent run <span class="s2">&quot;*&quot;</span> sbatch  <span class="c1"># run each experiment using the slurm job shecudler</span>
+xgent run <span class="s2">&quot;*&quot;</span> screen -dm bash   <span class="c1"># run each experiment in a seperate screen session</span>
+
+<span class="c1"># note</span>
+xgent note <span class="s2">&quot;some message&quot;</span> <span class="c1"># add note to experiment set</span>
+xgent note <span class="s2">&quot;TODO: do something&quot;</span> <span class="c1"># add note to experiment set</span>
+
+<span class="c1"># list</span>
+xgent list  <span class="c1"># list experiments in cwd</span>
+xgent list -l  <span class="c1"># display experiments in notebook form</span>
+xgent list -d  <span class="c1"># display date registered</span>
+xgent list -g  <span class="c1"># display version information</span>
+xgent list -P  <span class="c1"># display purpose message</span>
+xgent list -M  <span class="c1"># display meta information</span>
+xgent list -s  <span class="c1"># display experiment status</span>
+xgent list <span class="s2">&quot;*&quot;</span>  <span class="c1"># display experiments matching glob string</span>
+xgent list -p <span class="s2">&quot;lr.*&quot;</span>  <span class="c1"># display all experiments with parrameters matching regex search</span>
+xgent list -m   <span class="c1"># display messages matching default regex search</span>
+xgent list -m <span class="s2">&quot;e|s&quot;</span>  <span class="c1"># display messages matching specified regex search</span>
+xgent list <span class="s2">&quot;*&quot;</span> -sd -m <span class="s2">&quot;e|s&quot;</span>  <span class="c1"># options can be used together</span>
+xgent list -v  <span class="c1"># verbose list</span>
+xgent list <span class="o">[</span>...<span class="o">]</span> --to_csv  <span class="c1"># list as csv instead of formatted table</span>
+xgent list --csv &gt;&gt; my_file.txt   <span class="c1"># list as csv and pipe to text file</span>
+xgent list --max_width <span class="m">1000</span>   <span class="c1"># maximum width of each collumn</span>
+xgent list --max_rows <span class="m">100</span>    <span class="c1"># maximum number of rows</span>
+
+<span class="c1"># manipulating</span>
+xgent reset <span class="o">{</span>PATTERN<span class="o">}</span>   <span class="c1"># reset experiments to default status</span>
+xgent unlink <span class="o">{</span>PATTERN<span class="o">}</span>  <span class="c1"># unlink experiment(s) from a set </span>
+xgent relink -e <span class="o">{</span>PATTERN<span class="o">}</span>  <span class="c1"># relink experiments matching pattern</span>
+xgent clean  <span class="c1"># remove all experiments no longer in the set</span>
+xgent rm <span class="o">{</span>FOLDER<span class="o">}</span>  <span class="c1"># remove entire experiment folder</span>
+
+<span class="c1"># moving a single experiment set</span>
+mv experiment-set experiment-set-2   <span class="c1"># move experiment folder</span>
+xgent relink -r experiment-set-2   <span class="c1"># relink the experiment folder</span>
+
+<span class="c1"># moving a folder of multiple experiment sets</span>
+mv folder folder-2  <span class="c1"># move experiment folder</span>
+xgent relink -r folder-2 --recursive <span class="c1"># recursively relink all experiment folders</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="faq.html" class="btn btn-neutral float-right" title="FAQ" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="class-api.html" class="btn btn-neutral" title="Xmen Experiment Classes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Rob Weston.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.2.3',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="_static/jquery.fancybox.min.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+  <script type="text/javascript">
+    $(function(){
+      $('.image-reference').fancybox();
+    })
+  </script>
+
+</body>
+</html>

@@ -207,7 +207,10 @@
 <p>All examples in this section are defined in <code class="docutils literal notranslate"><span class="pre">xmen.examples</span></code> and can be run from the commandline using the <code class="docutils literal notranslate"><span class="pre">xmen</span></code> command line interface; just add them using <code class="docutils literal notranslate"><span class="pre">xmen</span> <span class="pre">--add</span></code> (if they are not already).</p>
 <div class="section" id="hello-world">
 <h3>Hello World<a class="headerlink" href="#hello-world" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Basic Examples&quot;&quot;&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Basic Examples.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="c1">#  Copyright (C) 2019  Robert J Weston, Oxford Robotics Institute</span>
 <span class="c1">#</span>
 <span class="c1">#  xmen</span>
@@ -233,13 +236,13 @@
     <span class="n">root</span><span class="p">:</span> <span class="n">xmen</span><span class="o">.</span><span class="n">Root</span><span class="p">,</span>   <span class="c1"># experiments are assigned a root before being executed</span>
     <span class="n">a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span><span class="p">,</span>  <span class="c1"># the first</span>
     <span class="c1"># argument</span>
-    <span class="n">b</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;World&#39;</span>   <span class="c1"># the second argument</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;World&#39;</span><span class="p">,</span>   <span class="c1"># the second argument</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A hello world experiment designed to demonstrate</span>
 <span class="sd">    defining experiments through the functional experiment api&quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{a}</span><span class="s1">  </span><span class="si">{b}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="o">...</span>     <span class="c1"># Whatever other experiment code you want</span>
+    <span class="o">...</span>     <span class="c1"># whatever other experiment code you want</span>
 
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">directory</span> <span class="o">+</span> <span class="s1">&#39;/out.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{a}</span><span class="s1"> </span><span class="si">{b}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -259,8 +262,18 @@
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1"># optionally expose the command line interface if you</span>
+    <span class="c1"># would like to run the experiment as a python script</span>
     <span class="kn">from</span> <span class="nn">xmen.functional</span> <span class="k">import</span> <span class="n">functional_experiment</span>
-    <span class="n">Exp</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">functional_experiment</span><span class="p">(</span><span class="n">hello_world</span><span class="p">)</span>
+    <span class="c1"># generate experiment from function definition if defined</span>
+    <span class="c1"># using the functional experiment (this step is not needed if</span>
+    <span class="c1"># the experiment is defined as a class)</span>
+    <span class="n">Exp</span> <span class="o">=</span> <span class="n">functional_experiment</span><span class="p">(</span><span class="n">hello_world</span><span class="p">)</span>
+    <span class="c1"># every experiment inherits main() allowing the experiment</span>
+    <span class="c1"># to be configured and run from the command line.</span>
+    <span class="n">Exp</span><span class="p">()</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+    <span class="c1"># try...</span>
+    <span class="c1"># &gt;&gt; python -m xmen.examples.hello_world --help</span>
 </pre></div>
 </div>
 </div>
@@ -1411,7 +1424,12 @@ tree /tmp/checkpoint
 </div>
 <div class="section" id="xmen-meets-pytorch-lightning">
 <h2>Xmen Meets Pytorch Lightning<a class="headerlink" href="#xmen-meets-pytorch-lightning" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="k">import</span> <span class="n">LightningModule</span>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>this is currently experimental!</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;CURRENTLY EXPERIMENTAL&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="k">import</span> <span class="n">LightningModule</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span>

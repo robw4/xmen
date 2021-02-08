@@ -1,3 +1,4 @@
+"""CURRENTLY EXPERIMENTAL"""
 from pytorch_lightning import LightningModule
 import torch
 import torch.nn.functional as F

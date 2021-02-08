@@ -536,29 +536,6 @@
             <span class="kn">import</span> <span class="nn">subprocess</span>
             <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">python_experiments</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="s1">&#39;--to_root&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">])</span>
 
-            <span class="c1"># # for p in self._config.python_paths:</span>
-            <span class="c1">#     # if self._config.python_experiments[name].startswith(p):</span>
-            <span class="c1">#     #     # Find the module name from the relative path of the</span>
-            <span class="c1">#     #     # module</span>
-            <span class="c1">#     #     module = &#39;.&#39;.join(self._config.python_experiments[name].replace(p, &#39;&#39;).split(&#39;/&#39;))</span>
-            <span class="c1">#     #     if module.startswith(&#39;.&#39;):</span>
-            <span class="c1">#     #         module = module[1:]</span>
-            <span class="c1">#     #     if module.endswith(&#39;.py&#39;):</span>
-            <span class="c1">#     #         module = module[:-3]</span>
-            <span class="c1">#     #     import importlib.util</span>
-            <span class="c1">#     #     mod = importlib.import_module(module)</span>
-            <span class="c1">#     #</span>
-            <span class="c1">#     #     # Get experiment from module</span>
-            <span class="c1">#     #     Exp = getattr(mod, name)</span>
-            <span class="c1">#     #     Exp().to_root(self.root)</span>
-            <span class="c1">#     #     break</span>
-            <span class="c1"># else:</span>
-            <span class="c1">#     print(&#39;ERROR: Could not find experiment on current PYTHONPATH. Either add the relevant module &#39;</span>
-            <span class="c1">#           &#39;to the global config using xmen config --add PATH or generate a root directly from the &#39;</span>
-            <span class="c1">#           &#39;experiment definition using /path/to/exp.py --to_root ROOT and initialise an experiment using&#39;</span>
-            <span class="c1">#           &#39;xmen init ROOT&#39;)</span>
-            <span class="c1">#     exit()</span>
-
             <span class="bp">self</span><span class="o">.</span><span class="n">script</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;script.sh&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;defaults.yml&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">name</span>

@@ -1,0 +1,6 @@
+_created: 8/2/2021  # _created: str=now_time ~ The date the experiment was created
+_version:
+  path: '/Users/robweston/xmen/xmen/examples/bash/script.sh'
+_meta: {}     # meta information can also be stored
+a: Hello
+b: World!

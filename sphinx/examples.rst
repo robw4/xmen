@@ -79,6 +79,7 @@ Tensorboard Logging
 
 Pytorch experiments with Xmen
 ##############################
+
 All examples in this section are defined in ``xmen.examples.torch`` and can be run from the commandline using the ``xmen`` command line interface; just add them using ``xmen --add`` (if they are not already).  Pytorch will need to be installed in order to run these examples.
 
 DCGAN using the functional api
@@ -98,5 +99,7 @@ Generative modelling with inheritance
 
 Xmen Meets Pytorch Lightning
 ##############################
+.. note:: this is currently experimental!
+
 .. literalinclude:: examples/torch/lightning.py
 

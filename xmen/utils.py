@@ -222,7 +222,7 @@ def get_meta(get_platform=True, get_cpu=True, get_memory=True, get_disk=False,
                 slurm = {'id': id}
                 if get_slurm:
                     out = subprocess.run(
-                        ['/usr/bin/scontrol', 'show', 'jobid', str(id)], capture_output=True)
+                        ['/usr/bin/scontrol', 'show', 'jobid', str(id)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     variables = ' '.join(out.stdout.decode(sys.getdefaultencoding()).replace('\n', '  ').split())
 
                     for v in variables.split(' '):
@@ -236,17 +236,17 @@ def get_meta(get_platform=True, get_cpu=True, get_memory=True, get_disk=False,
     if get_environ:
         meta.update({'environ': {k: v for k, v in os.environ.items()}})
 
-    if 'CONDA_EXE' in os.environ and get_conda:
-        try:
+    try:
+        if 'CONDA_EXE' in os.environ and get_conda:
             conda = subprocess.run(
-                [os.environ['CONDA_EXE'], 'env', 'export'], capture_output=True)
+                [os.environ['CONDA_EXE'], 'env', 'export'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out = conda.stdout.decode(sys.getdefaultencoding())
             from ruamel.yaml import YAML
             yaml = YAML(typ="safe")
             out = yaml.load(out)
             meta['conda'] = out
-        except:
-            pass
+    except:
+        pass
 
     return meta
 

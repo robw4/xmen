@@ -98,7 +98,6 @@
 <li class="toctree-l1"><a class="reference internal" href="class-api.html">Xmen Experiment Classes</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Cheat Sheet</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#xmen">xmen</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#xgent">xgent</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
@@ -179,25 +178,21 @@
 <h1>Cheat Sheet<a class="headerlink" href="#cheat-sheet" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="xmen">
 <h2>xmen<a class="headerlink" href="#xmen" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>xmen --help <span class="c1"># get help</span>
-xmen --add xmen.examples.hello_world HelloWorld  <span class="c1"># add a new python experiment (must be on path)</span>
-xmen --list  <span class="c1"># list current experiments</span>
-xmen HelloWorld <span class="c1"># display experiemnt docs</span>
-xmen HelloWorld --help <span class="c1"># get help with running the experiment</span>
-xmen HelloWorld <span class="o">[</span>--debug<span class="o">]</span> <span class="o">[</span>-u <span class="s2">&quot;{lr: 0.01}&quot;</span><span class="o">]</span> -x <span class="s2">&quot;/tmp/my_exp&quot;</span>  <span class="c1"># execute an experiment at &quot;/tmp/my_exp&quot;</span>
-xmen HelloWorld <span class="o">[</span>-u <span class="s2">&quot;/path/to/params.yml&quot;</span><span class="o">]</span> -x <span class="s2">&quot;/tmp/my_exp&quot;</span>  <span class="c1"># execute an experiment using parameters in a params.uml file</span>
-xmen --remove HelloWorld <span class="c1"># remove experiment from the xmen interface (non-destructive)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="xgent">
-<h2>xgent<a class="headerlink" href="#xgent" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># config - global configuration</span>
 xgent config --enable_prompt  <span class="c1"># turn prompting on (recommended)</span>
 xgent config --disable_prompt  <span class="c1"># turn prompting off</span>
 xgent config --clean  <span class="c1"># remove experiments from config that no longer exist</span>
 xgent config -H /path/to/header.txt  <span class="c1"># update header prepended to each run script</span>
 xgent config --list  <span class="c1"># list the current configuration</span>
+
+<span class="c1"># python - python interface</span>
+xgent python -a MODULE NAME <span class="c1"># add a python experiment to xmen</span>
+xgent python -l <span class="c1"># list available python experiments</span>
+xgent python -r NAME <span class="c1"># remove a python experiment</span>
+xgent python HelloWorld <span class="c1"># display experiemnt docs</span>
+xgent python HelloWorld --help <span class="c1"># get help with running the experiment</span>
+xgent python HelloWorld <span class="o">[</span>--debug<span class="o">]</span> <span class="o">[</span>-u <span class="s2">&quot;{lr: 0.01}&quot;</span><span class="o">]</span> -x <span class="s2">&quot;/tmp/my_exp&quot;</span>  <span class="c1"># execute an experiment at &quot;/tmp/my_exp&quot;</span>
+xgent python HelloWorld <span class="o">[</span>-u <span class="s2">&quot;/path/to/params.yml&quot;</span><span class="o">]</span> -x <span class="s2">&quot;/tmp/my_exp&quot;</span>  <span class="c1"># execute an experiment using parameters in a params.uml file</span>
 
 <span class="c1"># init - initialise an experiment set</span>
 xgent init -n HelloWorld  <span class="c1"># from a python experiment in the current dirctory</span>

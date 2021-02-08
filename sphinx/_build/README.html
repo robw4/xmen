@@ -217,64 +217,32 @@
 </pre></div>
 </div>
 </li>
-<li><p>Run from the command line</p>
+<li><p>Configure and run from the command line</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># add an experiment</span>
-&gt;&gt;&gt; xmen --add xmen.examples.hello_world HelloWorld
+&gt;&gt;&gt; xmen python --add xmen.examples.hello_world HelloWorld
 <span class="c1"># get documentation</span>
-&gt;&gt;&gt; xmen HelloWorld  
+&gt;&gt;&gt; xmen python HelloWorld  
   A class experiment
 
   Parameters:
       a: <span class="nv">str</span><span class="o">=</span>Hello ~ the first argument
       b: <span class="nv">str</span><span class="o">=</span>World ~ the second argument
-<span class="c1"># execute</span>
-&gt;&gt;&gt; xmen HelloWorld -x /tmp/hello_world  
-Hello World!
-<span class="c1"># change the parameters</span>
-&gt;&gt;&gt; men HelloWorld -u <span class="s2">&quot;{a: Bye, b: Planet}&quot;</span> -x /tmp/bye_bye_planet
-Bye Bye Planet!
-<span class="c1"># built in records</span>
-&gt;&gt;&gt; xmen list /tmp/bye_bye_planet   
-_root: /tmp/hello_world_experiments
-_name: <span class="nv">a</span><span class="o">=</span><span class="nv">Bye__b</span><span class="o">=</span>Planet
-_status: registered
-_created: <span class="m">2020</span>-09-05-12-22-20
-_messages:
-_version:
-  module: /Users/robweston/xmen/python/xmen/examples/hello_world.py
-  class: HelloWorld
-  git:
-    local: /Users/robweston/xmen
-    remote: https://github.com/robw4/xmen.git
-    commit: 93e5309e0f333419e1cebf49903fdb08df1a5af6
-    branch: master
-_meta:
-  mac: 0x6c96cfdb71b9
-  host: robw-macbook-2.local
-  user: robweston
-  home: /Users/robweston
-a: Bye
-b: Planet
-</pre></div>
-</div>
-</li>
-<li><p>Mass experimentation with <code class="docutils literal notranslate"><span class="pre">xgent</span></code></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialise Experiment Set</span>
-&gt;&gt;&gt; xgent init -n HelloWorld -r .
-<span class="c1"># Register Experiments</span>
-&gt;&gt;&gt; xgent register -u <span class="s2">&quot;{a: Hello | Bye, b: World | Planet}&quot;</span>
-<span class="c1"># Visulaise</span>
+<span class="c1"># initialise experient folder</span>
+&gt;&gt;&gt; xmen init -n HelloWorld -r .
+<span class="c1"># register experiments</span>
+&gt;&gt;&gt; xmen register -u <span class="s2">&quot;{a: Hello | Bye, b: World | Planet}&quot;</span>
+<span class="c1"># visulaise</span>
 &gt;&gt;&gt; xgent list -ds -p <span class="s2">&quot;.*&quot;</span>
    root               name      status              created      a       b
 <span class="m">0</span>  exps   <span class="nv">a</span><span class="o">=</span><span class="nv">Hello__b</span><span class="o">=</span>World  registered  <span class="m">2020</span>-09-04-18-36-12  Hello   World
 <span class="m">1</span>  exps  <span class="nv">a</span><span class="o">=</span><span class="nv">Hello__b</span><span class="o">=</span>Planet  registered  <span class="m">2020</span>-09-04-18-36-11  Hello  Planet
 <span class="m">2</span>  exps     <span class="nv">a</span><span class="o">=</span><span class="nv">Bye__b</span><span class="o">=</span>World  registered  <span class="m">2020</span>-09-04-18-36-11    Bye   World
 <span class="m">3</span>  exps    <span class="nv">a</span><span class="o">=</span><span class="nv">Bye__b</span><span class="o">=</span>Planet  registered  <span class="m">2020</span>-09-04-18-36-10    Bye  Planet
-<span class="c1"># Run</span>
-&gt;&gt;&gt; xgent run <span class="s2">&quot;*&quot;</span> bash
-&gt;&gt;&gt; xgent run <span class="s2">&quot;*&quot;</span> screen -dm bash
-&gt;&gt;&gt; xgent run <span class="s2">&quot;*&quot;</span> docker ...
-&gt;&gt;&gt; xgent run <span class="s2">&quot;*&quot;</span> sbatch
+<span class="c1"># run</span>
+&gt;&gt;&gt; xmen run <span class="s2">&quot;*&quot;</span> bash
+&gt;&gt;&gt; xmen run <span class="s2">&quot;*&quot;</span> screen -dm bash
+&gt;&gt;&gt; xmen run <span class="s2">&quot;*&quot;</span> docker ...
+&gt;&gt;&gt; xmen run <span class="s2">&quot;*&quot;</span> sbatch
 </pre></div>
 </div>
 </li>
@@ -292,29 +260,59 @@ b: Planet
 &gt;&gt;&gt; xmen
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">xman</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="nb">list</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">add</span> <span class="n">MODULE</span> <span class="n">NAME</span> <span class="n">MODULE</span> <span class="n">NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">remove</span> <span class="n">REMOVE</span><span class="p">]</span> <span class="p">[</span><span class="n">name</span> <span class="p">[</span><span class="n">name</span> <span class="o">...</span><span class="p">]]</span> <span class="o">...</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">xmen</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span>
+            <span class="p">{</span><span class="n">python</span><span class="p">,</span><span class="n">config</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">register</span><span class="p">,</span><span class="n">run</span><span class="p">,</span><span class="n">note</span><span class="p">,</span><span class="n">reset</span><span class="p">,</span><span class="n">unlink</span><span class="p">,</span><span class="n">clean</span><span class="p">,</span><span class="n">rm</span><span class="p">,</span><span class="n">relink</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span>
+            <span class="o">...</span>
 
-<span class="o">|||||||||||||||||||||||||</span> <span class="n">WELCOME</span> <span class="n">TO</span> <span class="o">||||||||||||||||||||||||||</span>
-<span class="o">||</span>                                                           <span class="o">||</span>
-<span class="o">||</span>    \\\  <span class="o">///</span>  <span class="o">|||</span>\\        <span class="o">//|||</span>  <span class="o">|||||||||</span>  <span class="o">|||</span>\\   <span class="o">|||</span>   <span class="o">||</span>
-<span class="o">||</span>     \\\<span class="o">///</span>   <span class="o">|||</span>\\\      <span class="o">///|||</span>  <span class="o">|||</span>        <span class="o">|||</span>\\\  <span class="o">|||</span>   <span class="o">||</span>
-<span class="o">||</span>      <span class="o">||||</span>    <span class="o">|||</span> \\\    <span class="o">///</span> <span class="o">|||</span>  <span class="o">||||||</span>     <span class="o">|||</span> \\\ <span class="o">|||</span>   <span class="o">||</span>
-<span class="o">||</span>     <span class="o">///</span>\\\   <span class="o">|||</span>  \\\  <span class="o">///</span>  <span class="o">|||</span>  <span class="o">|||</span>        <span class="o">|||</span>  \\\<span class="o">|||</span>   <span class="o">||</span>
-<span class="o">||</span>    <span class="o">///</span>  \\\  <span class="o">|||</span>   \\\<span class="o">///</span>   <span class="o">|||</span>  <span class="o">|||||||||</span>  <span class="o">|||</span>   \\<span class="o">|||</span>   <span class="o">||</span>
-<span class="o">||</span>                                                           <span class="o">||</span>
-<span class="o">||||||||||||</span> <span class="n">FAST</span> <span class="o">-</span> <span class="n">REPRODUCIBLE</span> <span class="o">-</span> <span class="n">EXPERIMENTATION</span> <span class="o">||||||||||||</span>
+<span class="o">|||||||||||||||||||||||||||</span> <span class="n">WELCOME</span> <span class="n">TO</span> <span class="o">|||||||||||||||||||||||||||</span>
+<span class="o">||</span>                                                              <span class="o">||</span>
+<span class="o">||</span>          <span class="o">&amp;@&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;@&amp;%</span>          <span class="o">||</span>
+<span class="o">||</span>         <span class="o">*@&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;</span>         <span class="o">||</span>
+<span class="o">||</span>          <span class="o">&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;</span>          <span class="o">||</span>
+<span class="o">||</span>           <span class="o">&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;</span>          <span class="o">||</span>
+<span class="o">||</span>           <span class="o">&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span><span class="c1">#          ||</span>
+<span class="o">||</span>           <span class="o">&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;.</span>          <span class="o">||</span>
+<span class="o">||</span>           <span class="o">&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.</span>          <span class="o">||</span>
+<span class="o">||</span>           <span class="o">&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*</span>          <span class="o">||</span>
+<span class="o">||</span>           <span class="o">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>          <span class="o">||</span>
+<span class="o">||</span>   <span class="c1">#&amp;@@@@@&amp;%&amp;&amp;&amp;&amp;&amp;&amp;&amp;@@@@@@@@@@@@@@@@@@@@@@@@@&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;@@@@@@&amp;#  ||</span>
+<span class="o">||</span>  <span class="o">/</span><span class="c1">#%%%%%%%%%&amp;&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;&amp;%%&amp;%%%%%%#  ||</span>
+<span class="o">||</span>   <span class="o">&amp;%&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;&amp;@&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;</span>   <span class="o">||</span>
+<span class="o">||</span>     <span class="p">(</span><span class="o">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;.</span>    <span class="o">||</span>
+<span class="o">||</span>      <span class="o">...</span><span class="p">,</span><span class="o">*/</span><span class="c1">#%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;##(*,...      ||</span>
+<span class="o">||</span>                                                              <span class="o">||</span>
+<span class="o">||</span>    \\\  <span class="o">///</span>  <span class="o">|||</span>\\        <span class="o">//|||</span>  <span class="o">|||||||||</span>  <span class="o">|||</span>\\   <span class="o">|||</span>      <span class="o">||</span>
+<span class="o">||</span>     \\\<span class="o">///</span>   <span class="o">|||</span>\\\      <span class="o">///|||</span>  <span class="o">|||</span>        <span class="o">|||</span>\\\  <span class="o">|||</span>      <span class="o">||</span>
+<span class="o">||</span>      <span class="o">||||</span>    <span class="o">|||</span> \\\    <span class="o">///</span> <span class="o">|||</span>  <span class="o">||||||</span>     <span class="o">|||</span> \\\ <span class="o">|||</span>      <span class="o">||</span>
+<span class="o">||</span>     <span class="o">///</span>\\\   <span class="o">|||</span>  \\\  <span class="o">///</span>  <span class="o">|||</span>  <span class="o">|||</span>        <span class="o">|||</span>  \\\<span class="o">|||</span>      <span class="o">||</span>
+<span class="o">||</span>    <span class="o">///</span>  \\\  <span class="o">|||</span>   \\\<span class="o">///</span>   <span class="o">|||</span>  <span class="o">|||||||||</span>  <span class="o">|||</span>   \\<span class="o">|||</span>      <span class="o">||</span>
+<span class="o">||</span>                                                              <span class="o">||</span>
+<span class="o">||</span>                      <span class="o">%@@</span><span class="p">,</span>     <span class="p">(</span><span class="o">@@/</span>                           <span class="o">||</span>
+<span class="o">||</span>                     <span class="o">@@@@@@@@@@@@@@@@@@@@@</span>                    <span class="o">||</span>
+<span class="o">||</span>        <span class="o">@@</span>        <span class="o">@@@@@@@@@@@@@@@@@@@@@@@@@@/</span>        <span class="o">@</span><span class="c1">#       ||</span>
+<span class="o">||</span>       <span class="o">@@</span><span class="c1">#     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#     @@       ||</span>
+<span class="o">||</span>        <span class="o">@@@@@@@@@@@@@@@@@@@@@@@.@@@@@@@@@@@@@@@@@@@@@@.</span>       <span class="o">||</span>
+<span class="o">||</span>           <span class="p">,</span><span class="o">@@@@@@@@@@@@@@@%</span>       <span class="o">@@@@@@@@@@@@@@@@</span>           <span class="o">||</span>
+<span class="o">||</span>                                                              <span class="o">||</span>
+<span class="o">||||||||||||||</span> <span class="n">FAST</span> <span class="o">-</span> <span class="n">REPRODUCIBLE</span> <span class="o">-</span> <span class="n">EXPERIMENTATION</span> <span class="o">|||||||||||||</span>
 
 <span class="n">positional</span> <span class="n">arguments</span><span class="p">:</span>
-  <span class="n">name</span>                  <span class="n">The</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">experiment</span> <span class="n">to</span> <span class="n">run</span>
-  <span class="n">flags</span>                 <span class="n">Python</span> <span class="n">flags</span> <span class="p">(</span><span class="k">pass</span> <span class="o">--</span><span class="n">help</span> <span class="k">for</span> <span class="n">more</span> <span class="n">info</span><span class="p">)</span>
+  <span class="p">{</span><span class="n">python</span><span class="p">,</span><span class="n">config</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">register</span><span class="p">,</span><span class="n">run</span><span class="p">,</span><span class="n">note</span><span class="p">,</span><span class="n">reset</span><span class="p">,</span><span class="n">unlink</span><span class="p">,</span><span class="n">clean</span><span class="p">,</span><span class="n">rm</span><span class="p">,</span><span class="n">relink</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span>
+    <span class="n">python</span>              <span class="n">Python</span> <span class="n">interface</span>
+    <span class="n">config</span>              <span class="n">View</span> <span class="o">/</span> <span class="n">edit</span> <span class="n">the</span> <span class="k">global</span> <span class="n">configuration</span>
+    <span class="n">init</span>                <span class="n">Initialise</span> <span class="n">an</span> <span class="n">experiment</span> <span class="nb">set</span>
+    <span class="n">register</span>            <span class="n">Register</span> <span class="n">a</span> <span class="nb">set</span> <span class="n">of</span> <span class="n">experiments</span>
+    <span class="n">run</span>                 <span class="n">Run</span> <span class="n">experiments</span> <span class="n">matching</span> <span class="n">glob</span> <span class="ow">in</span> <span class="n">experiment</span> <span class="nb">set</span> <span class="n">that</span> <span class="n">have</span> <span class="ow">not</span> <span class="n">yetbeen</span> <span class="n">run</span><span class="o">.</span>
+    <span class="n">note</span>                <span class="n">add</span> <span class="n">notes</span> <span class="n">to</span> <span class="n">an</span> <span class="n">experiment</span>
+    <span class="n">reset</span>               <span class="n">Reset</span> <span class="n">an</span> <span class="n">experiment</span> <span class="n">to</span> <span class="n">registered</span> <span class="n">status</span>
+    <span class="n">unlink</span>              <span class="n">Unlink</span> <span class="n">experiments</span> <span class="kn">from</span> <span class="nn">experiment</span> <span class="nb">set</span>
+    <span class="n">clean</span>               <span class="n">Remove</span> <span class="n">unlinked</span> <span class="n">experiments</span> <span class="p">(</span><span class="n">DESTRUCTIVE</span><span class="p">)</span>
+    <span class="n">rm</span>                  <span class="n">Remove</span> <span class="n">an</span> <span class="n">experiment</span> <span class="nb">set</span> <span class="p">(</span><span class="n">DESTRUCTIVE</span><span class="p">)</span>
+    <span class="n">relink</span>              <span class="n">Relink</span> <span class="n">experiments</span> <span class="n">to</span> <span class="k">global</span> <span class="n">configuration</span> <span class="ow">or</span> <span class="n">to</span> <span class="n">a</span> <span class="nb">set</span> <span class="n">root</span>
+    <span class="nb">list</span>                <span class="nb">list</span> <span class="n">experiments</span> <span class="n">to</span> <span class="n">screen</span>
 
 <span class="n">optional</span> <span class="n">arguments</span><span class="p">:</span>
-  <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>            <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
-  <span class="o">--</span><span class="nb">list</span><span class="p">,</span> <span class="o">-</span><span class="n">l</span>            <span class="n">List</span> <span class="n">available</span> <span class="n">python</span> <span class="n">experiments</span>
-  <span class="o">--</span><span class="n">add</span> <span class="n">MODULE</span> <span class="n">NAME</span> <span class="n">MODULE</span> <span class="n">NAME</span>
-                        <span class="n">Add</span> <span class="n">a</span> <span class="n">python</span> <span class="n">Experiment</span> <span class="k">class</span> <span class="nc">or</span> <span class="n">run</span> <span class="n">script</span> <span class="p">(</span><span class="n">it</span> <span class="n">must</span> <span class="n">already</span> <span class="n">be</span> <span class="n">on</span> <span class="n">PYTHONPATH</span><span class="p">)</span>
-  <span class="o">--</span><span class="n">remove</span> <span class="n">REMOVE</span><span class="p">,</span> <span class="o">-</span><span class="n">r</span> <span class="n">REMOVE</span>
-                        <span class="n">Remove</span> <span class="n">a</span> <span class="n">python</span> <span class="n">experiment</span> <span class="p">(</span><span class="n">passed</span> <span class="n">by</span> <span class="n">Name</span><span class="p">)</span>
+  <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>            <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exi</span>
 </pre></div>
 </div>
 </div>
@@ -370,82 +368,6 @@ Dcgan: /home/robw/.xmen/experiments/xmen.examples.Dcgan
 </li>
 <li><p>For command line help run</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">xmen</span> <span class="o">--</span><span class="n">help</span>
-<span class="n">usage</span><span class="p">:</span> <span class="n">xmen</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="nb">list</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">add</span> <span class="n">MODULE</span> <span class="n">NAME</span> <span class="n">MODULE</span> <span class="n">NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">remove</span> <span class="n">REMOVE</span><span class="p">]</span> <span class="p">[</span><span class="n">name</span> <span class="p">[</span><span class="n">name</span> <span class="o">...</span><span class="p">]]</span> <span class="o">...</span>
-
-<span class="o">|||||||||||||||||||||||||</span> <span class="n">WELCOME</span> <span class="n">TO</span> <span class="o">||||||||||||||||||||||||||</span>
-<span class="o">||</span>                                                           <span class="o">||</span>
-<span class="o">||</span>    \\\  <span class="o">///</span>  <span class="o">|||</span>\\        <span class="o">//|||</span>  <span class="o">|||||||||</span>  <span class="o">|||</span>\\   <span class="o">|||</span>   <span class="o">||</span>
-<span class="o">||</span>     \\\<span class="o">///</span>   <span class="o">|||</span>\\\      <span class="o">///|||</span>  <span class="o">|||</span>        <span class="o">|||</span>\\\  <span class="o">|||</span>   <span class="o">||</span>
-<span class="o">||</span>      <span class="o">||||</span>    <span class="o">|||</span> \\\    <span class="o">///</span> <span class="o">|||</span>  <span class="o">||||||</span>     <span class="o">|||</span> \\\ <span class="o">|||</span>   <span class="o">||</span>
-<span class="o">||</span>     <span class="o">///</span>\\\   <span class="o">|||</span>  \\\  <span class="o">///</span>  <span class="o">|||</span>  <span class="o">|||</span>        <span class="o">|||</span>  \\\<span class="o">|||</span>   <span class="o">||</span>
-<span class="o">||</span>    <span class="o">///</span>  \\\  <span class="o">|||</span>   \\\<span class="o">///</span>   <span class="o">|||</span>  <span class="o">|||||||||</span>  <span class="o">|||</span>   \\<span class="o">|||</span>   <span class="o">||</span>
-<span class="o">||</span>                                                           <span class="o">||</span>
-<span class="o">||||||||||||</span> <span class="n">FAST</span> <span class="o">-</span> <span class="n">REPRODUCIBLE</span> <span class="o">-</span> <span class="n">EXPERIMENTATION</span> <span class="o">||||||||||||</span>
-
-<span class="n">positional</span> <span class="n">arguments</span><span class="p">:</span>
-  <span class="n">name</span>                  <span class="n">The</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">experiment</span> <span class="n">to</span> <span class="n">run</span>
-  <span class="n">flags</span>                 <span class="n">Python</span> <span class="n">flags</span> <span class="p">(</span><span class="k">pass</span> <span class="o">--</span><span class="n">help</span> <span class="k">for</span> <span class="n">more</span> <span class="n">info</span><span class="p">)</span>
-
-<span class="n">optional</span> <span class="n">arguments</span><span class="p">:</span>
-  <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>            <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
-  <span class="o">--</span><span class="nb">list</span><span class="p">,</span> <span class="o">-</span><span class="n">l</span>            <span class="n">List</span> <span class="n">available</span> <span class="n">python</span> <span class="n">experiments</span>
-  <span class="o">--</span><span class="n">add</span> <span class="n">MODULE</span> <span class="n">NAME</span> <span class="n">MODULE</span> <span class="n">NAME</span>
-                        <span class="n">Add</span> <span class="n">a</span> <span class="n">python</span> <span class="n">Experiment</span> <span class="k">class</span> <span class="nc">or</span> <span class="n">run</span> <span class="n">script</span> <span class="p">(</span><span class="n">it</span> <span class="n">must</span> <span class="n">already</span> <span class="n">be</span> <span class="n">on</span> <span class="n">PYTHONPATH</span><span class="p">)</span>
-  <span class="o">--</span><span class="n">remove</span> <span class="n">REMOVE</span><span class="p">,</span> <span class="o">-</span><span class="n">r</span> <span class="n">REMOVE</span>
-                        <span class="n">Remove</span> <span class="n">a</span> <span class="n">python</span> <span class="n">experiment</span> <span class="p">(</span><span class="n">passed</span> <span class="n">by</span> <span class="n">Name</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">xgent</span> <span class="o">--</span><span class="n">help</span>
-<span class="n">usage</span><span class="p">:</span> <span class="n">xgent</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">{</span><span class="n">config</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">register</span><span class="p">,</span><span class="n">run</span><span class="p">,</span><span class="n">note</span><span class="p">,</span><span class="n">reset</span><span class="p">,</span><span class="n">unlink</span><span class="p">,</span><span class="n">clean</span><span class="p">,</span><span class="n">rm</span><span class="p">,</span><span class="n">relink</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span> <span class="o">...</span>
-
-<span class="o">|||||||||||||||||||||||||||</span> <span class="n">WELCOME</span> <span class="n">TO</span> <span class="o">||||||||||||||||||||||||||||</span>
-<span class="o">||</span>                                                              <span class="o">||</span>
-<span class="o">||</span>          <span class="o">&amp;@&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;@&amp;%</span>          <span class="o">||</span>
-<span class="o">||</span>         <span class="o">*@&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;</span>         <span class="o">||</span>
-<span class="o">||</span>          <span class="o">&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;</span>          <span class="o">||</span>
-<span class="o">||</span>           <span class="o">&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;</span>          <span class="o">||</span>
-<span class="o">||</span>           <span class="o">&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span><span class="c1">#          ||</span>
-<span class="o">||</span>           <span class="o">&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;.</span>          <span class="o">||</span>
-<span class="o">||</span>           <span class="o">&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.</span>          <span class="o">||</span>
-<span class="o">||</span>           <span class="o">&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*</span>          <span class="o">||</span>
-<span class="o">||</span>           <span class="o">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>          <span class="o">||</span>
-<span class="o">||</span>   <span class="c1">#&amp;@@@@@&amp;%&amp;&amp;&amp;&amp;&amp;&amp;&amp;@@@@@@@@@@@@@@@@@@@@@@@@@&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;@@@@@@&amp;#  ||</span>
-<span class="o">||</span>  <span class="o">/</span><span class="c1">#%%%%%%%%%&amp;&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;&amp;%%&amp;%%%%%%#  ||</span>
-<span class="o">||</span>   <span class="o">&amp;%&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;&amp;@&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;</span>   <span class="o">||</span>
-<span class="o">||</span>     <span class="p">(</span><span class="o">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;.</span>    <span class="o">||</span>
-<span class="o">||</span>      <span class="o">...</span><span class="p">,</span><span class="o">*/</span><span class="c1">#%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;##(*,...      ||</span>
-<span class="o">||</span>                                                              <span class="o">||</span>
-<span class="o">||</span>  \\\  <span class="o">///</span>  <span class="o">|||||||||||</span>  <span class="o">|||||||||</span>  <span class="o">|||</span>\\   <span class="o">|||</span>  <span class="o">||||||||||</span>   <span class="o">||</span>
-<span class="o">||</span>   \\\<span class="o">///</span>   <span class="o">|||</span>          <span class="o">|||</span>        <span class="o">|||</span>\\\  <span class="o">|||</span>      <span class="o">|||</span>      <span class="o">||</span>
-<span class="o">||</span>    <span class="o">||||</span>    <span class="o">|||</span>   <span class="o">|||||</span>  <span class="o">||||||</span>     <span class="o">|||</span> \\\ <span class="o">|||</span>      <span class="o">|||</span>      <span class="o">||</span>
-<span class="o">||</span>   <span class="o">///</span>\\\   <span class="o">|||</span>     <span class="o">|||</span>  <span class="o">|||</span>        <span class="o">|||</span>  \\\<span class="o">|||</span>      <span class="o">|||</span>      <span class="o">||</span>
-<span class="o">||</span>  <span class="o">///</span>  \\\  <span class="o">|||||||||||</span>  <span class="o">|||||||||</span>  <span class="o">|||</span>   \\<span class="o">|||</span>      <span class="o">|||</span>      <span class="o">||</span>
-<span class="o">||</span>                                                              <span class="o">||</span>
-<span class="o">||</span>                      <span class="o">%@@</span><span class="p">,</span>     <span class="p">(</span><span class="o">@@/</span>                           <span class="o">||</span>
-<span class="o">||</span>                     <span class="o">@@@@@@@@@@@@@@@@@@@@@</span>                    <span class="o">||</span>
-<span class="o">||</span>        <span class="o">@@</span>        <span class="o">@@@@@@@@@@@@@@@@@@@@@@@@@@/</span>        <span class="o">@</span><span class="c1">#       ||</span>
-<span class="o">||</span>       <span class="o">@@</span><span class="c1">#     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#     @@       ||</span>
-<span class="o">||</span>        <span class="o">@@@@@@@@@@@@@@@@@@@@@@@.@@@@@@@@@@@@@@@@@@@@@@.</span>       <span class="o">||</span>
-<span class="o">||</span>           <span class="p">,</span><span class="o">@@@@@@@@@@@@@@@%</span>       <span class="o">@@@@@@@@@@@@@@@@</span>           <span class="o">||</span>
-<span class="o">||</span>                                                              <span class="o">||</span>
-<span class="o">||||||||||||||</span> <span class="n">FAST</span> <span class="o">-</span> <span class="n">REPRODUCIBLE</span> <span class="o">-</span> <span class="n">EXPERIMENTATION</span> <span class="o">|||||||||||||</span>
-
-<span class="n">positional</span> <span class="n">arguments</span><span class="p">:</span>
-  <span class="p">{</span><span class="n">config</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">register</span><span class="p">,</span><span class="n">run</span><span class="p">,</span><span class="n">note</span><span class="p">,</span><span class="n">reset</span><span class="p">,</span><span class="n">unlink</span><span class="p">,</span><span class="n">clean</span><span class="p">,</span><span class="n">rm</span><span class="p">,</span><span class="n">relink</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span>
-    <span class="n">config</span>              <span class="n">View</span> <span class="o">/</span> <span class="n">edit</span> <span class="n">the</span> <span class="k">global</span> <span class="n">configuration</span>
-    <span class="n">init</span>                <span class="n">Initialise</span> <span class="n">an</span> <span class="n">experiment</span> <span class="nb">set</span>
-    <span class="n">register</span>            <span class="n">Register</span> <span class="n">a</span> <span class="nb">set</span> <span class="n">of</span> <span class="n">experiments</span>
-    <span class="n">run</span>                 <span class="n">Run</span> <span class="n">experiments</span> <span class="n">matching</span> <span class="n">glob</span> <span class="ow">in</span> <span class="n">experiment</span> <span class="nb">set</span> <span class="n">that</span> <span class="n">have</span> <span class="ow">not</span> <span class="n">yetbeen</span> <span class="n">run</span><span class="o">.</span>
-    <span class="n">note</span>                <span class="n">add</span> <span class="n">notes</span> <span class="n">to</span> <span class="n">an</span> <span class="n">experiment</span>
-    <span class="n">reset</span>               <span class="n">Reset</span> <span class="n">an</span> <span class="n">experiment</span> <span class="n">to</span> <span class="n">registered</span> <span class="n">status</span>
-    <span class="n">unlink</span>              <span class="n">Unlink</span> <span class="n">experiments</span> <span class="kn">from</span> <span class="nn">experiment</span> <span class="nb">set</span>
-    <span class="n">clean</span>               <span class="n">Remove</span> <span class="n">unlinked</span> <span class="n">experiments</span> <span class="p">(</span><span class="n">DESTRUCTIVE</span><span class="p">)</span>
-    <span class="n">rm</span>                  <span class="n">Remove</span> <span class="n">an</span> <span class="n">experiment</span> <span class="nb">set</span> <span class="p">(</span><span class="n">DESTRUCTIVE</span><span class="p">)</span>
-    <span class="n">relink</span>              <span class="n">Relink</span> <span class="n">experiments</span> <span class="n">to</span> <span class="k">global</span> <span class="n">configuration</span> <span class="ow">or</span> <span class="n">to</span> <span class="n">a</span> <span class="nb">set</span> <span class="n">root</span>
-    <span class="nb">list</span>                <span class="nb">list</span> <span class="n">experiments</span> <span class="n">to</span> <span class="n">screen</span>
-
-<span class="n">optional</span> <span class="n">arguments</span><span class="p">:</span>
-  <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>            <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
 </pre></div>
 </div>
 </li>
@@ -462,7 +384,7 @@ Dcgan: /home/robw/.xmen/experiments/xmen.examples.Dcgan
 <li><p><code class="docutils literal notranslate"><span class="pre">pandas</span></code></p></li>
 </ul>
 </li>
-<li><p>Monior Dependencies:</p>
+<li><p>Monitor Dependencies:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">pytorch</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tensorboard</span></code></p></li>

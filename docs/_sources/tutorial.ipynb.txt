@@ -78,8 +78,9 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "## Xmen command line interface\n",
-    "Any experiment that conforms to the xmen api can automatically be run in the commandline. This is facilitated by the `xmen` command line tool:"
+    "## Running Experiments\n",
+    "### 1. xmen command line interface\n",
+    "Any experiment that conforms to the xmen api can automatically be run in the commandline. This is facilitated by the `xmen` command line tool which allows multiple experiments to be quickly configured and run from the command line and is designed to easily interface with the slurm job scheduler."
    ]
   },
   {
@@ -91,238 +92,11 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "usage: xmen [-h] [--list] [--add MODULE NAME MODULE NAME] [--remove REMOVE]\n",
-      "            [name [name ...]] ...\n",
+      "usage: xmen [-h]\n",
+      "            {python,config,init,register,run,note,reset,unlink,clean,rm,relink,list}\n",
+      "            ...\n",
       "\n",
-      "||||||||||||||||||||||||| WELCOME TO ||||||||||||||||||||||||||\n",
-      "||                                                           ||\n",
-      "||    \\\\\\  ///  |||\\\\        //|||  |||||||||  |||\\\\   |||   ||\n",
-      "||     \\\\\\///   |||\\\\\\      ///|||  |||        |||\\\\\\  |||   ||\n",
-      "||      ||||    ||| \\\\\\    /// |||  ||||||     ||| \\\\\\ |||   ||\n",
-      "||     ///\\\\\\   |||  \\\\\\  ///  |||  |||        |||  \\\\\\|||   ||\n",
-      "||    ///  \\\\\\  |||   \\\\\\///   |||  |||||||||  |||   \\\\|||   ||\n",
-      "||                                                           ||\n",
-      "|||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION ||||||||||||\n",
-      "\n",
-      "positional arguments:\n",
-      "  name                  The name of the experiment to run\n",
-      "  flags                 Python flags (pass --help for more info)\n",
-      "\n",
-      "optional arguments:\n",
-      "  -h, --help            show this help message and exit\n",
-      "  --list, -l            List available python experiments\n",
-      "  --add MODULE NAME MODULE NAME\n",
-      "                        Add a python Experiment class or run script (it must already be on PYTHONPATH)\n",
-      "  --remove REMOVE, -r REMOVE\n",
-      "                        Remove a python experiment (passed by Name)\n"
-     ]
-    }
-   ],
-   "source": [
-    "%%bash\n",
-    "xmen"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "### Adding an Experiment to Xmen"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "Before being run an experiment must first be registered with ``xmen``. This is achieved by passing the module and the name of each experiment. For example the experiments defined above which are copies of ``hello_world`` and ``HelloWorld`` in `xmen.examples.hello_world` can be added as:"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 2,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "%%bash\n",
-    "xmen --add xmen.examples.hello_world hello_world\n",
-    "xmen --add xmen.examples.hello_world HelloWorld"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "They can now be accessed in ``xmen``:"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 3,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "A hello world experiment designed to demonstrate\n",
-      "    defining experiments through the functional experiment api\n",
-      "\n",
-      "Parameters:\n",
-      "    a: str=Hello ~ the first argument\n",
-      "    b: str=World ~ the second argument\n",
-      "\n",
-      "For more help use --help.\n"
-     ]
-    }
-   ],
-   "source": [
-    "%%bash \n",
-    "xmen hello_world"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "Xmen automatically takes care of the command line interface including automatically reading comments next to parameters and adding them to the experiments help, alonsidge the experiments `__doc__` string.\n",
-    "\n",
-    "### Executing Experiments\n",
-    "Experiments are executed by passing the `-x` command line argument alongside a path to the experiments repository:"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 4,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Hello  World\n"
-     ]
-    }
-   ],
-   "source": [
-    "%%bash\n",
-    "xmen hello_world -x ~/tmp/hello_world"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "The parameters of the experiment can be updated by using the `-u` command line flag, specifying the parameters to update as a yaml dictionary. For example:"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 5,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Updating parameters {'a': 'Bye Bye', 'b': 'planet'}\n",
-      "Bye Bye  planet\n"
-     ]
-    }
-   ],
-   "source": [
-    "%%bash\n",
-    "xmen hello_world -u \"{a: Bye Bye, b: planet}\" -x ~/tmp/bye_bye"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "### Automatic Record Keeping\n",
-    "Alongside running the experiment `xmen` also logs all the important information to reproduce the experiment at a later date. This is logged in a ``params.yml`` in the experiment repository. For example:"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 6,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "_created: 11-16-20-21:31:30  # _created: str=now_time ~ The date the experiment was created\n",
-      "_messages: # _messages: Dict[Any, Any]={} ~ Messages left by the experiment\n",
-      "  a: Bye Bye\n",
-      "  b: planet\n",
-      "_meta: # _meta: Optional[Dict]=None ~ The global configuration for the experiment manager\n",
-      "  mac: '0x6c96cfdb71b9'\n",
-      "  host: robw-macbook-2.local\n",
-      "  user: robweston\n",
-      "  home: /Users/robweston\n",
-      "_name: bye_bye # _name: Optional[str]=None ~ The name of the experiment (under root)\n",
-      "_purpose: '' # _purpose: Optional[str]=None ~ A description of the experiment purpose\n",
-      "_root: /Users/robweston/tmp # _root: Optional[str]=None ~ The root directory of the experiment\n",
-      "_status: finished # _status: str='default' ~ One of ['default' | 'created' | 'running' | 'error' | 'finished']\n",
-      "_version: # _version: Optional[Dict[Any, Any]]=None ~ Experiment version information. See `get_version`\n",
-      "  module: xmen.examples.hello_world\n",
-      "  function: hello_world\n",
-      "  path: /Users/robweston/xmen/xmen/examples/hello_world.py\n",
-      "  git:\n",
-      "    local: /Users/robweston/xmen\n",
-      "    remote: https://github.com/robw4/xmen.git\n",
-      "    commit: c434b15c09937e5dbd4b0e3391943c272df884da\n",
-      "    branch: master\n",
-      "a: Bye Bye # a: str=Hello ~ the first argument\n",
-      "b: planet # b: str=World ~ the second argument\n"
-     ]
-    }
-   ],
-   "source": [
-    "%%bash\n",
-    "cat ~/tmp/bye_bye/params.yml"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "Here we can find:\n",
-    "- `_created` date and time the experiment was run\n",
-    "- `_messages` any messages logged with the experiment during execution\n",
-    "- `_meta` information about the system the experiment was run on\n",
-    "- `_status` the state of the experiment. If an error occurs during excution then the experiment state will be updated to `'errror'`.\n",
-    "- `_version` the information needed to re-run the experiment. If the file lives in a git repo then the git commit, path to the repositoy and remote repository are also loggeed automatically.\n"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "## Xgent command line interface"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "The e`x`periment mana`g`em`ent` tool `xgent` allows multiple experiments to be quickly configured and run from the command line and is designed to easily interface with the slurm job scheduler."
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 7,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "usage: xgent [-h]\n",
-      "             {config,init,register,run,note,reset,unlink,clean,rm,relink,list}\n",
-      "             ...\n",
-      "\n",
-      "||||||||||||||||||||||||||| WELCOME TO ||||||||||||||||||||||||||||\n",
+      "||||||||||||||||||||||||||| WELCOME TO |||||||||||||||||||||||||||\n",
       "||                                                              ||\n",
       "||          &@&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&@&%          ||    \n",
       "||         *@&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&         ||    \n",
@@ -339,11 +113,11 @@
       "||     (@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&.    ||    \n",
       "||      ...,*/#%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&##(*,...      ||    \n",
       "||                                                              ||\n",
-      "||  \\\\\\  ///  |||||||||||  |||||||||  |||\\\\   |||  ||||||||||   ||\n",
-      "||   \\\\\\///   |||          |||        |||\\\\\\  |||      |||      ||\n",
-      "||    ||||    |||   |||||  ||||||     ||| \\\\\\ |||      |||      ||\n",
-      "||   ///\\\\\\   |||     |||  |||        |||  \\\\\\|||      |||      ||\n",
-      "||  ///  \\\\\\  |||||||||||  |||||||||  |||   \\\\|||      |||      ||\n",
+      "||    \\\\\\  ///  |||\\\\        //|||  |||||||||  |||\\\\   |||      ||\n",
+      "||     \\\\\\///   |||\\\\\\      ///|||  |||        |||\\\\\\  |||      ||\n",
+      "||      ||||    ||| \\\\\\    /// |||  ||||||     ||| \\\\\\ |||      ||\n",
+      "||     ///\\\\\\   |||  \\\\\\  ///  |||  |||        |||  \\\\\\|||      ||\n",
+      "||    ///  \\\\\\  |||   \\\\\\///   |||  |||||||||  |||   \\\\|||      ||\n",
       "||                                                              ||\n",
       "||                      %@@,     (@@/                           ||\n",
       "||                     @@@@@@@@@@@@@@@@@@@@@                    ||\n",
@@ -355,7 +129,8 @@
       "|||||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION |||||||||||||\n",
       "\n",
       "positional arguments:\n",
-      "  {config,init,register,run,note,reset,unlink,clean,rm,relink,list}\n",
+      "  {python,config,init,register,run,note,reset,unlink,clean,rm,relink,list}\n",
+      "    python              Python interface\n",
       "    config              View / edit the global configuration\n",
       "    init                Initialise an experiment set\n",
       "    register            Register a set of experiments\n",
@@ -375,83 +150,213 @@
    ],
    "source": [
     "%%bash\n",
-    "xgent"
+    "xmen"
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "### Initialising a set of experiments\n",
-    "A set of experiments is initialised from a python experiment definition using the `xgent init` command. For example,"
+    "### 2. Adding an Experiment to Xmen"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Before being run an experiment must first be registered with ``xmen``. This is achieved by passing the module and the name of each experiment. For example the experiments defined above which are copies of ``hello_world`` and ``HelloWorld`` in `xmen.examples.hello_world` can be added as:"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 8,
+   "execution_count": 2,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Generating experiment root at /Users/robweston/tmp/xgent/hello_world\n",
-      "hello_world\n",
-      "Experiment root created at /Users/robweston/tmp/xgent/hello_world\n"
+      "Added experiment hello_world from module xmen.examples.hello_world\n",
+      "Added experiment HelloWorld from module xmen.examples.hello_world\n"
      ]
     }
    ],
    "source": [
     "%%bash\n",
-    "xgent init -n hello_world -r ~/tmp/xgent/hello_world"
+    "xmen python --add xmen.examples.hello_world hello_world\n",
+    "xmen python -a xmen.examples.hello_world HelloWorld"
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "### Update Defaults"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "After a set of experiments has been initialised, the default parameters of the experiment can be changed by changing the `defaults.yml` generated by xgent suring the `xgent init` call:"
+    "To see that the experiments have been registered with ``xmen`` we can run:"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 9,
+   "execution_count": 3,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "/Users/robweston/tmp/xgent/hello_world\n"
+      "The following python experiments are currently linked\n",
+      "CycleGan: /Users/robweston/projects/rad2sim2rad/python/rad2sim2rad/experiments/cycle_gan/cycle_gan.py\n",
+      "ThereAndBackCycleGan: /Users/robweston/projects/rad2sim2rad/python/rad2sim2rad/experiments/cycle_gan/there_and_back.py\n",
+      "MaskingByMoving: /Users/robweston/projects/rad2sim2rad/python/rad2sim2rad/experiments/masking_by_moving/experiment.py\n",
+      "ThereAndBack: /Users/robweston/projects/rad2sim2rad/python/rad2sim2rad/experiments/there_and_back/there_and_back.py\n",
+      "AnExperiment: /Users/robweston/xmen/examples/experiment.py\n",
+      "HelloWorld: /Users/robweston/.xmen/experiments/xmen.examples.hello_world.HelloWorld\n",
+      "MnistCGan: /Users/robweston/.xmen/experiments/xmen.examples.object.MnistCGan\n",
+      "hello_world: /Users/robweston/.xmen/experiments/xmen.examples.hello_world.hello_world\n",
+      "dcgan: /Users/robweston/.xmen/experiments/xmen.examples.torch.functional.dcgan\n"
      ]
     }
    ],
    "source": [
-    "cd ~/tmp/xgent/hello_world"
+    "%%bash\n",
+    "xmen python --list"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "They can now be accessed in ``xmen``:"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 10,
+   "execution_count": 4,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "_created: 11-16-20-23:19:21  # _created: str=now_time ~ The date the experiment was created\n",
+      "A hello world experiment designed to demonstrate\n",
+      "    defining experiments through the functional experiment api\n",
+      "\n",
+      "Parameters:\n",
+      "    a: str=Hello ~ the first argument\n",
+      "    b: str=World ~ the second argument\n",
+      "\n",
+      "For more help use --help.\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash \n",
+    "xmen python hello_world"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Xmen automatically takes care of the command line interface including automatically reading comments next to parameters and adding them to the experiments help, alonsidge the experiments `__doc__` string."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### 3. Initialising an experiment folder"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "A set of experiments is initialised from a python experiment definition using the `xmen init` command. For example,"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Generating experiment root at /Users/robweston/tmp/xmen/hello_world\n",
+      "hello_world\n",
+      "Experiment root created at /Users/robweston/tmp/xmen/hello_world\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "xmen init -n hello_world -r ~/tmp/xmen/hello_world"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### 4. Update default parameters"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "After a set of experiments has been initialised, the default parameters of the experiment can be changed by changing the `defaults.yml` generated by xmen during the `xmen init` call:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/Users/robweston/tmp/xmen/hello_world\n"
+     ]
+    }
+   ],
+   "source": [
+    "cd ~/tmp/xmen/hello_world"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "_created: 02-08-21-19:04:29  # _created: str=now_time ~ The date the experiment was created\n",
       "_meta: # _meta: Optional[Dict]=None ~ The global configuration for the experiment manager\n",
       "  mac: '0x6c96cfdb71b9'\n",
-      "  host: robw-macbook-2.local\n",
+      "  host: dhcp55.robots.ox.ac.uk\n",
       "  user: robweston\n",
       "  home: /Users/robweston\n",
+      "  system:\n",
+      "    system: Darwin\n",
+      "    node: dhcp55.robots.ox.ac.uk\n",
+      "    release: 16.7.0\n",
+      "    version: 'Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 2018; root:xnu-3789.73.11~1/RELEASE_X86_64'\n",
+      "    machine: x86_64\n",
+      "    processor: i386\n",
+      "  virtual:\n",
+      "    total: 16.00GB\n",
+      "    free: 6.03GB\n",
+      "    used: 9.09GB\n",
+      "    percentage: 62.3%\n",
+      "  swap:\n",
+      "    total: 2.00GB\n",
+      "    free: ' 1.54GB'\n",
+      "    used: 470.25MB\n",
+      "    percentage: '23.0'\n",
       "_version: # _version: Optional[Dict[Any, Any]]=None ~ Experiment version information. See `get_version`\n",
       "  module: xmen.examples.hello_world\n",
       "  function: hello_world\n",
@@ -459,7 +364,7 @@
       "  git:\n",
       "    local: /Users/robweston/xmen\n",
       "    remote: https://github.com/robw4/xmen.git\n",
-      "    commit: c434b15c09937e5dbd4b0e3391943c272df884da\n",
+      "    commit: 7b6e0734d93fdaad5cd8daac012ecef5afb237f5\n",
       "    branch: master\n",
       "a: Hello # a: str=Hello ~ the first argument\n",
       "b: World # b: str=World ~ the second argument\n"
@@ -475,24 +380,24 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "### Register an experiment"
+    "### 5. Register experiments"
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "After this experiments are registered to the experiment set using the ``xgent register`` command:"
+    "After this experiments are registered to the experiment set using the ``xment register`` command:"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 11,
+   "execution_count": 8,
    "metadata": {},
    "outputs": [],
    "source": [
     "%%bash\n",
-    "xgent register -u \"{a: Hello | Bye, b: World | Planet}\""
+    "xmen register -u \"{a: Hello | Bye, b: World | Planet}\""
    ]
   },
   {
@@ -513,51 +418,51 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "The experiments registered in the experiment set are summarised using the `xgent list` command:"
+    "The experiments registered in the experiment set are summarised using the `xmen list` command:"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 12,
+   "execution_count": 9,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "/Users/robweston/tmp/xgent/hello_world*\n",
+      "/Users/robweston/tmp/xmen/hello_world*\n",
       "          root               name      status              created\n",
-      "0  hello_world   a=Hello__b=World  registered  2020-11-16-23-19-26\n",
-      "1  hello_world  a=Hello__b=Planet  registered  2020-11-16-23-19-26\n",
-      "2  hello_world     a=Bye__b=World  registered  2020-11-16-23-19-26\n",
-      "3  hello_world    a=Bye__b=Planet  registered  2020-11-16-23-19-26\n",
+      "0  hello_world   a=Hello__b=World  registered  2021-02-08-19-04-30\n",
+      "1  hello_world  a=Hello__b=Planet  registered  2021-02-08-19-04-30\n",
+      "2  hello_world     a=Bye__b=World  registered  2021-02-08-19-04-30\n",
+      "3  hello_world    a=Bye__b=Planet  registered  2021-02-08-19-04-30\n",
       "\n",
-      "Roots relative to: /Users/robweston/tmp/xgent\n"
+      "Roots relative to: /Users/robweston/tmp/xmen\n"
      ]
     }
    ],
    "source": [
     "%%bash\n",
-    "xgent list -sd"
+    "xmen list -sd"
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "### Run batches of experiments"
+    "### 6. Run experiments"
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "After registering experiments are run using the `xgent run` command:"
+    "After registering experiments are run using the `xmen run` command:"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 13,
+   "execution_count": 10,
    "metadata": {},
    "outputs": [
     {
@@ -569,19 +474,19 @@
       "Hello  Planet\n",
       "Hello  World\n",
       "\n",
-      "Running: bash /Users/robweston/tmp/xgent/hello_world/a=Bye__b=Planet/run.sh\n",
+      "Running: bash /Users/robweston/tmp/xmen/hello_world/a=Bye__b=Planet/run.sh\n",
       "\n",
-      "Running: bash /Users/robweston/tmp/xgent/hello_world/a=Bye__b=World/run.sh\n",
+      "Running: bash /Users/robweston/tmp/xmen/hello_world/a=Bye__b=World/run.sh\n",
       "\n",
-      "Running: bash /Users/robweston/tmp/xgent/hello_world/a=Hello__b=Planet/run.sh\n",
+      "Running: bash /Users/robweston/tmp/xmen/hello_world/a=Hello__b=Planet/run.sh\n",
       "\n",
-      "Running: bash /Users/robweston/tmp/xgent/hello_world/a=Hello__b=World/run.sh\n"
+      "Running: bash /Users/robweston/tmp/xmen/hello_world/a=Hello__b=World/run.sh\n"
      ]
     }
    ],
    "source": [
     "%%bash\n",
-    "xgent run \"*\" bash"
+    "xmen run \"*\" bash"
    ]
   },
   {
@@ -593,39 +498,39 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 14,
+   "execution_count": 11,
    "metadata": {},
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "/Users/robweston/tmp/xgent/hello_world*\n",
+      "/Users/robweston/tmp/xmen/hello_world*\n",
       "          root               name    status              created      a       b\n",
-      "0  hello_world   a=Hello__b=World  finished  2020-11-16-23-19-32  Hello   World\n",
-      "1  hello_world  a=Hello__b=Planet  finished  2020-11-16-23-19-32  Hello  Planet\n",
-      "2  hello_world     a=Bye__b=World  finished  2020-11-16-23-19-31    Bye   World\n",
-      "3  hello_world    a=Bye__b=Planet  finished  2020-11-16-23-19-31    Bye  Planet\n",
+      "0  hello_world   a=Hello__b=World  finished  2021-02-08-19-04-35  Hello   World\n",
+      "1  hello_world  a=Hello__b=Planet  finished  2021-02-08-19-04-34  Hello  Planet\n",
+      "2  hello_world     a=Bye__b=World  finished  2021-02-08-19-04-33    Bye   World\n",
+      "3  hello_world    a=Bye__b=Planet  finished  2021-02-08-19-04-32    Bye  Planet\n",
       "\n",
-      "Roots relative to: /Users/robweston/tmp/xgent\n"
+      "Roots relative to: /Users/robweston/tmp/xmen\n"
      ]
     }
    ],
    "source": [
     "%%bash\n",
-    "xgent list -sd -m \"a|b\""
+    "xmen list -sd -m \"a|b\""
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "the experiment status has been changed from registered to finished and each message has been logged. Once finished experiments cannot be re-run unless they are first re-registered. This is achieved using the `xgent reset` command:"
+    "the experiment status has been changed from registered to finished and each message has been logged. Once finished experiments cannot be re-run unless they are first re-registered. This is achieved using the `xmen reset` command:"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 15,
+   "execution_count": 12,
    "metadata": {},
    "outputs": [
     {
@@ -637,36 +542,197 @@
       "Hello  Planet\n",
       "Hello  World\n",
       "\n",
-      "Running: bash /Users/robweston/tmp/xgent/hello_world/a=Bye__b=Planet/run.sh\n",
+      "Running: bash /Users/robweston/tmp/xmen/hello_world/a=Bye__b=Planet/run.sh\n",
       "\n",
-      "Running: bash /Users/robweston/tmp/xgent/hello_world/a=Bye__b=World/run.sh\n",
+      "Running: bash /Users/robweston/tmp/xmen/hello_world/a=Bye__b=World/run.sh\n",
       "\n",
-      "Running: bash /Users/robweston/tmp/xgent/hello_world/a=Hello__b=Planet/run.sh\n",
+      "Running: bash /Users/robweston/tmp/xmen/hello_world/a=Hello__b=Planet/run.sh\n",
       "\n",
-      "Running: bash /Users/robweston/tmp/xgent/hello_world/a=Hello__b=World/run.sh\n",
-      "/Users/robweston/tmp/xgent/hello_world*\n",
+      "Running: bash /Users/robweston/tmp/xmen/hello_world/a=Hello__b=World/run.sh\n",
+      "/Users/robweston/tmp/xmen/hello_world*\n",
       "          root               name    status              created      a       b\n",
-      "0  hello_world   a=Hello__b=World  finished  2020-11-16-23-19-39  Hello   World\n",
-      "1  hello_world  a=Hello__b=Planet  finished  2020-11-16-23-19-38  Hello  Planet\n",
-      "2  hello_world     a=Bye__b=World  finished  2020-11-16-23-19-38    Bye   World\n",
-      "3  hello_world    a=Bye__b=Planet  finished  2020-11-16-23-19-37    Bye  Planet\n",
+      "0  hello_world   a=Hello__b=World  finished  2021-02-08-19-04-41  Hello   World\n",
+      "1  hello_world  a=Hello__b=Planet  finished  2021-02-08-19-04-40  Hello  Planet\n",
+      "2  hello_world     a=Bye__b=World  finished  2021-02-08-19-04-39    Bye   World\n",
+      "3  hello_world    a=Bye__b=Planet  finished  2021-02-08-19-04-38    Bye  Planet\n",
       "\n",
-      "Roots relative to: /Users/robweston/tmp/xgent\n"
+      "Roots relative to: /Users/robweston/tmp/xmen\n"
      ]
     }
    ],
    "source": [
     "%%bash\n",
-    "xgent reset \"*\"\n",
-    "xgent run \"*\" bash\n",
-    "xgent list -sd -m \"a|b\""
+    "xmen reset \"*\"\n",
+    "xmen run \"*\" bash\n",
+    "xmen list -sd -m \"a|b\""
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "In this case notice how the created time has been updated. This correpsonds to the time the experiment was last run. Various options exist for running experiments using the `xgent run` command. For example we could run each experiment in a screen command as:"
+    "In this case notice how the created time has been updated. This correpsonds to the time the experiment was last run. Various options exist for running experiments using the `xmen run` command. For example we could run each experiment in a screen command as:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Running: screen -dm bash /Users/robweston/tmp/xmen/hello_world/a=Bye__b=Planet/run.sh\n",
+      "\n",
+      "Running: screen -dm bash /Users/robweston/tmp/xmen/hello_world/a=Bye__b=World/run.sh\n",
+      "\n",
+      "Running: screen -dm bash /Users/robweston/tmp/xmen/hello_world/a=Hello__b=Planet/run.sh\n",
+      "\n",
+      "Running: screen -dm bash /Users/robweston/tmp/xmen/hello_world/a=Hello__b=World/run.sh\n",
+      "/Users/robweston/tmp/xmen/hello_world*\n",
+      "          root               name    status              created      a       b\n",
+      "0  hello_world   a=Hello__b=World  finished  2021-02-08-19-04-45  Hello   World\n",
+      "1  hello_world  a=Hello__b=Planet  finished  2021-02-08-19-04-44  Hello  Planet\n",
+      "2  hello_world     a=Bye__b=World  finished  2021-02-08-19-04-44    Bye   World\n",
+      "3  hello_world    a=Bye__b=Planet  finished  2021-02-08-19-04-44    Bye  Planet\n",
+      "\n",
+      "Roots relative to: /Users/robweston/tmp/xmen\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "xmen reset \"*\"\n",
+    "xmen run \"*\" screen -dm bash\n",
+    "xmen list -sd -m \"a|b\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Features"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Experiment Visualisation\n",
+    "Experiments can be visualised using the ``xmen list`` command. For more info see:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "usage: xmen list [-h] [-p [PARAM_MATCH [PARAM_MATCH ...]]]\n",
+      "                 [-n [TYPE_MATCH [TYPE_MATCH ...]]] [-v] [-d] [-g] [-P] [-s]\n",
+      "                 [-m [DISPLAY_MESSAGES]] [-M [DISPLAY_META]] [-l]\n",
+      "                 [--load_defaults] [--max_width MAX_WIDTH]\n",
+      "                 [--max_rows MAX_ROWS] [--csv]\n",
+      "                 [pattern [pattern ...]]\n",
+      "\n",
+      "positional arguments:\n",
+      "  pattern               List experiments which match pattern.\n",
+      "\n",
+      "optional arguments:\n",
+      "  -h, --help            show this help message and exit\n",
+      "  -p [PARAM_MATCH [PARAM_MATCH ...]], --param_match [PARAM_MATCH [PARAM_MATCH ...]]\n",
+      "                        List only experiments with certain parameter\n",
+      "                        conditions of the form reg, reg==val or\n",
+      "                        val1==reg==val2. Here reg is a regex matching a set of\n",
+      "                        parameters. ==, <, >, !=, >=, <= are all supported\n",
+      "                        with meaning defined as in python. Eg. a.*==cat and\n",
+      "                        1.0<a.*<=2.0 will return any experiment that has\n",
+      "                        parameters that match a.* provided that each match\n",
+      "                        satisfies the condition.\n",
+      "  -n [TYPE_MATCH [TYPE_MATCH ...]], --type_match [TYPE_MATCH [TYPE_MATCH ...]]\n",
+      "                        List only experiments with this type (class).\n",
+      "  -v, --verbose         Display all information for each experiment\n",
+      "  -d, --display_date    Display created date for each experiment\n",
+      "  -g, --display_git     Display git commit for each experiment\n",
+      "  -P, --display_purpose\n",
+      "                        Display purpose for each experiment\n",
+      "  -s, --display_status  Display status for each experiment\n",
+      "  -m [DISPLAY_MESSAGES], --display_messages [DISPLAY_MESSAGES]\n",
+      "                        Display messages for each experiment\n",
+      "  -M [DISPLAY_META], --display_meta [DISPLAY_META]\n",
+      "                        Display meta information for each experiment. The\n",
+      "                        regex '^root$|^name$|^mac$|^host$|^user$|^home$' gives\n",
+      "                        basic meta information logged with every experiment.\n",
+      "                        Other information is separated into groups including\n",
+      "                        'network.*', 'gpu.*', 'cpu.*', 'system.*',\n",
+      "                        'virtual.*', 'swap.*'\n",
+      "  -l, --list            Display as list and not a table\n",
+      "  --load_defaults       Infer parameters from defaults.yml and overides\n",
+      "                        instead of params.yml. Potentially faster but no\n",
+      "                        messages are available.\n",
+      "  --max_width MAX_WIDTH\n",
+      "                        The maximum width of an individual collumn. If None\n",
+      "                        then will print for ever\n",
+      "  --max_rows MAX_ROWS   Display tables with this number of rows.\n",
+      "  --csv                 Display the table as csv.\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "xmen list --help"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Git support\n",
+    "When running experiments xmen logs lots of useful information automatically. For example, the git information for the repo in which the experiement is defined. This can be found in the ``params.yml`` folder and can be visualised as:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/Users/robweston/tmp/xmen/hello_world*\n",
+      "          root               name                  local                             remote                                    commit  branch\n",
+      "0  hello_world   a=Hello__b=World  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master\n",
+      "1  hello_world  a=Hello__b=Planet  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master\n",
+      "2  hello_world     a=Bye__b=World  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master\n",
+      "3  hello_world    a=Bye__b=Planet  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master\n",
+      "\n",
+      "Roots relative to: /Users/robweston/tmp/xmen\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "xmen list -g"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Automatic Record Keeping"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Other meta information is also logged and can be visualised using the meta flag `-M`"
    ]
   },
   {
@@ -678,30 +744,427 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
+      "/Users/robweston/tmp/xmen/hello_world*\n",
+      "          root               name             mac                    host       user              home\n",
+      "0  hello_world   a=Hello__b=World  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston\n",
+      "1  hello_world  a=Hello__b=Planet  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston\n",
+      "2  hello_world     a=Bye__b=World  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston\n",
+      "3  hello_world    a=Bye__b=Planet  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston\n",
       "\n",
-      "Running: screen -dm bash /Users/robweston/tmp/xgent/hello_world/a=Bye__b=Planet/run.sh\n",
-      "\n",
-      "Running: screen -dm bash /Users/robweston/tmp/xgent/hello_world/a=Bye__b=World/run.sh\n",
-      "\n",
-      "Running: screen -dm bash /Users/robweston/tmp/xgent/hello_world/a=Hello__b=Planet/run.sh\n",
-      "\n",
-      "Running: screen -dm bash /Users/robweston/tmp/xgent/hello_world/a=Hello__b=World/run.sh\n",
-      "/Users/robweston/tmp/xgent/hello_world*\n",
-      "          root               name    status              created      a       b\n",
-      "0  hello_world   a=Hello__b=World  finished  2020-11-16-23-19-45  Hello   World\n",
-      "1  hello_world  a=Hello__b=Planet  finished  2020-11-16-23-19-45  Hello  Planet\n",
-      "2  hello_world     a=Bye__b=World  finished  2020-11-16-23-19-44    Bye   World\n",
-      "3  hello_world    a=Bye__b=Planet  finished  2020-11-16-23-19-44    Bye  Planet\n",
-      "\n",
-      "Roots relative to: /Users/robweston/tmp/xgent\n"
+      "Roots relative to: /Users/robweston/tmp/xmen\n"
      ]
     }
    ],
    "source": [
     "%%bash\n",
-    "xgent reset \"*\"\n",
-    "xgent run \"*\" screen -dm bash\n",
-    "xgent list -sd -m \"a|b\""
+    "# basic meta information\n",
+    "xmen list -M"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/Users/robweston/tmp/xmen/hello_world*\n",
+      "          root               name system_system             system_node system_release                                               system_version system_machine system_processor\n",
+      "0  hello_world   a=Hello__b=World        Darwin  dhcp55.robots.ox.ac.uk         16.7.0  Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 20...         x86_64             i386\n",
+      "1  hello_world  a=Hello__b=Planet        Darwin  dhcp55.robots.ox.ac.uk         16.7.0  Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 20...         x86_64             i386\n",
+      "2  hello_world     a=Bye__b=World        Darwin  dhcp55.robots.ox.ac.uk         16.7.0  Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 20...         x86_64             i386\n",
+      "3  hello_world    a=Bye__b=Planet        Darwin  dhcp55.robots.ox.ac.uk         16.7.0  Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 20...         x86_64             i386\n",
+      "\n",
+      "Roots relative to: /Users/robweston/tmp/xmen\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "# system info\n",
+    "xmen list -M \"system_.*\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Meta information is also logged for ``\"cpu_.*\", \"swap_.*\", \"virtual_.*\", \"gpu_.*\"``. In addition, a more extensive summary of the environment is logged when each experiment is run and can be found in the `meta.yml` file in the experiments folder including network information and global flags. For example:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "mac: '0x6c96cfdb71b9'\n",
+      "host: dhcp55.robots.ox.ac.uk\n",
+      "user: robweston\n",
+      "home: /Users/robweston\n",
+      "system:\n",
+      "  system: Darwin\n",
+      "  node: dhcp55.robots.ox.ac.uk\n",
+      "  release: 16.7.0\n",
+      "  version: 'Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 2018; root:xnu-3789.73.11~1/RELEASE_X86_64'\n",
+      "  machine: x86_64\n",
+      "  processor: i386\n",
+      "cpu:\n",
+      "  physical: 4\n",
+      "  total: 8\n",
+      "  max_freq: 2200.00Mhz\n",
+      "  min_freq: 2200.00Mhz\n",
+      "  cur_freq: 2200.00Mhz\n",
+      "virtual:\n",
+      "  total: 16.00GB\n",
+      "  free: 6.15GB\n",
+      "  used: 8.97GB\n",
+      "  percentage: 61.5%\n",
+      "swap:\n",
+      "  total: 2.00GB\n",
+      "  free: ' 1.54GB'\n",
+      "  used: 470.25MB\n",
+      "  percentage: '23.0'\n",
+      "disks:\n",
+      "  /dev/disk1:\n",
+      "    mountpoint: /\n",
+      "    fstype: hfs\n",
+      "    total: 464.78GB\n",
+      "    used: 430.99GB\n",
+      "    free: 33.54GB\n",
+      "    percent: 92.8%\n",
+      "  read: 90.18GB\n",
+      "  write: 147.87GB\n",
+      "network:\n",
+      "  lo0:\n",
+      "    AF_INET6:\n",
+      "      address: fe80::1%lo0\n",
+      "      netmask: 'ffff:ffff:ffff:ffff::'\n",
+      "      broadcast: None\n",
+      "  en0:\n",
+      "    AF_INET6:\n",
+      "      address: fe80::cf3:b64a:220b:17d8%en0\n",
+      "      netmask: 'ffff:ffff:ffff:ffff::'\n",
+      "      broadcast: None\n",
+      "  en6:\n",
+      "    AF_INET6:\n",
+      "      address: fe80::107d:1836:a969:5191%en6\n",
+      "      netmask: 'ffff:ffff:ffff:ffff::'\n",
+      "      broadcast: None\n",
+      "  en1:\n",
+      "    AF_LINK:\n",
+      "      address: 6a:00:03:5b:d3:f0\n",
+      "      netmask: None\n",
+      "      broadcast: None\n",
+      "  en2:\n",
+      "    AF_LINK:\n",
+      "      address: 6a:00:03:5b:d3:f1\n",
+      "      netmask: None\n",
+      "      broadcast: None\n",
+      "  bridge0:\n",
+      "    AF_LINK:\n",
+      "      address: 6a:00:03:5b:d3:f0\n",
+      "      netmask: None\n",
+      "      broadcast: None\n",
+      "  p2p0:\n",
+      "    AF_LINK:\n",
+      "      address: 0e:96:cf:db:71:b9\n",
+      "      netmask: None\n",
+      "      broadcast: None\n",
+      "  awdl0:\n",
+      "    AF_INET6:\n",
+      "      address: fe80::d86a:adff:fe3b:d95%awdl0\n",
+      "      netmask: 'ffff:ffff:ffff:ffff::'\n",
+      "      broadcast: None\n",
+      "  utun0:\n",
+      "    AF_INET6:\n",
+      "      address: fe80::77eb:8860:4aa1:d43b%utun0\n",
+      "      netmask: 'ffff:ffff:ffff:ffff::'\n",
+      "      broadcast: None\n",
+      "  sent: 21.37GB\n",
+      "  received: 37.36GB\n",
+      "environ:\n",
+      "  PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: cpp\n",
+      "  TERM_PROGRAM: iTerm.app\n",
+      "  TERM: screen\n",
+      "  SHELL: /bin/zsh\n",
+      "  CLICOLOR: '1'\n",
+      "  TMPDIR: /var/folders/3f/7jm6_wkj6rq0znrt1zgbg7hm0000gn/T/\n",
+      "  CONDA_SHLVL: '2'\n",
+      "  Apple_PubSub_Socket_Render: /private/tmp/com.apple.launchd.fPKHCGpHV7/Render\n",
+      "  CONDA_PROMPT_MODIFIER: '(python3.6) '\n",
+      "  TERM_PROGRAM_VERSION: 3.1.5\n",
+      "  TERM_SESSION_ID: w0t4p0:7B70FECE-A287-43A3-A009-150E7FF3AA01\n",
+      "  ZSH: /Users/robweston/.oh-my-zsh\n",
+      "  USER: robweston\n",
+      "  CONDA_EXE: /Users/robweston/miniconda3/bin/conda\n",
+      "  TERMCAP: \"SC|screen|VT 100/ANSI X3.64 virtual terminal:\\\\\\n\\t:DO=\\\\E[%dB:LE=\\\\E[%dD:RI=\\\\\\\n",
+      "    E[%dC:UP=\\\\E[%dA:bs:bt=\\\\E[Z:\\\\\\n\\t:cd=\\\\E[J:ce=\\\\E[K:cl=\\\\E[H\\\\E[J:cm=\\\\E[%i%d;%dH:ct=\\\\\\\n",
+      "    E[3g:\\\\\\n\\t:do=^J:nd=\\\\E[C:pt:rc=\\\\E8:rs=\\\\Ec:sc=\\\\E7:st=\\\\EH:up=\\\\EM:\\\\\\n\\t:le=^H:bl=^G:cr=^M:it#8:ho=\\\\\\\n",
+      "    E[H:nw=\\\\EE:ta=^I:is=\\\\E)0:\\\\\\n\\t:li#24:co#80:am:xn:xv:LP:sr=\\\\EM:al=\\\\E[L:AL=\\\\\\\n",
+      "    E[%dL:\\\\\\n\\t:cs=\\\\E[%i%d;%dr:dl=\\\\E[M:DL=\\\\E[%dM:dc=\\\\E[P:DC=\\\\E[%dP:\\\\\\n\\t:im=\\\\\\\n",
+      "    E[4h:ei=\\\\E[4l:mi:IC=\\\\E[%d@:ks=\\\\E[?1h\\\\E=:\\\\\\n\\t:ke=\\\\E[?1l\\\\E>:vi=\\\\E[?25l:ve=\\\\\\\n",
+      "    E[34h\\\\E[?25h:vs=\\\\E[34l:\\\\\\n\\t:ti=\\\\E[?1049h:te=\\\\E[?1049l:k0=\\\\E[10~:k1=\\\\EOP:k2=\\\\\\\n",
+      "    EOQ:\\\\\\n\\t:k3=\\\\EOR:k4=\\\\EOS:k5=\\\\E[15~:k6=\\\\E[17~:k7=\\\\E[18~:\\\\\\n\\t:k8=\\\\E[19~:k9=\\\\\\\n",
+      "    E[20~:k;=\\\\E[21~:F1=\\\\E[23~:F2=\\\\E[24~:\\\\\\n\\t:kh=\\\\E[1~:@1=\\\\E[1~:kH=\\\\E[4~:@7=\\\\\\\n",
+      "    E[4~:kN=\\\\E[6~:kP=\\\\E[5~:\\\\\\n\\t:kI=\\\\E[2~:kD=\\\\E[3~:ku=\\\\EOA:kd=\\\\EOB:kr=\\\\EOC:kl=\\\\\\\n",
+      "    EOD:\"\n",
+      "  SSH_AUTH_SOCK: /private/tmp/com.apple.launchd.c8iOoBTn71/Listeners\n",
+      "  KERNEL_LAUNCH_TIMEOUT: '40'\n",
+      "  __CF_USER_TEXT_ENCODING: 0x1F5:0x0:0x2\n",
+      "  JPY_PARENT_PID: '89428'\n",
+      "  PAGER: cat\n",
+      "  _CE_CONDA: ''\n",
+      "  LSCOLORS: Gxfxcxdxbxegedabagacad\n",
+      "  CONDA_PREFIX_1: /Users/robweston/miniconda3\n",
+      "  PATH: /Users/robweston/.rbenv/shims:/Users/robweston/.gem/ruby/2.7.0/bin:/usr/local/opt/ruby/bin:/Users/robweston/.rbenv/shims:/Users/robweston/miniconda3/envs/python3.6/bin:/Users/robweston/miniconda3/condabin:/Users/robweston/.rbenv/shims:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/usr/local/share/dotnet:~/.dotnet/tools:/usr/local/git/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Library/TeX/texbin\n",
+      "  STY: 2844..dhcp55\n",
+      "  _: /Users/robweston/tmp/xmen/hello_world/xmen.examples.hello_world.hello_world\n",
+      "  CONDA_PREFIX: /Users/robweston/miniconda3/envs/python3.6\n",
+      "  PWD: /Users/robweston/tmp/xmen/hello_world\n",
+      "  MPLBACKEND: module://ipykernel.pylab.backend_inline\n",
+      "  LANG: en_GB.UTF-8\n",
+      "  ITERM_PROFILE: Default\n",
+      "  XPC_FLAGS: '0x0'\n",
+      "  RBENV_SHELL: zsh\n",
+      "  _CE_M: ''\n",
+      "  CXX: /usr/bin/clang++\n",
+      "  XPC_SERVICE_NAME: '0'\n",
+      "  SHLVL: '4'\n",
+      "  HOME: /Users/robweston\n",
+      "  COLORFGBG: 12;8\n",
+      "  ITERM_SESSION_ID: w0t4p0:7B70FECE-A287-43A3-A009-150E7FF3AA01\n",
+      "  CONDA_PYTHON_EXE: /Users/robweston/miniconda3/bin/python\n",
+      "  PYTHONPATH: :/Users/robweston/code/python-mrg-viewer/build-conda-build-conda-py36/python:/Users/robweston/code/python-moos/build/lib:/Users/robweston/xmen/python:/Users/robweston/projects/rad2sim2rad/python\n",
+      "  LESS: -R\n",
+      "  LOGNAME: robweston\n",
+      "  WINDOW: '0'\n",
+      "  LC_CTYPE: en_GB.UTF-8\n",
+      "  CONDA_DEFAULT_ENV: python3.6\n",
+      "  PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION: '2'\n",
+      "  CC: /usr/bin/clang\n",
+      "  DISPLAY: /private/tmp/com.apple.launchd.9Ugqo2pZGO/org.macosforge.xquartz:0\n",
+      "  GIT_PAGER: cat\n",
+      "  COLORTERM: truecolor\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "cat ~/tmp/xmen/hello_world/a=Hello__b=World/meta.yml"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Note Taking\n",
+    "Notes can be manually added to an experiment using the ``xmen note`` command:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "usage: xmen note [-h] [-r DIR] [-d] message\n",
+      "\n",
+      "positional arguments:\n",
+      "  message             Add note to experiment set\n",
+      "\n",
+      "optional arguments:\n",
+      "  -h, --help          show this help message and exit\n",
+      "  -r DIR, --root DIR  Path to the root experiment folder. If None then the\n",
+      "                      current work directory will be used\n",
+      "  -d, --delete        Delete the note corresponding to message.\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "xmen note --help"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "For example to add a note to the experiments run:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%bash\n",
+    "xmen note \"example of adding a note\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Xmens list command provides an easy way to viusalise notes attached to an experiment."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " 0 /Users/robweston/tmp/xmen/hello_world\n",
+      "     |- a=Hello__b=World\n",
+      "     |- a=Hello__b=Planet\n",
+      "     |- a=Bye__b=World\n",
+      "     |- a=Bye__b=Planet\n",
+      "     purpose: \n",
+      "     created: 02-08-21-19:04:29\n",
+      "     version: \n",
+      "       module: xmen.examples.hello_world\n",
+      "       function: hello_world\n",
+      "       path: /Users/robweston/xmen/xmen/examples/hello_world.py\n",
+      "       git:\n",
+      "         local: /Users/robweston/xmen\n",
+      "         remote: https://github.com/robw4/xmen.git\n",
+      "         commit: 7b6e0734d93fdaad5cd8daac012ecef5afb237f5\n",
+      "         branch: master\n",
+      "     notes: \n",
+      "       example of adding a note\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "xmen list -l"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Conda support"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "To make reproducing experiments as easy as possible, alongside the git version information, the conda environent is also logged as an ``experiment.yml`` file when each experiment is run. To turn this feature on run:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%bash\n",
+    "xmen config --enable_save_conda"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now lets re-run ``\"a=Hello__b=World\"``:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/Users/robweston/tmp/xmen/hello_world/a=Hello__b=World/environment.yml\n",
+      "Hello  World\n",
+      "\n",
+      "Running: bash /Users/robweston/tmp/xmen/hello_world/a=Hello__b=World/run.sh\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "xmen reset \"a=Hello__b=World\"\n",
+    "xmen run \"a=Hello__b=World\" bash"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In this case an ``environment.yml`` file has been generated automatically once the experiment was run"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "name: python3.6\n",
+      "channels:\n",
+      "- pytorch\n",
+      "- anaconda\n",
+      "- conda-forge\n",
+      "- defaults\n",
+      "dependencies:\n",
+      "- _tflow_select=2.3.0=mkl\n",
+      "- absl-py=0.8.0=py36_0\n",
+      "- alabaster=0.7.12=py36_0\n",
+      "- appnope=0.1.0=py36hf537a9a_0\n",
+      "- asn1crypto=1.0.1=py36_0\n",
+      "- astor=0.8.0=py36_0\n",
+      "- attrs=19.2.0=py_0\n",
+      "- babel=2.7.0=py_0\n",
+      "- backcall=0.1.0=py36_0\n",
+      "- beautifulsoup4=4.8.0=py36_0\n",
+      "- blas=1.0=mkl\n",
+      "- bleach=3.1.0=py36_0\n",
+      "- bzip2=1.0.8=h1de35cc_0\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "head -20 ~/tmp/xmen/hello_world/a=Hello__b=World/environment.yml"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Note, that while this is a useful feature this does have some additional overhead particularly when working with bloated conda environments. The feature can therefore be disabled as:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%bash\n",
+    "xmen config --disable_save_conda"
    ]
   },
   {
@@ -720,7 +1183,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 17,
+   "execution_count": 26,
    "metadata": {},
    "outputs": [
     {
@@ -757,22 +1220,28 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 18,
+   "execution_count": 27,
    "metadata": {},
    "outputs": [],
    "source": [
     "%%bash\n",
-    "xgent config -H ~/xmen/examples/header.txt"
+    "xmen config -H ~/xmen/examples/header.txt"
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "This will be appended to each run script generated by xgent. Experiments can then be submitted using the steps described before, but this time running each job with the sbatch command:\n",
+    "This will be appended to each run script generated by xmen. Experiments can then be submitted using the steps described before, but this time running each job with the sbatch command:\n",
     "\n",
-    "```python\n",
-    "xgent run \"*\" sbatch\n",
+    "```bash\n",
+    "xmen run \"*\" sbatch\n",
+    "```\n",
+    "\n",
+    "Note the header is used to set *default* paraeter values. They can still be overidden by passing command line flags to sbatch. For example the ``--job-name`` flag can be set to override the name of the experiment as:\n",
+    "\n",
+    "```bash\n",
+    "xmen run \"*\" sbatch --job-name=new_name\n",
     "```"
    ]
   },
@@ -780,11 +1249,424 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
+    "### Language agnostic experiment configuration"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Whilst so far we have considered defining and running experiments in python ``xmen`` is designed to work with other types of experiments. A general experiment can be defined through a ``script.sh`` which takes a yaml file of parameters as its first argment. For example, a trivial bash experiment ``script.sh`` which takes a yaml file and prints to screen might look something like:\n",
+    "\n",
+    "```bash\n",
+    "#! /bin/bash\n",
+    "echo \"contents of params.yml file ${1}\"\n",
+    "cat ${1}\n",
+    "```\n",
+    "\n",
+    "Next to interface with the ``xmen`` command line tool we need to generate a set of default paramaters in a yaml file called ``defaults.yml``. The script `xmen.examples.bash.generate` is provided to do this for you:\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%bash\n",
+    "python -m xmen.examples.bash.generate ~/tmp/xmen/bash"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now when we look in `~/tmp/xmen/bash` we find a copy of the `script.sh` defined above alongside a `defaults.yml` file."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/Users/robweston/tmp/xmen/bash\n"
+     ]
+    }
+   ],
+   "source": [
+    "cd ~/tmp/xmen/bash"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "total 16\n",
+      "-rw-r--r--  1 robweston  staff  109  8 Feb 19:05 defaults.yml\n",
+      "-rw-r--r--  1 robweston  staff  164  8 Feb 19:05 script.sh\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "ls -l ~/tmp/xmen/bash"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The ``defaults.yml`` file defines two parameters `a` and `b`. The special parameters `_version` and `_created` can also be included. Here, `_created` gives the date the file was created whilst version is a dictionary with a single entry giving the path to the file in which the parameters were originally defined."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "_version:\n",
+      "  path: /Users/robweston/xmen/xmen/examples/bash/generate.py\n",
+      "_created: 8/2/2021\n",
+      "a: Hello\n",
+      "b: Planet\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "cat ~/tmp/xmen/bash/defaults.yml"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "It is now possible to initialise, register and run experiments using the xmen command line tool in a similar way to before. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "None\n",
+      "Defaults from /Users/robweston/tmp/xmen/bash/defaults.yml\n",
+      "Script from /Users/robweston/tmp/xmen/bash/script.sh\n",
+      "Experiment root created at /Users/robweston/tmp/xmen/bash\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "xmen init"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%bash\n",
+    "xmen register -u \"{a: Hello | Bye, b: World| Planet}\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "#######################################\n",
+      "contents of params.yml file /Users/robweston/tmp/xmen/bash/a=Bye__b=Planet/params.yml\n",
+      "#######################################\n",
+      "_root: /Users/robweston/tmp/xmen/bash  # The root directory of the experiment\n",
+      "_name: a=Bye__b=Planet # The name of the experiment (under root)\n",
+      "_status: registered # One of ['default' | 'created' | 'running' | 'error' | 'finished']\n",
+      "_created: 2021-02-08-19-05-03 # The date the experiment was created\n",
+      "_purpose: # A description of the experiment purpose\n",
+      "_messages: {} # Messages left by the experiment\n",
+      "_version: # Experiment version information. See `get_version`\n",
+      "  path: /Users/robweston/xmen/xmen/examples/bash/generate.py\n",
+      "  git:\n",
+      "    local: /Users/robweston/xmen\n",
+      "    remote: https://github.com/robw4/xmen.git\n",
+      "    commit: 7b6e0734d93fdaad5cd8daac012ecef5afb237f5\n",
+      "    branch: master\n",
+      "_meta: # The global configuration for the experiment manager\n",
+      "  mac: '0x6c96cfdb71b9'\n",
+      "  host: dhcp55.robots.ox.ac.uk\n",
+      "  user: robweston\n",
+      "  home: /Users/robweston\n",
+      "  system:\n",
+      "    system: Darwin\n",
+      "    node: dhcp55.robots.ox.ac.uk\n",
+      "    release: 16.7.0\n",
+      "    version: 'Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 2018; root:xnu-3789.73.11~1/RELEASE_X86_64'\n",
+      "    machine: x86_64\n",
+      "    processor: i386\n",
+      "  cpu:\n",
+      "    physical: 4\n",
+      "    total: 8\n",
+      "    max_freq: 2200.00Mhz\n",
+      "    min_freq: 2200.00Mhz\n",
+      "    cur_freq: 2200.00Mhz\n",
+      "  virtual:\n",
+      "    total: 16.00GB\n",
+      "    free: 6.10GB\n",
+      "    used: 9.02GB\n",
+      "    percentage: 61.9%\n",
+      "  swap:\n",
+      "    total: 2.00GB\n",
+      "    free: ' 1.54GB'\n",
+      "    used: 470.25MB\n",
+      "    percentage: '23.0'\n",
+      "a: Bye\n",
+      "b: Planet\n",
+      " \n",
+      "#######################################\n",
+      "contents of params.yml file /Users/robweston/tmp/xmen/bash/a=Bye__b=World/params.yml\n",
+      "#######################################\n",
+      "_root: /Users/robweston/tmp/xmen/bash  # The root directory of the experiment\n",
+      "_name: a=Bye__b=World # The name of the experiment (under root)\n",
+      "_status: registered # One of ['default' | 'created' | 'running' | 'error' | 'finished']\n",
+      "_created: 2021-02-08-19-05-03 # The date the experiment was created\n",
+      "_purpose: # A description of the experiment purpose\n",
+      "_messages: {} # Messages left by the experiment\n",
+      "_version: # Experiment version information. See `get_version`\n",
+      "  path: /Users/robweston/xmen/xmen/examples/bash/generate.py\n",
+      "  git:\n",
+      "    local: /Users/robweston/xmen\n",
+      "    remote: https://github.com/robw4/xmen.git\n",
+      "    commit: 7b6e0734d93fdaad5cd8daac012ecef5afb237f5\n",
+      "    branch: master\n",
+      "_meta: # The global configuration for the experiment manager\n",
+      "  mac: '0x6c96cfdb71b9'\n",
+      "  host: dhcp55.robots.ox.ac.uk\n",
+      "  user: robweston\n",
+      "  home: /Users/robweston\n",
+      "  system:\n",
+      "    system: Darwin\n",
+      "    node: dhcp55.robots.ox.ac.uk\n",
+      "    release: 16.7.0\n",
+      "    version: 'Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 2018; root:xnu-3789.73.11~1/RELEASE_X86_64'\n",
+      "    machine: x86_64\n",
+      "    processor: i386\n",
+      "  cpu:\n",
+      "    physical: 4\n",
+      "    total: 8\n",
+      "    max_freq: 2200.00Mhz\n",
+      "    min_freq: 2200.00Mhz\n",
+      "    cur_freq: 2200.00Mhz\n",
+      "  virtual:\n",
+      "    total: 16.00GB\n",
+      "    free: 6.11GB\n",
+      "    used: 9.02GB\n",
+      "    percentage: 61.8%\n",
+      "  swap:\n",
+      "    total: 2.00GB\n",
+      "    free: ' 1.54GB'\n",
+      "    used: 470.25MB\n",
+      "    percentage: '23.0'\n",
+      "a: Bye\n",
+      "b: World\n",
+      " \n",
+      "#######################################\n",
+      "contents of params.yml file /Users/robweston/tmp/xmen/bash/a=Hello__b=Planet/params.yml\n",
+      "#######################################\n",
+      "_root: /Users/robweston/tmp/xmen/bash  # The root directory of the experiment\n",
+      "_name: a=Hello__b=Planet # The name of the experiment (under root)\n",
+      "_status: registered # One of ['default' | 'created' | 'running' | 'error' | 'finished']\n",
+      "_created: 2021-02-08-19-05-03 # The date the experiment was created\n",
+      "_purpose: # A description of the experiment purpose\n",
+      "_messages: {} # Messages left by the experiment\n",
+      "_version: # Experiment version information. See `get_version`\n",
+      "  path: /Users/robweston/xmen/xmen/examples/bash/generate.py\n",
+      "  git:\n",
+      "    local: /Users/robweston/xmen\n",
+      "    remote: https://github.com/robw4/xmen.git\n",
+      "    commit: 7b6e0734d93fdaad5cd8daac012ecef5afb237f5\n",
+      "    branch: master\n",
+      "_meta: # The global configuration for the experiment manager\n",
+      "  mac: '0x6c96cfdb71b9'\n",
+      "  host: dhcp55.robots.ox.ac.uk\n",
+      "  user: robweston\n",
+      "  home: /Users/robweston\n",
+      "  system:\n",
+      "    system: Darwin\n",
+      "    node: dhcp55.robots.ox.ac.uk\n",
+      "    release: 16.7.0\n",
+      "    version: 'Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 2018; root:xnu-3789.73.11~1/RELEASE_X86_64'\n",
+      "    machine: x86_64\n",
+      "    processor: i386\n",
+      "  cpu:\n",
+      "    physical: 4\n",
+      "    total: 8\n",
+      "    max_freq: 2200.00Mhz\n",
+      "    min_freq: 2200.00Mhz\n",
+      "    cur_freq: 2200.00Mhz\n",
+      "  virtual:\n",
+      "    total: 16.00GB\n",
+      "    free: 6.10GB\n",
+      "    used: 9.02GB\n",
+      "    percentage: 61.9%\n",
+      "  swap:\n",
+      "    total: 2.00GB\n",
+      "    free: ' 1.54GB'\n",
+      "    used: 470.25MB\n",
+      "    percentage: '23.0'\n",
+      "a: Hello\n",
+      "b: Planet\n",
+      " \n",
+      "#######################################\n",
+      "contents of params.yml file /Users/robweston/tmp/xmen/bash/a=Hello__b=World/params.yml\n",
+      "#######################################\n",
+      "_root: /Users/robweston/tmp/xmen/bash  # The root directory of the experiment\n",
+      "_name: a=Hello__b=World # The name of the experiment (under root)\n",
+      "_status: registered # One of ['default' | 'created' | 'running' | 'error' | 'finished']\n",
+      "_created: 2021-02-08-19-05-03 # The date the experiment was created\n",
+      "_purpose: # A description of the experiment purpose\n",
+      "_messages: {} # Messages left by the experiment\n",
+      "_version: # Experiment version information. See `get_version`\n",
+      "  path: /Users/robweston/xmen/xmen/examples/bash/generate.py\n",
+      "  git:\n",
+      "    local: /Users/robweston/xmen\n",
+      "    remote: https://github.com/robw4/xmen.git\n",
+      "    commit: 7b6e0734d93fdaad5cd8daac012ecef5afb237f5\n",
+      "    branch: master\n",
+      "_meta: # The global configuration for the experiment manager\n",
+      "  mac: '0x6c96cfdb71b9'\n",
+      "  host: dhcp55.robots.ox.ac.uk\n",
+      "  user: robweston\n",
+      "  home: /Users/robweston\n",
+      "  system:\n",
+      "    system: Darwin\n",
+      "    node: dhcp55.robots.ox.ac.uk\n",
+      "    release: 16.7.0\n",
+      "    version: 'Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 2018; root:xnu-3789.73.11~1/RELEASE_X86_64'\n",
+      "    machine: x86_64\n",
+      "    processor: i386\n",
+      "  cpu:\n",
+      "    physical: 4\n",
+      "    total: 8\n",
+      "    max_freq: 2200.00Mhz\n",
+      "    min_freq: 2200.00Mhz\n",
+      "    cur_freq: 2200.00Mhz\n",
+      "  virtual:\n",
+      "    total: 16.00GB\n",
+      "    free: 6.10GB\n",
+      "    used: 9.02GB\n",
+      "    percentage: 61.8%\n",
+      "  swap:\n",
+      "    total: 2.00GB\n",
+      "    free: ' 1.54GB'\n",
+      "    used: 470.25MB\n",
+      "    percentage: '23.0'\n",
+      "a: Hello\n",
+      "b: World\n",
+      " \n",
+      "\n",
+      "Running: bash /Users/robweston/tmp/xmen/bash/a=Bye__b=Planet/run.sh\n",
+      "\n",
+      "Running: bash /Users/robweston/tmp/xmen/bash/a=Bye__b=World/run.sh\n",
+      "\n",
+      "Running: bash /Users/robweston/tmp/xmen/bash/a=Hello__b=Planet/run.sh\n",
+      "\n",
+      "Running: bash /Users/robweston/tmp/xmen/bash/a=Hello__b=World/run.sh\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "xmen run \"*\" bash"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Alongside allowing experiments to be initialised and run quickly, ``xmen`` still takes care of record keeping behind the scenes, automatically logging git and system information as before:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/Users/robweston/tmp/xmen/bash*\n",
+      "   root               name                  local                             remote                                    commit  branch      status              created             mac                    host       user              home\n",
+      "0  bash   a=Hello__b=World  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master  registered  2021-02-08-19-05-03  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston\n",
+      "1  bash  a=Hello__b=Planet  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master  registered  2021-02-08-19-05-03  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston\n",
+      "2  bash     a=Bye__b=World  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master  registered  2021-02-08-19-05-03  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston\n",
+      "3  bash    a=Bye__b=Planet  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master  registered  2021-02-08-19-05-03  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston\n",
+      "\n",
+      "Roots relative to: /Users/robweston/tmp/xmen\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%bash\n",
+    "xmen list -dsgM"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Clean Up"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%bash\n",
+    "# remove the ~/tmp/xmen folder\n",
+    "rm -rf ~/tmp/xmen"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
     "## Next Steps\n",
-    "- For further help running any of the command line tools try `xmen --help`, `xmen hello_world --help`, `xgent --help` and `xgent ... --help`\n",
+    "- For further help running any of the command line tools try `xmen --help`, `xmen hello_world --help`\n",
     "- More exampels of the experiments can be found in `xmen.examples`\n",
     "- Check out the API docs and the cheat sheet"
    ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
   }
  ],
  "metadata": {
