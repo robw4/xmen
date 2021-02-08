@@ -61,12 +61,194 @@ class MultiOut(object):
             f.flush()
 
 
-def get_meta():
+def get_size(bytes, suffix="B"):
+    """
+    Scale bytes to its proper format
+    e.g:
+        1253656 => '1.20MB'
+        1253656678 => '1.17GB'
+    """
+    factor = 1024
+    for unit in ["", "K", "M", "G", "T", "P"]:
+        if bytes < factor:
+            return f"{bytes:.2f}{unit}{suffix}"
+        bytes /= factor
+
+
+def get_meta(get_platform=True, get_cpu=True, get_memory=True, get_disk=False,
+             get_slurm=False, get_conda=False, get_network=False, get_gpu=False, get_environ=False, live=False):
     """Get Meta information for the system"""
     import uuid
     import socket
     import getpass
-    return {'mac': hex(uuid.getnode()), 'host': socket.getfqdn(), 'user': getpass.getuser(), 'home': os.path.expanduser("~")}
+    import os
+    import platform
+    meta = {'mac': hex(uuid.getnode()),
+            'host': socket.getfqdn(),
+            'user': getpass.getuser(),
+            'home': os.path.expanduser("~")}
+
+    if get_platform:
+        try:
+            # system information
+            uname = platform.uname()
+            system = {
+                'system': uname.system,
+                'node': uname.node,
+                'release': uname.release,
+                'version': uname.version,
+                'machine': uname.machine,
+                'processor': uname.processor}
+            meta.update({'system': system})
+        except:
+            pass
+    if get_cpu:
+        try:
+            import psutil
+            cpufreq = psutil.cpu_freq()
+            cpu = {
+                'physical': psutil.cpu_count(logical=False),
+                'total':  psutil.cpu_count(logical=True),
+                'max_freq': f"{cpufreq.max:.2f}Mhz",
+                'min_freq': f"{cpufreq.min:.2f}Mhz",
+                'cur_freq': f"{cpufreq.current:.2f}Mhz"}
+            if live:
+                cpu.update({'usage': {str(i): f'{percentage}%' for i, percentage in
+                            enumerate(psutil.cpu_percent(percpu=True, interval=1))}})
+            meta.update({'cpu': cpu})
+        except:
+            pass
+
+    if get_memory:
+        try:
+            import psutil
+            svmem = psutil.virtual_memory()
+            virtual = {
+                'total': f"{get_size(svmem.total)}",
+                'free': f"{get_size(svmem.available)}",
+                'used': f"{get_size(svmem.used)}",
+                'percentage': f"{svmem.percent}%"}
+            swap = psutil.swap_memory()
+            swap = {
+                "total": f"{get_size(swap.total)}",
+                "free": f" {get_size(swap.free)}",
+                "used": f"{get_size(swap.used)}",
+                "percentage": f"{swap.percent}"}
+            meta.update({'virtual': virtual, 'swap': swap})
+        except:
+            pass
+
+    if get_disk:
+        try:
+            # Disk Information
+            # get all disk partitions
+            partitions = psutil.disk_partitions()
+            disks = {}
+            for partition in partitions:
+                info = {
+                    'mountpoint': partition.mountpoint,
+                    'fstype': partition.fstype,
+                }
+                try:
+                    partition_usage = psutil.disk_usage(partition.mountpoint)
+                    info.update({
+                        'total': f"{get_size(partition_usage.total)}",
+                        'used': f"{get_size(partition_usage.used)}",
+                        "free": f"{get_size(partition_usage.free)}",
+                        'percent': f"{partition_usage.percent}%"})
+                except PermissionError:
+                    # this can be catched due to the disk that
+                    # isn't ready
+                    continue
+                disks.update({partition.device: info})
+
+            # get IO statistics since boot
+            disk_io = psutil.disk_io_counters()
+            disks.update({
+                'read': f"{get_size(disk_io.read_bytes)}",
+                'write': f"{get_size(disk_io.write_bytes)}"})
+            meta.update(
+                {'disks': disks})
+        except:
+            pass
+
+    if get_network:
+        try:
+            if_addrs = psutil.net_if_addrs()
+            network = {}
+            for interface_name, interface_addresses in if_addrs.items():
+                interface = {}
+                for address in interface_addresses:
+                    interface.update(
+                        {interface_name: {
+                            str(address.family).split('.')[-1]: {
+                                'address': f"{address.address}",
+                                'netmask': f"{address.netmask}",
+                                'broadcast': f"{address.broadcast}"}}})
+                network.update(interface)
+            net_io = psutil.net_io_counters()
+            network.update({
+                'sent': f"{get_size(net_io.bytes_sent)}",
+                'received': f"{get_size(net_io.bytes_recv)}"})
+            meta.update({'network': network})
+        except:
+            pass
+
+    if get_gpu:
+        try:
+            import GPUtil
+            gpus = {}
+            for gpu in GPUtil.getGPUs():
+                gpus.update({
+                  str(gpu.id): {
+                      'name': gpu.name,
+                      'load': f"{gpu.load*100}%",
+                      'memory': f"{gpu.memoryFree}MB",
+                      'used': f"{gpu.memoryUsed}MB",
+                      'temperature': f"{gpu.temperature}°C",
+                      'uuid': f"{gpu.uuid}"}
+                })
+            meta.update({'gpu': gpus})
+        except:
+            pass
+
+    if get_slurm:
+        try:
+            import os
+            import sys
+            import subprocess
+            id = os.environ.get('SLURM_JOB_ID')
+            if id is not None:
+                slurm = {'id': id}
+                if get_slurm:
+                    out = subprocess.run(
+                        ['/usr/bin/scontrol', 'show', 'jobid', str(id)], capture_output=True)
+                    variables = ' '.join(out.stdout.decode(sys.getdefaultencoding()).replace('\n', '  ').split())
+
+                    for v in variables.split(' '):
+                        args = v.split('=')
+                        if len(args) == 2 and args[0] != '':
+                            slurm.update({args[0]: args[1]})
+                    meta.update({'slurm': slurm})
+        except:
+            pass
+
+    if get_environ:
+        meta.update({'environ': {k: v for k, v in os.environ.items()}})
+
+    if 'CONDA_EXE' in os.environ and get_conda:
+        try:
+            conda = subprocess.run(
+                [os.environ['CONDA_EXE'], 'env', 'export'], capture_output=True)
+            out = conda.stdout.decode(sys.getdefaultencoding())
+            from ruamel.yaml import YAML
+            yaml = YAML(typ="safe")
+            out = yaml.load(out)
+            meta['conda'] = out
+        except:
+            pass
+
+    return meta
 
 
 def get_attribute_helps(cls):
@@ -319,6 +501,30 @@ class TypedMeta(type):
             cls.__doc__ += '\n\nParameters:\n'
             cls.__doc__ += '\n'.join(lines)
 
+    def __iter__(self):
+        """Iterating over the class simply returns itself once, None once and then ends.
+        This allows functional experiments to be defined using the new signature::
+
+            Exp = functional_experiment(func)
+
+        whilst also being backward compatible with the previous signatuew::
+
+            Exp, _ = functional_experiment(func)
+
+        In the latter case ``_`` will be assigned the value of None.
+        """
+        self.count = 0
+        return self
+
+    def __next__(self):
+        self.count += 1
+        if self.count == 1:
+            return self
+        elif self.count == 2:
+            return None
+        else:
+            raise StopIteration
+
 
 def get_git(path):
     """Get git information for the given path.
@@ -445,7 +651,7 @@ def get_run_script(module, name, shell='/usr/bin/env python3', comment='#'):
     sh += [f'X = getattr(mod, "{name}")']
     sh += ['if type(X) is not xmen.utils.TypedMeta:']
     sh += ['    from xmen.functional import functional_experiment']
-    sh += ['    X, _ = functional_experiment(X)']
+    sh += ['    X = functional_experiment(X)']
     sh += ['X().main()']
     return '\n'.join(sh)
 

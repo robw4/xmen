@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>xmen.manager &mdash; xmen 0.1 documentation</title>
+  <title>xmen.manager &mdash; xmen 0.2.3 documentation</title>
   
 
   
@@ -40,7 +40,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="xmen 0.1 documentation" href="../../index.html"/>
+    <link rel="top" title="xmen 0.2.3 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -187,26 +187,26 @@
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">glob</span>
 
-<span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="kn">import</span> <span class="n">get_meta</span><span class="p">,</span> <span class="n">get_version</span><span class="p">,</span> <span class="n">DATE_FORMAT</span><span class="p">,</span> <span class="n">get_git</span>
+<span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">get_meta</span><span class="p">,</span> <span class="n">get_version</span><span class="p">,</span> <span class="n">DATE_FORMAT</span><span class="p">,</span> <span class="n">get_git</span>
 <span class="kn">import</span> <span class="nn">xmen.config</span>
 
 
 <span class="k">class</span> <span class="nc">ExperimentNotFoundException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">root</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;The experiment </span><span class="si">{self.name}</span><span class="s2"> was not found under root </span><span class="si">{self.root}</span><span class="s2">.&quot;</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;The experiment </span><span class="si">{self.name}</span><span class="s2"> was not found under root </span><span class="si">{self.root}</span><span class="s2">.&quot;</span>
 
 
 <span class="k">class</span> <span class="nc">InvalidExperimentRoot</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">root</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;The folder </span><span class="si">{self.root}</span><span class="s2"> is not a valid experiment root. It has either&quot;</span> \
-               <span class="sa">f</span><span class="s2">&quot;not been initilaised or is missing a defaults.yml and / or run.sh script&quot;</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;The folder </span><span class="si">{self.root}</span><span class="s2"> is not a valid experiment root. It has either&quot;</span> \
+               <span class="n">f</span><span class="s2">&quot;not been initilaised or is missing a defaults.yml and / or run.sh script&quot;</span>
 
 
 <div class="viewcode-block" id="ExperimentManager"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager">[docs]</a><span class="k">class</span> <span class="nc">ExperimentManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -255,7 +255,7 @@
 
 <span class="sd">                .. note ::</span>
 
-<span class="sd">                    ``Experiment`` objects are able to automatically load_and_generate script.sh files that look like this::</span>
+<span class="sd">                    ``Experiment`` objects are able to automatically generate script.sh files that look like this::</span>
 
 <span class="sd">                        #!/bin/bash</span>
 <span class="sd">                        # File generated on the 06:34PM September 13, 2019</span>
@@ -346,7 +346,7 @@
 <span class="sd">            experiment_run(&#39;all&#39;)                                         # Run all created experiments</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="ExperimentManager.__init__"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">headless</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ExperimentManager.__init__"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">headless</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Link an experiment manager to root. If root already contains an ``experiment.yml`` then it is loaded.</span>
 
 <span class="sd">        In order to link a new experiment with a defaults.yml and script.sh file then the initialise method must be</span>
@@ -496,36 +496,36 @@
 <span class="sd">            script (str): A path to a ``script.sh``. If ``&quot;&quot;`` then a script.sh file is searched for in the current work</span>
 <span class="sd">                directory.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">copyfile</span>
+        <span class="kn">from</span> <span class="nn">shutil</span> <span class="k">import</span> <span class="n">copyfile</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Load defaults</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;defaults.yml&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">defaults</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">defaults</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Defaults from </span><span class="si">{self.defaults}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Defaults from </span><span class="si">{self.defaults}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">defaults</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
                     <span class="n">copyfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;defaults.yml&#39;</span><span class="p">))</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;defaults.yml&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No defaults.yml file exists in </span><span class="si">{self.root}</span><span class="s2">. Either use the root argument to copy &quot;</span>
-                                 <span class="sa">f</span><span class="s2">&quot;a default file from another location or add a &#39;defaults.yml&#39; to the root directory&quot;</span>
-                                 <span class="sa">f</span><span class="s2">&quot;manually.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;No defaults.yml file exists in </span><span class="si">{self.root}</span><span class="s2">. Either use the root argument to copy &quot;</span>
+                                 <span class="n">f</span><span class="s2">&quot;a default file from another location or add a &#39;defaults.yml&#39; to the root directory&quot;</span>
+                                 <span class="n">f</span><span class="s2">&quot;manually.&quot;</span><span class="p">)</span>
 
             <span class="c1"># Load script file</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">script</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;script.sh&#39;</span><span class="p">))</span> <span class="k">if</span> <span class="n">script</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Script from </span><span class="si">{self.script}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Script from </span><span class="si">{self.script}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">script</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">script</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
                     <span class="n">copyfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">script</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;script.sh&#39;</span><span class="p">))</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">script</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;script.sh&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{self.script}</span><span class="s2"> does not exist. Either use the script argument to copy &quot;</span>
-                                 <span class="sa">f</span><span class="s2">&quot;a script file from another location or add a &#39;script.sh&#39; to the root directory&quot;</span>
-                                 <span class="sa">f</span><span class="s2">&quot;manually.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;File </span><span class="si">{self.script}</span><span class="s2"> does not exist. Either use the script argument to copy &quot;</span>
+                                 <span class="n">f</span><span class="s2">&quot;a script file from another location or add a &#39;script.sh&#39; to the root directory&quot;</span>
+                                 <span class="n">f</span><span class="s2">&quot;manually.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">script</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;script.sh&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">python_experiments</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Python Experiment </span><span class="si">{name}</span><span class="s1"> has not been registered with the global configuration. Aborting!&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Python Experiment </span><span class="si">{name}</span><span class="s1"> has not been registered with the global configuration. Aborting!&#39;</span><span class="p">)</span>
                 <span class="k">return</span>
 
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">python_paths</span><span class="p">:</span>
@@ -554,7 +554,7 @@
             <span class="c1">#     #     break</span>
             <span class="c1"># else:</span>
             <span class="c1">#     print(&#39;ERROR: Could not find experiment on current PYTHONPATH. Either add the relevant module &#39;</span>
-            <span class="c1">#           &#39;to the global config using xmen config --add PATH or load_and_generate a root directly from the &#39;</span>
+            <span class="c1">#           &#39;to the global config using xmen config --add PATH or generate a root directly from the &#39;</span>
             <span class="c1">#           &#39;experiment definition using /path/to/exp.py --to_root ROOT and initialise an experiment using&#39;</span>
             <span class="c1">#           &#39;xmen init ROOT&#39;)</span>
             <span class="c1">#     exit()</span>
@@ -568,10 +568,10 @@
 
         <span class="c1"># Save state to yml</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;experiment.yml&#39;</span><span class="p">)):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;There already exists a experiment.yml file in the root directory </span><span class="si">{self.root}</span><span class="s2">. &quot;</span>
-                  <span class="sa">f</span><span class="s2">&quot;To reinitialise an experiment folder remove the experiment.yml.&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;There already exists a experiment.yml file in the root directory </span><span class="si">{self.root}</span><span class="s2">. &quot;</span>
+                  <span class="n">f</span><span class="s2">&quot;To reinitialise an experiment folder remove the experiment.yml.&quot;</span><span class="p">)</span>
             <span class="n">exit</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Experiment root created at </span><span class="si">{self.root}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Experiment root created at </span><span class="si">{self.root}</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="c1"># Add purpose message</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">prompt_for_message</span><span class="p">:</span>
@@ -641,10 +641,10 @@
         <span class="c1"># Change the location of defaults and script.sh in experiment.yml</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No defaults.yml file found in </span><span class="si">{root}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;No defaults.yml file found in </span><span class="si">{root}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">script</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">script</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No script.sh file found in </span><span class="si">{root}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;No script.sh file found in </span><span class="si">{root}</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="c1"># Update global config</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="k">as</span> <span class="n">config</span><span class="p">:</span>
@@ -759,19 +759,19 @@
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">elem</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">defaults</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">dict</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Attempting to update dictionary parameters but key </span><span class="si">{k}</span><span class="s1"> is not a dictionary&#39;</span>
-                                         <span class="sa">f</span><span class="s1">&#39;in the defaults.yml&#39;</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Attempting to update dictionary parameters but key </span><span class="si">{k}</span><span class="s1"> is not a dictionary&#39;</span>
+                                         <span class="n">f</span><span class="s1">&#39;in the defaults.yml&#39;</span><span class="p">)</span>
                     <span class="n">overides</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">defaults</span><span class="p">[</span><span class="n">k</span><span class="p">]})</span>
                     <span class="k">for</span> <span class="n">dict_k</span><span class="p">,</span> <span class="n">dict_v</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                         <span class="k">if</span> <span class="n">dict_k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">defaults</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;key </span><span class="si">{dict_k}</span><span class="s1"> not found in defaults </span><span class="si">{k}</span><span class="s1">&#39;</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;key </span><span class="si">{dict_k}</span><span class="s1"> not found in defaults </span><span class="si">{k}</span><span class="s1">&#39;</span><span class="p">)</span>
                         <span class="n">overides</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">dict_k</span><span class="p">:</span> <span class="n">dict_v</span><span class="p">})</span>
                 <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">defaults</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Attempting to update a list of parameters but key </span><span class="si">{k}</span><span class="s1"> does not have &#39;</span>
-                                         <span class="sa">f</span><span class="s1">&#39;a list value&#39;</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Attempting to update a list of parameters but key </span><span class="si">{k}</span><span class="s1"> does not have &#39;</span>
+                                         <span class="n">f</span><span class="s1">&#39;a list value&#39;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">defaults</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Override list length does not match default list length&#39;</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Override list length does not match default list length&#39;</span><span class="p">)</span>
                     <span class="n">overides</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">))]})</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">overides</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">})</span>
@@ -792,11 +792,11 @@
                 <span class="c1"># Setup experiment folder</span>
                 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">experiment_path</span><span class="p">):</span>
                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">):</span>
-                        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{i}</span><span class="s2">&quot;</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="n">f</span><span class="s2">&quot;_</span><span class="si">{i}</span><span class="s2">&quot;</span><span class="p">):</span>
                             <span class="c1"># logging.info(f&quot;Directory already exists creating. The current experiment will be set up &quot;</span>
                             <span class="c1">#              f&quot;at {experiment_path}_{i}&quot;)</span>
-                            <span class="n">experiment_name</span> <span class="o">=</span> <span class="n">current_name</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{i}</span><span class="s2">&quot;</span>
-                            <span class="n">experiment_path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{i}</span><span class="s2">&quot;</span>
+                            <span class="n">experiment_name</span> <span class="o">=</span> <span class="n">current_name</span> <span class="o">+</span> <span class="n">f</span><span class="s2">&quot;_</span><span class="si">{i}</span><span class="s2">&quot;</span>
+                            <span class="n">experiment_path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="n">f</span><span class="s2">&quot;_</span><span class="si">{i}</span><span class="s2">&quot;</span>
                             <span class="k">break</span>
                         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">99</span><span class="p">:</span>
                             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The number of experiments allowed with the same overides is limited to 100&#39;</span><span class="p">)</span>
@@ -817,6 +817,15 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">version</span> <span class="o">=</span> <span class="kc">None</span>
 
+                <span class="n">meta</span> <span class="o">=</span> <span class="n">get_meta</span><span class="p">(</span><span class="n">get_conda</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">conda_env</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;conda&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">conda_env</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">:</span>
+                    <span class="kn">from</span> <span class="nn">ruamel.yaml</span> <span class="k">import</span> <span class="n">YAML</span>
+                    <span class="n">yaml</span> <span class="o">=</span> <span class="n">YAML</span><span class="p">()</span>
+                    <span class="n">yaml</span><span class="o">.</span><span class="n">default_flow_style</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">experiment_name</span><span class="p">,</span> <span class="s1">&#39;environment.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">conda_env</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+                
                 <span class="n">extra_params</span> <span class="o">=</span> <span class="p">{</span>
                     <span class="s1">&#39;_root&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span>
                     <span class="s1">&#39;_name&#39;</span><span class="p">:</span> <span class="n">experiment_name</span><span class="p">,</span>
@@ -827,7 +836,7 @@
                     <span class="s1">&#39;_version&#39;</span><span class="p">:</span> <span class="n">version</span><span class="p">,</span>
                     <span class="s1">&#39;_meta&#39;</span><span class="p">:</span> <span class="n">get_meta</span><span class="p">()}</span>
 
-                <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+                <span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
                 <span class="n">params</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">defaults</span><span class="p">)</span>
                 <span class="c1"># Remove optional parameters from defaults</span>
                 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;_created&#39;</span><span class="p">,</span> <span class="s1">&#39;_version&#39;</span><span class="p">,</span> <span class="s1">&#39;_meta&#39;</span><span class="p">]:</span>
@@ -836,7 +845,7 @@
 
                 <span class="c1"># Add base parameters to params</span>
                 <span class="c1"># helps = get_attribute_helps(Experiment)</span>
-                <span class="kn">from</span> <span class="nn">xmen.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+                <span class="kn">from</span> <span class="nn">xmen.experiment</span> <span class="k">import</span> <span class="n">Experiment</span>
                 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">extra_params</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
                     <span class="n">h</span> <span class="o">=</span> <span class="n">Experiment</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
                     <span class="n">params</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
@@ -846,7 +855,7 @@
                     <span class="n">header_str</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">header</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">header_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">header</span>
-                <span class="n">script</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;#!</span><span class="si">{shell}</span><span class="se">\n</span><span class="si">{header_str}</span><span class="se">\n</span><span class="si">{shell}</span><span class="s1"> {os.path.join(self.script)} {os.path.join(experiment_path, &quot;params.yml&quot;)}&#39;</span>
+                <span class="n">script</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;#!</span><span class="si">{shell}</span><span class="se">\n</span><span class="si">{header_str}</span><span class="se">\n</span><span class="si">{shell}</span><span class="s1"> {os.path.join(self.script)} {os.path.join(experiment_path, &quot;params.yml&quot;)}&#39;</span>
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">experiment_name</span><span class="p">,</span> <span class="s1">&#39;run.sh&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
 
@@ -914,25 +923,25 @@
         <span class="c1"># Get defaults information</span>
         <span class="n">defaults</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_defaults</span><span class="p">()</span>
         <span class="k">if</span> <span class="s1">&#39;_created&#39;</span> <span class="ow">in</span> <span class="n">defaults</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Defaults: </span><span class="se">\n</span><span class="s1">&#39;</span>
-                  <span class="sa">f</span><span class="s1">&#39;- created: </span><span class="si">{defaults[&quot;_created&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Defaults: </span><span class="se">\n</span><span class="s1">&#39;</span>
+                  <span class="n">f</span><span class="s1">&#39;- created: </span><span class="si">{defaults[&quot;_created&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="s1">&#39;_version&#39;</span> <span class="ow">in</span> <span class="n">defaults</span><span class="p">:</span>
             <span class="n">version</span> <span class="o">=</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;_version&quot;</span><span class="p">]</span>
             <span class="k">if</span> <span class="s1">&#39;path&#39;</span> <span class="ow">in</span> <span class="n">version</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;- path: </span><span class="si">{version[&quot;path&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;- path: </span><span class="si">{version[&quot;path&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;- module: </span><span class="si">{version[&quot;module&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;- class: </span><span class="si">{version[&quot;class&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;- module: </span><span class="si">{version[&quot;module&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;- class: </span><span class="si">{version[&quot;class&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="s1">&#39;git&#39;</span> <span class="ow">in</span> <span class="n">version</span><span class="p">:</span>
                 <span class="n">git</span> <span class="o">=</span> <span class="n">version</span><span class="p">[</span><span class="s1">&#39;git&#39;</span><span class="p">]</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- git:&#39;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;   local: </span><span class="si">{git[&quot;local&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;   commit: </span><span class="si">{git[&quot;commit&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;   remote: </span><span class="si">{git[&quot;remote&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;   local: </span><span class="si">{git[&quot;local&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;   commit: </span><span class="si">{git[&quot;commit&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;   remote: </span><span class="si">{git[&quot;remote&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ExperimentManager.clean"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Remove directories no longer linked to the experiment manager&quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">rmtree</span>
+        <span class="kn">from</span> <span class="nn">shutil</span> <span class="k">import</span> <span class="n">rmtree</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_initialised</span><span class="p">()</span>
         <span class="n">subdirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">and</span>
                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">))</span> <span class="ow">and</span>
@@ -942,32 +951,31 @@
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The following experiments were found for deletion:&#39;</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">subdirs</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-                <span class="n">inp</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Do you wish to continue? [y | n]: &#39;</span><span class="p">)</span>
+                <span class="n">inp</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Do you wish to continue? [y | n]: &#39;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">inp</span> <span class="o">!=</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Aborting!&#39;</span><span class="p">)</span>
                     <span class="k">return</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The following experiments were deleted:&#39;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">subdirs</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">)):</span>
                     <span class="n">rmtree</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The following experiments were deleted:&#39;</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">subdirs</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;no folders found for deletion&#39;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">rm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">rmtree</span>
+        <span class="kn">from</span> <span class="nn">shutil</span> <span class="k">import</span> <span class="n">rmtree</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_initialised</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">prompt_for_message</span><span class="p">:</span>
-            <span class="n">inp</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;This command will remove the whole experiment folder </span><span class="si">{self.root}</span><span class="s1">. &#39;</span>
-                        <span class="sa">f</span><span class="s1">&#39;Do you wish to continue? [y | n]: &#39;</span><span class="p">)</span>
+            <span class="n">inp</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;This command will remove the whole experiment folder </span><span class="si">{self.root}</span><span class="s1">. &#39;</span>
+                        <span class="n">f</span><span class="s1">&#39;Do you wish to continue? [y | n]: &#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">inp</span> <span class="o">!=</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Aborting!&#39;</span><span class="p">)</span>
                 <span class="k">return</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
             <span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Removed </span><span class="si">{self.root}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Removed </span><span class="si">{self.root}</span><span class="s1">&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ExperimentManager.run"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Run all experiments that match the global pattern using the run command given by args.&quot;&quot;&quot;</span>
@@ -996,7 +1004,7 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Note models are removed from the experiment list only. To remove the model directories run&quot;</span>
                   <span class="s2">&quot;experiment clean&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No experiments match pattern </span><span class="si">{pattern}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;No experiments match pattern </span><span class="si">{pattern}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ExperimentManager.relink"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.relink">[docs]</a>    <span class="k">def</span> <span class="nf">relink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Re-link all experiment folders that match ``pattern`` (and are not currently managed by the experiment</span>
@@ -1012,9 +1020,9 @@
         <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">subdirs</span><span class="p">:</span>
             <span class="n">params</span><span class="p">,</span> <span class="n">defaults</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_params</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_defaults</span><span class="p">()</span>
             <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">defaults</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">params</span><span class="p">]):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cannot re-link folder </span><span class="si">{d}</span><span class="s1"> as params are not compatible with defaults&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Cannot re-link folder </span><span class="si">{d}</span><span class="s1"> as params are not compatible with defaults&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Relinking </span><span class="si">{d}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Relinking </span><span class="si">{d}</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span> <span class="o">+=</span> <span class="p">[</span><span class="n">d</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">overides</span> <span class="o">+=</span> <span class="p">[{</span><span class="n">pk</span><span class="p">:</span> <span class="n">pv</span> <span class="k">for</span> <span class="n">pk</span><span class="p">,</span> <span class="n">pv</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">pk</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">defaults</span><span class="p">[</span><span class="n">pk</span><span class="p">]</span> <span class="o">!=</span> <span class="n">pv</span><span class="p">}]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span></div></div>
@@ -1056,7 +1064,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.1',
+            VERSION:'0.2.3',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
@@ -1068,7 +1076,6 @@
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
       <script type="text/javascript" src="../../_static/language_data.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
       <script type="text/javascript" src="../../_static/jquery.fancybox.min.js"></script>
 
   

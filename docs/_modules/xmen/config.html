@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>xmen.config &mdash; xmen 0.1 documentation</title>
+  <title>xmen.config &mdash; xmen 0.2.3 documentation</title>
   
 
   
@@ -40,7 +40,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="xmen 0.1 documentation" href="../../index.html"/>
+    <link rel="top" title="xmen 0.2.3 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -181,11 +181,11 @@
 <span class="kn">import</span> <span class="nn">re</span>
 
 <span class="kn">import</span> <span class="nn">xmen.manager</span>
-<span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="kn">import</span> <span class="n">get_meta</span>
+<span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">get_meta</span>
 
 
 <span class="k">class</span> <span class="nc">NoMatchException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Experiment at ``path`` does not contain a match&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">NoMatchException</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
@@ -193,10 +193,11 @@
 
 <div class="viewcode-block" id="GlobalExperimentManager"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager">[docs]</a><span class="k">class</span> <span class="nc">GlobalExperimentManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A helper class used to manage global configuration of the Experiment Manager&quot;&quot;&quot;</span>
-<div class="viewcode-block" id="GlobalExperimentManager.__init__"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="GlobalExperimentManager.__init__"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">python_experiments</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># A dictionary of paths to python modules compatible with the experiment api</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">python_paths</span> <span class="o">=</span> <span class="p">[]</span>         <span class="c1"># A list of python paths needed to run each module</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prompt_for_message</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_conda</span> <span class="o">=</span> <span class="kc">True</span>         <span class="c1"># Whether to save conda info to file</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span> <span class="o">=</span> <span class="p">{}</span>          <span class="c1"># A list of all experiments registered with an Experiment Manager</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="n">get_meta</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
@@ -208,10 +209,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_from_yml</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_to_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -225,7 +226,7 @@
         <span class="sd">&quot;&quot;&quot;Load the experiment config from a ``config.yml`` file&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">,</span> <span class="s1">&#39;config.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
-            <span class="kn">from</span> <span class="nn">ruamel.yaml.comments</span> <span class="kn">import</span> <span class="n">CommentedMap</span>
+            <span class="kn">from</span> <span class="nn">ruamel.yaml.comments</span> <span class="k">import</span> <span class="n">CommentedMap</span>
             <span class="n">params</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">RoundTripLoader</span><span class="p">)</span>
             <span class="n">to_yml</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -270,29 +271,25 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  - &#39;</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;The current configuration as a string&quot;&quot;&quot;</span>
-        <span class="n">string</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Prompt for Message: </span><span class="si">{self.prompt_for_message}</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;Python Path:</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;prompt for message: </span><span class="si">{self.prompt_for_message}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;save conda: </span><span class="si">{self.save_conda}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;python Path:</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">python_paths</span><span class="p">:</span>
-            <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  - </span><span class="si">{p}</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;Python Experiments:</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;  - </span><span class="si">{p}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;python experiments:</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">python_experiments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-           <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  - </span><span class="si">{k}</span><span class="s1">: </span><span class="si">{v}</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;Header:</span><span class="se">\n</span><span class="s1">&#39;</span>
+           <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;  - </span><span class="si">{k}</span><span class="s1">: </span><span class="si">{v}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;header:</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="n">string</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;Meta:</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;meta:</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  - </span><span class="si">{k}</span><span class="s1">: </span><span class="si">{m}</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;Experiments:</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;  - </span><span class="si">{k}</span><span class="s1">: </span><span class="si">{m}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;experiments:</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">e</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-            <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  - </span><span class="si">{e[&quot;created&quot;]}</span><span class="s1">: </span><span class="si">{k}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;  - </span><span class="si">{e[&quot;created&quot;]}</span><span class="s1">: </span><span class="si">{k}</span><span class="se">\n</span><span class="s1">&#39;</span>
 
         <span class="k">return</span> <span class="n">string</span>
 
@@ -373,7 +370,7 @@
                             <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                                 <span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
-                            <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+                            <span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
                             <span class="n">params</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">defaults</span><span class="p">)</span>
                             <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">em</span><span class="o">.</span><span class="n">overides</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
                     <span class="k">else</span><span class="p">:</span>
@@ -437,7 +434,7 @@
                                     <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">missing_entry</span><span class="p">]</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">,</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">]:</span>
+                            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">,</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">,</span> <span class="s1">&#39;_notes&#39;</span><span class="p">]:</span>
                                 <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
                                     <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
                                 <span class="k">else</span><span class="p">:</span>
@@ -553,7 +550,7 @@
 <div class="viewcode-block" id="GlobalExperimentManager.add_experiment"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.add_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">add_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add a python experiment ``name`` defined in ``module`` either as a class or function.&quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">stat</span>
-        <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="kn">import</span> <span class="n">get_run_script</span>
+        <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">get_run_script</span>
         <span class="n">script</span> <span class="o">=</span> <span class="n">get_run_script</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
         <span class="c1"># Make executable run script</span>
@@ -603,7 +600,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.1',
+            VERSION:'0.2.3',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
@@ -615,7 +612,6 @@
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
       <script type="text/javascript" src="../../_static/language_data.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
       <script type="text/javascript" src="../../_static/jquery.fancybox.min.js"></script>
 
   

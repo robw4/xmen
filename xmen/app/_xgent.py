@@ -65,6 +65,52 @@ subparsers = parser.add_subparsers()
 
 
 #######################################################################################################################
+#  add
+#######################################################################################################################
+python_parser = subparsers.add_parser('python', help='Python interface')
+python_parser.add_argument('--list', '-l', action='store_true', default=None, help='List available python experiments')
+python_parser.add_argument('--add', '-a', default=None, metavar=('MODULE', 'NAME'),
+                           help='Add a python Experiment class or run script (it must already be on PYTHONPATH)',
+                           nargs=2)
+python_parser.add_argument('name', help='The name of the experiment to run', nargs='*', default=None)
+python_parser.add_argument('--remove', '-r', help='Remove a python experiment (passed by Name)')
+python_parser.add_argument('flags', help='Python flags (pass --help for more info)', nargs=argparse.REMAINDER, default=[])
+
+def _python(args):
+    import subprocess
+    global_exp_manager = GlobalExperimentManager()
+    if args.list is not None:
+        print(f'The following python experiments are currently linked')
+        for k, v in global_exp_manager.python_experiments.items():
+            print(f'{k}: {v}')
+    if args.add is not None:
+        try:
+            with global_exp_manager as config:
+                config.add_experiment(*args.add)
+            print(f'Added experiment {args.add[-1]} from module {args.add[-2]}')
+        except:
+            print(f'ERROR: failed to add experiment {args.add[-1]} from module {args.add[-2]}')
+    if args.remove is not None:
+        with global_exp_manager as config:
+            if args.remove in config.python_experiments:
+                path = config.python_experiments.pop(args.remove)
+                if '.xmen' in path:
+                    os.remove(path)
+                print(f'Successfully removed {args.remove}!')
+    if args.name:
+        import subprocess
+        if args.name[0] not in global_exp_manager.python_experiments:
+            print(f'No experiments found matching {args.name[0]}')
+            exit()
+        args = [global_exp_manager.python_experiments[args.name[0]]] + args.flags
+        subprocess.call(args)
+
+
+
+python_parser.set_defaults(func=_python)
+
+
+#######################################################################################################################
 #  config
 #######################################################################################################################
 config_parser = subparsers.add_parser('config', help='View / edit the global configuration')
@@ -75,6 +121,12 @@ config_parser.add_argument('--clean', action='store_false',
                            default=None)
 config_parser.add_argument('--enable_prompt', action='store_false',
                            help='Turn purpose prompting on', default=None)
+
+config_parser.add_argument('--disable_save_conda', action='store_false',
+                           help='Turn conda environment saving off', default=None)
+config_parser.add_argument('--enable_save_conda', action='store_false',
+                           help='Turn conda environment saving on', default=None)
+
 config_parser.add_argument('--update_meta', default=None, action='store_true',
                            help='Update meta information in each experiment (both defaults.yml and params.yml). '
                                 'WARNING: Overwrites information in the params.yml or defaults.yml')
@@ -89,6 +141,12 @@ def _config(args):
             config.prompt_for_message = False
         elif args.enable_prompt is not None:
             config.prompt_for_message = True
+
+        if args.disable_save_conda is not None:
+            config.save_conda = False
+        elif args.enable_save_conda is not None:
+            config.save_conda = True
+
 
         if args.update_meta is not None:
             config.update_meta()
@@ -341,8 +399,13 @@ list_parser.add_argument('-s', '--display_status', action='store_true', default=
 list_parser.add_argument('-m', '--display_messages', default=None,
                          const='^e$|^s$|^wall$|^end$|^next$|^.*step$|^.*load$',
                          type=str, help="Display messages for each experiment", nargs='?')
-list_parser.add_argument('-M', '--display_meta', action='store_true', default=None,
-                         help="Display messages for each experiment")
+list_parser.add_argument('-M', '--display_meta', default=None,
+                         const='^root$|^name$|^mac$|^host$|^user$|^home$',
+                         type=str,
+                         help="Display meta information for each experiment. The regex "
+                              "'^root$|^name$|^mac$|^host$|^user$|^home$' gives basic meta information "
+                              "logged with every experiment. Other information is separated into groups including "
+                              "'network.*', 'gpu.*', 'cpu.*', 'system.*', 'virtual.*', 'swap.*' ", nargs='?')
 list_parser.add_argument('-l', '--list', action='store_true', default=None,
                          help="Display as list and not a table")
 list_parser.add_argument('--load_defaults', action='store_true', default=None,
@@ -351,12 +414,12 @@ list_parser.add_argument('--load_defaults', action='store_true', default=None,
 list_parser.add_argument('--max_width', default=60, help='The maximum width of an individual collumn. '
                                                            'If None then will print for ever', type=int)
 list_parser.add_argument('--max_rows', default=None, help='Display tables with this number of rows.', type=int)
-
 list_parser.add_argument('--csv', action='store_true', help='Display the table as csv.', default=None)
 
 
 def _list(args):
     import pandas as pd
+    from xmen.utils import recursive_print_lines
     pd.set_option('display.width', 1000)
     pd.set_option('display.max_columns', 1000)
     pd.set_option('display.max_colwidth', args.max_width)
@@ -370,6 +433,8 @@ def _list(args):
 
     params = os.path.join(pattern, 'params.yml')
     if os.path.exists(params):
+        # print the params.yml file to screen
+        print(f'Content of {params}')
         import ruamel.yaml
         from xmen.utils import recursive_print_lines
         with open(os.path.join(params), 'r') as params_yml:
@@ -386,18 +451,21 @@ def _list(args):
                 mode='set', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
                 load_defaults=True)
             notes = []
-            for i, (r, e, p, n, d, t) in enumerate(
-                    zip(*[results[j] for j in ('_root', '_experiments', '_purpose', '_notes', '_created', '_type')])):
+            for i, (r, e, p, n, d, t, v) in enumerate(
+                    zip(*[results[j] for j in ('_root', '_experiments', '_purpose', 
+                                               '_notes', '_created', '_type', '_version')])):
                 k = 5
                 i = str(i)
                 note = ' ' * (k // 2 - len(str(i))) + str(i) + ' ' * (k // 2 - 1) + r + '\n' + ' ' * k
                 if len(e) > 0:
                     note += ('\n' + ' ' * k).join(['|- ' + ee[len(r) + 1:] for ee in e]) + '\n' + ' ' * k
-                note += 'Purpose: ' + p + '\n' + ' ' * k
-                note += 'Created: ' + d + '\n' + ' ' * k
-                note += 'Type: ' + str(t)
+                note += 'purpose: ' + p + '\n' + ' ' * k
+                note += 'created: ' + d + '\n' + ' ' * k
+                if len(v) > 0:
+                    note += 'version: ' + '\n' + ' ' * (k + 2) + ('\n' + ' ' * (k + 2)).join(
+                        [l for l in recursive_print_lines(v)])
                 if len(n) > 0:
-                    note += '\n' + ' ' * k + 'Notes: ' + '\n' + ' ' * (k + 2)
+                    note += '\n' + ' ' * k + 'notes: ' + '\n' + ' ' * (k + 2)
                     note += ('\n' + ' ' * (k + 2)).join(
                         ['\n'.join(textwrap.wrap(nn, width=1000, subsequent_indent=' ' * (k + 3))) for i, nn in
                          enumerate(n)])

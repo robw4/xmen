@@ -153,11 +153,12 @@ def functional_experiment(fn):
         return fn(self, **params)
 
     cls.run = run
-    return cls, None
+    return cls
 
 
 def autodoc(func):
     """A decorator used to add parameter comments to the docstring of func."""
+    from functools import wraps
     _docs, _ = read_comments(func)
     if func.__doc__ is None:
         func.__doc__ = ''

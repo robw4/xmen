@@ -1,25 +1,21 @@
 # Cheat Sheet
 ## xmen
 ```bash
-xmen --help # get help
-xmen --add xmen.examples.hello_world HelloWorld  # add a new python experiment (must be on path)
-xmen --list  # list current experiments
-xmen HelloWorld # display experiemnt docs
-xmen HelloWorld --help # get help with running the experiment
-xmen HelloWorld [--debug] [-u "{lr: 0.01}"] -x "/tmp/my_exp"  # execute an experiment at "/tmp/my_exp"
-xmen HelloWorld [-u "/path/to/params.yml"] -x "/tmp/my_exp"  # execute an experiment using parameters in a params.uml file
-xmen --remove HelloWorld # remove experiment from the xmen interface (non-destructive)
-```
-
-## xgent
-
-```bash
 # config - global configuration
 xgent config --enable_prompt  # turn prompting on (recommended)
 xgent config --disable_prompt  # turn prompting off
 xgent config --clean  # remove experiments from config that no longer exist
 xgent config -H /path/to/header.txt  # update header prepended to each run script
 xgent config --list  # list the current configuration
+
+# python - python interface
+xgent python -a MODULE NAME # add a python experiment to xmen
+xgent python -l # list available python experiments
+xgent python -r NAME # remove a python experiment
+xgent python HelloWorld # display experiemnt docs
+xgent python HelloWorld --help # get help with running the experiment
+xgent python HelloWorld [--debug] [-u "{lr: 0.01}"] -x "/tmp/my_exp"  # execute an experiment at "/tmp/my_exp"
+xgent python HelloWorld [-u "/path/to/params.yml"] -x "/tmp/my_exp"  # execute an experiment using parameters in a params.uml file
 
 # init - initialise an experiment set
 xgent init -n HelloWorld  # from a python experiment in the current dirctory

@@ -1,7 +1,8 @@
 from xmen import Experiment
 from xmen.monitor import Monitor
+import os
 
-X = Experiment('/Users/robweston/Desktop', 'ex1')
+X = Experiment(os.path.join(os.environ['HOME'], 'tmp'), 'ex1')
 
 a, b, c, d, e, f = 0, 0, 0, 0, 0, 0
 
@@ -15,11 +16,12 @@ def mult(x):
 
 
 m = Monitor(
-    log=('a|b@2s', 'b@1e', 'c@1er', "d|e@1eo", "f@1se"),
+    log=('a|b@2s', 'b@1e', 'c@1er', "d|e@1eo", "e@1se"),
     log_fn=(mult, identity, identity, identity, identity),
     log_format='.3f',
     msg='a->X@1s',
     time=('@2s', '@1e'),
+    probe='X@10s',
     limit='@20s')
 for _ in m(range(2)):
     for _ in m(range(2)):

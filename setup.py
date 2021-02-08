@@ -21,17 +21,19 @@ from setuptools import setup
 
 setup(
     name='xmen',
-    version='0.2.4',
+    version='0.2.5',
     description='Experiment management libraries for fast, reproducible, remote and local experimentation',
     author='Rob Weston',
     author_email='robw@robots.ox.ac.uk',
     entry_points={
         'console_scripts':
-            ['xmen=xmen.app._xmen:main',
-             'xgent=xmen.app._xgent:main']},
-    # scripts=['xmen/_xgent.py'],
+            [
+                # 'xmen=xmen.app._xmen:main',
+                'xgent=xmen.app._xgent:main'
+            ]},
     install_requires=[
             'ruamel.yaml>=0.16.10',
             'pandas>=1.1.1',
-            'GitPython>=3.1.7'],
+            'GitPython>=3.1.7',
+            'psutil'],
     packages=setuptools.find_packages())

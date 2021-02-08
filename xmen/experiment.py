@@ -40,6 +40,11 @@ helps = {
     'txt': 'Also log stdout and stderr to an out.txt file. Enabled by default',
     'restart': 'Restart the experiment'}
 
+from xmen.config import GlobalExperimentManager
+
+SAVE_CONDA = GlobalExperimentManager().save_conda
+
+
 import textwrap
 for k in helps:
     helps[k] = '\n'.join(textwrap.wrap(helps[k], 50))
@@ -119,8 +124,6 @@ class Experiment(object, metaclass=TypedMeta):
             self._messages: Dict[Any, Any] = {}  # @p Messages left by the experiment
             self._version: Optional[Dict[Any, Any]] = None   # @p Experiment version information. See `get_version`
             self._meta: Optional[Dict] = None    # @p The global configuration for the experiment manager
-            self._notes: Dict[str, str] = {}     # @p Notes attached to the experiment
-            # self._origin: Optional[str] = None    # @p The path the experiment was initially registered at
             self._specials: List[str] = _SPECIALS
             self._helps: Optional[Dict] = None
         else:
@@ -175,10 +178,10 @@ class Experiment(object, metaclass=TypedMeta):
         """A dictionary giving the version information for the experiment"""
         return self._version
 
-    @property
-    def notes(self):
-        """A dictionary containing the notes attached to the experiment"""
-        return self._notes
+    # @property
+    # def notes(self):
+    #     """A dictionary containing the notes attached to the experiment"""
+    #     return self._notes
 
     @root.setter
     def root(self, value):
@@ -218,8 +221,11 @@ class Experiment(object, metaclass=TypedMeta):
         else:
             self._version = get_version(cls=self.__class__)
 
-    def update_meta(self):
-        self._meta = get_meta()
+    def update_meta(self, get_cpu=False, get_gpu=False, save=False):
+        self._meta = get_meta(
+            get_platform=True, get_cpu=get_cpu, get_gpu=get_gpu)
+        if save:
+            self._to_yaml()
 
     def to_defaults(self, defaults_dir):
         """Create a ``defaults.yml`` file from experiment object.
@@ -401,14 +407,15 @@ class Experiment(object, metaclass=TypedMeta):
         from xmen.utils import get_run_script
         if hasattr(self, 'fn'):
             script = get_run_script(*self.fn)
+            path = os.path.join(root_dir, '.'.join(self.fn))
         else:
+            path = os.path.join(root_dir, '.'.join([self.__class__.__module__, self.__class__.__name__]))
             script = get_run_script(self.__class__.__module__, self.__class__.__name__)
 
         if not os.path.exists(root_dir):
             os.makedirs(root_dir)
 
         # Save to root directory
-        path = os.path.join(root_dir, f'{self.__class__.__module__}.{self.__class__.__name__}')
         open(path, 'w').write(script)
         st = os.stat(path)
         os.chmod(path, st.st_mode | stat.S_IEXEC)
@@ -455,6 +462,20 @@ class Experiment(object, metaclass=TypedMeta):
         def _sigusr1_handler(signum, handler):
             raise TimeoutException()
         signal.signal(signal.SIGUSR1, _sigusr1_handler)
+
+        meta = get_meta(
+            get_platform=True, get_cpu=True, get_memory=True, get_disk=True,
+            get_slurm=True, get_conda=SAVE_CONDA, get_network=True, get_gpu=True,
+            get_environ=True)
+        conda = meta.pop('conda', None)
+        from ruamel.yaml import YAML
+        yaml = YAML()
+        yaml.default_flow_style = False
+        if conda is not None:
+            with open(os.path.join(self.directory, 'environment.yml'), 'w') as f:
+                yaml.dump(conda, f)
+        with open(os.path.join(self.directory, 'meta.yml'), 'w') as f:
+            yaml.dump(meta, f)
 
         self._update_status('running')
         return self
@@ -523,16 +544,6 @@ class Experiment(object, metaclass=TypedMeta):
                 pass
         return v
 
-    def note(self, txt, rm=False):
-        if not rm:
-            now = datetime.datetime.now().strftime(DATE_FORMAT)
-            self._notes[now] = txt
-        else:
-            for k in list(self._notes.keys()):
-                if txt.strip() == self._notes[k].strip():
-                    self._notes.pop(k)
-        self._to_yaml()
-
     def compare(self, k, v, keep='latest'):
         assert keep in ['max', 'min', 'latest']
         cur = self.messages.get(k, None)
@@ -562,7 +573,7 @@ class Experiment(object, metaclass=TypedMeta):
             # Update debug parameters
             print('Running as debug')
             self.debug()
-        # Update the parameter values from either
+        # update the parameter values from either
         # a parameter string or from a defaults.yml file.
         if args.update is not None:
             for update in args.update:

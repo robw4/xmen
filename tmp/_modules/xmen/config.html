@@ -1,0 +1,643 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>xmen.config &mdash; xmen 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="../../_static/jquery.fancybox.min.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../../_static/glpi.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="xmen 0.1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> xmen
+          
+
+          
+          </a>
+
+          
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Xmen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../class-api.html">Xmen Experiment Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cheat-sheet.html">Cheat Sheet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">xmen</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>xmen.config</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for xmen.config</h1><div class="highlight"><pre>
+<span></span><span class="c1">#  Copyright (C) 2019  Robert J Weston, Oxford Robotics Institute</span>
+<span class="c1">#</span>
+<span class="c1">#  xmen</span>
+<span class="c1">#  email:   robw@robots.ox.ac.uk</span>
+<span class="c1">#  github: https://github.com/robw4/xmen/</span>
+<span class="c1">#</span>
+<span class="c1">#  This program is free software; you can redistribute it and/or modify</span>
+<span class="c1">#  it under the terms of the GNU General Public License as published by</span>
+<span class="c1">#  the Free Software Foundation; either version 3 of the License, or</span>
+<span class="c1">#  (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1">#  This program is distributed in the hope that it will be useful,</span>
+<span class="c1">#  but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1">#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1">#  GNU General Public License for more details.</span>
+<span class="c1">#  You should have received a copy of the GNU General Public License</span>
+<span class="c1">#   along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">import</span> <span class="nn">xmen.manager</span>
+<span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="kn">import</span> <span class="n">get_meta</span>
+
+
+<span class="k">class</span> <span class="nc">NoMatchException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Experiment at ``path`` does not contain a match&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NoMatchException</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+
+
+<div class="viewcode-block" id="GlobalExperimentManager"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager">[docs]</a><span class="k">class</span> <span class="nc">GlobalExperimentManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A helper class used to manage global configuration of the Experiment Manager&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="GlobalExperimentManager.__init__"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">python_experiments</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># A dictionary of paths to python modules compatible with the experiment api</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">python_paths</span> <span class="o">=</span> <span class="p">[]</span>         <span class="c1"># A list of python paths needed to run each module</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prompt_for_message</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span> <span class="o">=</span> <span class="p">{}</span>          <span class="c1"># A list of all experiments registered with an Experiment Manager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="n">get_meta</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;HOME&#39;</span><span class="p">),</span> <span class="s1">&#39;.xmen&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_from_yml</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_to_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save the current config to an ``config.yaml``&quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;_&#39;</span><span class="p">}</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">,</span> <span class="s1">&#39;config.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">Dumper</span><span class="o">=</span><span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">RoundTripDumper</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_from_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load the experiment config from a ``config.yml`` file&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">,</span> <span class="s1">&#39;config.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
+            <span class="kn">from</span> <span class="nn">ruamel.yaml.comments</span> <span class="kn">import</span> <span class="n">CommentedMap</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">RoundTripLoader</span><span class="p">)</span>
+            <span class="n">to_yml</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;experiments&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">CommentedMap</span><span class="p">:</span>
+                    <span class="n">experiments</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="n">to_yml</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">for</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                        <span class="n">em</span> <span class="o">=</span> <span class="n">xmen</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">ExperimentManager</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="n">vv</span><span class="p">,</span> <span class="n">headless</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="n">experiments</span><span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">root</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s1">&#39;created&#39;</span><span class="p">:</span> <span class="n">em</span><span class="o">.</span><span class="n">created</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">em</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="s1">&#39;purpose&#39;</span><span class="p">:</span> <span class="n">em</span><span class="o">.</span><span class="n">purpose</span><span class="p">,</span> <span class="s1">&#39;notes&#39;</span><span class="p">:</span> <span class="n">em</span><span class="o">.</span><span class="n">notes</span><span class="p">}</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">experiments</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">if</span> <span class="s1">&#39;meta&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                <span class="n">to_yml</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">to_yml</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">update_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
+            <span class="n">em</span> <span class="o">=</span> <span class="n">xmen</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">ExperimentManager</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+            <span class="n">em</span><span class="o">.</span><span class="n">update_meta</span><span class="p">()</span>
+
+<div class="viewcode-block" id="GlobalExperimentManager.clean"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iteratively search through experiment sets and remove any that no longer exist.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This is performed by checking that experiment folder is a valid set using</span>
+<span class="sd">            using ``ExperimentManager(p).check_initialised()``</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">corrupted</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">em</span> <span class="o">=</span> <span class="n">xmen</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">ExperimentManager</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+                <span class="n">em</span><span class="o">.</span><span class="n">check_initialised</span><span class="p">()</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">corrupted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">corrupted</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The following experiments were removed from the global configuration... &#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">corrupted</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  - &#39;</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The current configuration as a string&quot;&quot;&quot;</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Prompt for Message: </span><span class="si">{self.prompt_for_message}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;Python Path:</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">python_paths</span><span class="p">:</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  - </span><span class="si">{p}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;Python Experiments:</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">python_experiments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+           <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  - </span><span class="si">{k}</span><span class="s1">: </span><span class="si">{v}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;Header:</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;Meta:</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  - </span><span class="si">{k}</span><span class="s1">: </span><span class="si">{m}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;Experiments:</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;  - </span><span class="si">{e[&quot;created&quot;]}</span><span class="s1">: </span><span class="si">{k}</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+        <span class="k">return</span> <span class="n">string</span>
+
+<div class="viewcode-block" id="GlobalExperimentManager.find"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">param_match</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">types_match</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">load_defaults</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">missing_entry</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Search through all experiments in the globally filtering by experiment location, parameters, and type.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mode (str): If &#39;all&#39; then all experiments for each set will be concatenated and summarised individually</span>
+<span class="sd">                whilst if &#39;set&#39; then experiments will be summarised and searched for based on the default parameters.</span>
+<span class="sd">            pattern (str): A unix glob pattern of experiments to consider</span>
+<span class="sd">            param_match (list): A list of strings providing a condition to filter experiments by their parameters.</span>
+<span class="sd">                Compatible string formats are &quot;regex&quot;, &quot;regex op val&quot; or &quot;val1 op1 regex op2 val2&quot; where op is in</span>
+<span class="sd">                ``[&lt;=,==,&gt;=,&lt;,&gt;,!=]``. If just a regex is supplied then only experiments with parameters matching the</span>
+<span class="sd">                regex will be returned. If an op is supplied then only experiments with all parameters which match the</span>
+<span class="sd">                regex and satisfy the condition will be returned.</span>
+<span class="sd">            types_match (list): A list of types of experiments to search for</span>
+<span class="sd">            load_defaults (bool): If True then ``defaults.yml`` files will be loaded and the parameters of each</span>
+<span class="sd">                experiment inferred from the overides defined in the ``experiment.yml`` file for each experiment set.</span>
+<span class="sd">                This is potentially faster (less io) but means that the messages for each experiment will not be</span>
+<span class="sd">                returned.</span>
+<span class="sd">            missing_entry: Assign this parameter to missing values (see notes).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            matches (dict): A dict with possible keys ``[&#39;_root&#39;, &#39;_purpose&#39;, &#39;_type&#39;, &#39;_notes&#39;,  &#39;_name&#39;, &#39;_created&#39;,</span>
+<span class="sd">                &#39;_version&#39;, &#39;_status&#39;, &#39;_messages&#39;, &#39;_experiments&#39;, *param_keys]`` where  ``param_keys`` correspond to</span>
+<span class="sd">                any parameters that satisfy the conditions in param_match. The keys</span>
+<span class="sd">                ``[&#39;_root&#39;, &#39;_purpose&#39;, &#39;_type&#39;, &#39;_notes&#39;, &#39;_created&#39;]`` will always be present,</span>
+<span class="sd">                ``[&#39;_name&#39;, &#39;_version&#39;]`` will be added if ``load_defaults==True`` and ``[&#39;_name&#39;, &#39;_version&#39;,</span>
+<span class="sd">                &#39;_status&#39;, &#39;_messages]`` if ``load_defaults==False``. If [mode == &#39;set&#39;] then</span>
+<span class="sd">                the key  &#39;_experiments&#39; will also be added (giving a list of paths to the experiments in each set).</span>
+<span class="sd">                The created dates in this case correspond to the date the set was created</span>
+<span class="sd">                (given in defaults.yml).</span>
+<span class="sd">            special_keys (dict): A list of keys starting with &#39;_&#39; present in the dictionary.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Due to the use of regex and conditions it is possible for parameters to match in one experiment which are</span>
+<span class="sd">                not present in another. In this case missing parameters are given a value equal to ``missing_string``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">fnmatch</span>
+        <span class="kn">import</span> <span class="nn">re</span>
+        <span class="k">def</span> <span class="nf">_comparison</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="n">arg</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+               <span class="n">out</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="n">out</span>
+
+        <span class="c1"># Will use same pattern to search for  parameters and messages</span>
+        <span class="c1"># All special parameters are recorded</span>
+        <span class="c1"># From experiment.yml</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;_root&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;_type&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;_notes&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;_meta&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="c1"># Additional</span>
+        <span class="k">if</span> <span class="n">load_defaults</span><span class="p">:</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;_name&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;_created&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;_version&#39;</span><span class="p">:</span> <span class="p">[]})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;_name&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;_created&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;_status&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;_messages&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;_version&#39;</span><span class="p">:</span> <span class="p">[]})</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;_experiments&#39;</span><span class="p">:</span> <span class="p">[]})</span>
+
+        <span class="c1"># Filter experiment by name</span>
+        <span class="n">experiments</span> <span class="o">=</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">pattern</span><span class="p">)</span>
+        <span class="n">encountered</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">root</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">em</span> <span class="o">=</span> <span class="n">xmen</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">ExperimentManager</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">load_defaults</span><span class="p">:</span>
+                    <span class="n">defaults</span> <span class="o">=</span> <span class="n">em</span><span class="o">.</span><span class="n">load_defaults</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">types_match</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">em</span><span class="o">.</span><span class="n">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">types_match</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">NoMatchException</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+
+                <span class="n">paths</span> <span class="o">=</span> <span class="n">em</span><span class="o">.</span><span class="n">experiments</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span> <span class="k">else</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">defaults</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">paths</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">load_defaults</span><span class="p">:</span>
+                            <span class="n">params</span> <span class="o">=</span> <span class="n">em</span><span class="o">.</span><span class="n">load_params</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+                            <span class="n">params</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">defaults</span><span class="p">)</span>
+                            <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">em</span><span class="o">.</span><span class="n">overides</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">params</span> <span class="o">=</span> <span class="n">em</span><span class="o">.</span><span class="n">load_defaults</span><span class="p">()</span>
+
+                    <span class="c1"># Find experiments who&#39;s parameters match all conditions</span>
+                    <span class="k">if</span> <span class="n">param_match</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">extracted</span> <span class="o">=</span> <span class="p">{}</span>
+                        <span class="c1"># Search through al param matches</span>
+                        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">param_match</span><span class="p">:</span>
+                            <span class="c1"># Condition from param string</span>
+                            <span class="n">splits</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(&lt;=|==|&gt;=|&lt;|&gt;|!=)&#39;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                                <span class="n">reg</span> <span class="o">=</span> <span class="n">splits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                                <span class="n">valid</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="kc">True</span>
+                            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                                <span class="n">reg</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">splits</span>
+                                <span class="n">valid</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">_comparison</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">op</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+                            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+                                <span class="n">y1</span><span class="p">,</span> <span class="n">op1</span><span class="p">,</span> <span class="n">reg</span><span class="p">,</span> <span class="n">op2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">splits</span>
+                                <span class="n">valid</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">_comparison</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">op1</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">op2</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: Only strings of the form (3.0 | cat) &lt; param &lt;= (4.0 | dog) can be set but&#39;</span>
+                                          <span class="s1">&#39;got match_keys&#39;</span><span class="p">)</span>
+                                    <span class="n">exit</span><span class="p">()</span>
+
+                            <span class="c1"># Keep keys if match or special (_...)</span>
+                            <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">reg</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                                <span class="k">raise</span> <span class="n">NoMatchException</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+
+                            <span class="n">keys</span> <span class="o">+=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
+                            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="n">valid</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]):</span>
+                                    <span class="n">extracted</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="k">raise</span> <span class="n">NoMatchException</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">extracted</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="n">NoMatchException</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># If we get here add parameters to experiments (extracted must have at least one element)</span>
+                            <span class="c1"># Infer current length of table (same length for every entry)</span>
+                            <span class="n">table_length</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span>
+                            <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">values</span><span class="p">()]):</span>
+                                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;This should not happen&#39;</span><span class="p">)</span>
+
+                            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">extracted</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">,</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">]:</span>
+                                    <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
+                                        <span class="n">encountered</span> <span class="o">+=</span> <span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                                        <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">missing_entry</span><span class="p">]</span> <span class="o">*</span> <span class="n">table_length</span> <span class="o">+</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
+                                    <span class="k">else</span><span class="p">:</span>
+                                        <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
+
+                            <span class="k">if</span> <span class="s1">&#39;_meta&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">extracted</span><span class="p">:</span>
+                                <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_meta&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">get_meta</span><span class="p">()]</span>
+                            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">encountered</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">extracted</span><span class="p">:</span>
+                                    <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">missing_entry</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">,</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">]:</span>
+                                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
+                                    <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="s1">&#39;_meta&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                            <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_meta&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">get_meta</span><span class="p">()]</span>
+
+                    <span class="c1"># Add data to table from experiment.yml</span>
+                    <span class="k">if</span> <span class="n">load_defaults</span><span class="p">:</span>
+                        <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_name&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">em</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]]</span>
+                    <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+                        <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_experiments&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">experiments</span><span class="p">]</span>
+
+                    <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">root</span><span class="p">]</span>
+                    <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_purpose&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">purpose</span><span class="p">]</span>
+                    <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_type&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
+                    <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_notes&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">notes</span><span class="p">]</span>
+            <span class="k">except</span> <span class="n">NoMatchException</span> <span class="k">as</span> <span class="n">m</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_name&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">table</span></div>
+
+<div class="viewcode-block" id="GlobalExperimentManager.find_to_dataframe"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.find_to_dataframe">[docs]</a>    <span class="k">def</span> <span class="nf">find_to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">display_git</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">display_purpose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">display_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">display_messages</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">display_status</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">display_meta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert the output of the `find` method to a formatted data frame configured by args. If verbose then all</span>
+<span class="sd">        entries will be displayed (independent of the other args)&quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+        <span class="n">special_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">table</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
+        <span class="n">display</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;root&#39;</span><span class="p">:</span> <span class="n">table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_root&#39;</span><span class="p">)}</span>
+
+        <span class="k">if</span> <span class="s1">&#39;_name&#39;</span> <span class="ow">in</span> <span class="n">special_keys</span><span class="p">:</span>
+            <span class="n">display</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_name&#39;</span><span class="p">)</span>
+        <span class="n">display</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s1">&#39;created&#39;</span><span class="p">:</span> <span class="n">table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_created&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_type&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;purpose&#39;</span><span class="p">:</span> <span class="n">table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_purpose&#39;</span><span class="p">)})</span>
+
+        <span class="k">if</span> <span class="s1">&#39;_origin&#39;</span> <span class="ow">in</span> <span class="n">special_keys</span><span class="p">:</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_origin&#39;</span><span class="p">)</span>
+
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_meta&#39;</span><span class="p">)</span>
+        <span class="n">meta_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">meta</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">meta_dict</span><span class="p">:</span>
+                    <span class="n">meta_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">meta_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span>
+        <span class="n">display</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">meta_dict</span><span class="p">)</span>
+
+        <span class="c1"># Remove Notes</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_notes&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;_status&#39;</span> <span class="ow">in</span> <span class="n">special_keys</span><span class="p">:</span>
+            <span class="n">display</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_status&#39;</span><span class="p">)</span>
+        <span class="c1"># Add version information to table</span>
+        <span class="n">versions</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_version&#39;</span><span class="p">)</span>
+        <span class="n">display</span><span class="p">[</span><span class="s1">&#39;commit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">version</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;git&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;commit&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">version</span> <span class="ow">in</span> <span class="n">versions</span><span class="p">]</span>
+
+        <span class="c1"># Add messages to table</span>
+        <span class="n">encountered</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="s1">&#39;_messages&#39;</span> <span class="ow">in</span> <span class="n">special_keys</span><span class="p">:</span>
+            <span class="n">messages</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_messages&#39;</span><span class="p">)</span>  <span class="c1"># List of dict</span>
+            <span class="n">message_dict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">message_dict</span><span class="p">:</span>
+                        <span class="n">message_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">message_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">message_dict</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">m</span><span class="p">:</span>
+                        <span class="n">message_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
+            <span class="n">display</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">message_dict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">display_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">display</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">display_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;root&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">display</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">display_git</span><span class="p">:</span>
+                <span class="n">display_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;commit&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">display_status</span><span class="p">:</span>
+                <span class="n">display_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">display_date</span><span class="p">:</span>
+                <span class="n">display_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;created&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">display_meta</span><span class="p">:</span>
+                <span class="n">display_keys</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">meta_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;origin&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">display_messages</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="n">display_messages</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;_messages&#39;</span> <span class="ow">in</span> <span class="n">special_keys</span><span class="p">:</span>
+                <span class="n">display_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">message_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">display_messages</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="n">display_messages</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;.*&#39;</span><span class="p">,</span> <span class="n">k</span><span class="p">)]</span>
+                    <span class="c1"># list(message_dict.keys())</span>
+                <span class="n">display_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">display_purpose</span><span class="p">:</span>
+                <span class="n">display_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;purpose&#39;</span><span class="p">]</span>
+
+        <span class="n">display_keys</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="c1"># Add other params</span>
+        <span class="n">display</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">display</span><span class="p">)</span>
+        <span class="c1"># Shorten roots</span>
+        <span class="n">roots</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;root&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">commonprefix</span><span class="p">(</span><span class="n">roots</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">prefix</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+            <span class="n">roots</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">roots</span><span class="p">]</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;root&#39;</span><span class="p">:</span> <span class="n">roots</span><span class="p">})</span>
+        <span class="c1"># Finally filter</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">items</span><span class="o">=</span><span class="n">display_keys</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">prefix</span></div>
+
+<div class="viewcode-block" id="GlobalExperimentManager.add_experiment"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.add_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">add_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a python experiment ``name`` defined in ``module`` either as a class or function.&quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">stat</span>
+        <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="kn">import</span> <span class="n">get_run_script</span>
+        <span class="n">script</span> <span class="o">=</span> <span class="n">get_run_script</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># Make executable run script</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">,</span> <span class="s1">&#39;experiments&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">]))</span>
+        <span class="c1"># Note old experiments will be written over</span>
+        <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">st</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">|</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IEXEC</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">python_experiments</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">path</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span></div></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Rob Weston.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script type="text/javascript" src="../../_static/jquery.fancybox.min.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+  <script type="text/javascript">
+    $(function(){
+      $('.image-reference').fancybox();
+    })
+  </script>
+
+</body>
+</html>

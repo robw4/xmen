@@ -370,43 +370,43 @@ class XmenMessenger(Hook):
         """Leave messages, timing and step information with experiments"""
         from xmen.experiment import Experiment
 
-        if monitor.directory is None:
-            monitor.log(f'WARNING: Cannot log {list(var_dict.keys())} as monitor does not have a directory')
+        # if monitor.directory is None:
+        #     monitor.log(f'WARNING: Cannot log {list(var_dict.keys())} as monitor does not have a directory')
+        # else:
+        # get and remove experiments from var_dict
+        results = zip(*[(k, var_dict[k]) for k in var_dict if re.match(self.log, k) is None])
+        results = list(results)
+        if len(results) == 2:
+            names, experiments = results
         else:
-            # get and remove experiments from var_dict
-            results = zip(*[(k, var_dict[k]) for k in var_dict if re.match(self.log, k) is None])
-            results = list(results)
-            if len(results) == 2:
-                names, experiments = results
-            else:
-                return
+            return
 
-            for k in names:
-                var_dict.pop(k)
+        for k in names:
+            var_dict.pop(k)
 
-            if self.expand:
-                # Expand dictionaries in var_dict
-                pop, add = [], {}
-                for k, v in var_dict.items():
-                    if isinstance(v, dict):
-                        p = '' if self.prepend is None else k + '_'
-                        add.update({p + kk: vv for kk, vv in v.items()})
-                        pop.append(k)
-                for p in pop:
-                    var_dict.pop(p)
-                var_dict.update(add)
+        if self.expand:
+            # Expand dictionaries in var_dict
+            pop, add = [], {}
+            for k, v in var_dict.items():
+                if isinstance(v, dict):
+                    p = '' if self.prepend is None else k + '_'
+                    add.update({p + kk: vv for kk, vv in v.items()})
+                    pop.append(k)
+            for p in pop:
+                var_dict.pop(p)
+            var_dict.update(add)
 
-            for e, name in zip(experiments, names):
-                # Get leader
-                leader, best_leader = None, False
+        for e, name in zip(experiments, names):
+            # Get leader
+            leader, best_leader = None, False
 
-                if self.leader is not None:
-                    leader = [k for k in var_dict if re.match(self.leader, k) is not None][0]
-                if isinstance(e, Experiment):
-                    e.message(monitor.summary(verbose=1))
-                    e.message(var_dict, keep=self.keep, leader=leader)
-                    keys = list(var_dict.keys())
-                    monitor.log(f'Left messages {keys if keys != [] else ""} with {name} at {e.directory}')
+            if self.leader is not None:
+                leader = [k for k in var_dict if re.match(self.leader, k) is not None][0]
+            if isinstance(e, Experiment):
+                e.message(monitor.summary(verbose=1))
+                e.message(var_dict, keep=self.keep, leader=leader)
+                keys = list(var_dict.keys())
+                monitor.log(f'Left messages {keys if keys != [] else ""} with {name} at {e.directory}')
 
 
 class Timer(Hook):
@@ -415,6 +415,28 @@ class Timer(Hook):
         s = monitor.summary(verbose=1)
         keys = [k for k in s if k not in BRIEF.values() and k != 'last']
         monitor.log(' '.join(f'{k}={s[k]}' for k in keys))
+
+
+class Probe(Hook):
+    """A simple probing hook used to retrieve and log a system snapshot with the experiment"""
+    def __call__(self, var_dict, monitor):
+        for k, v in var_dict.items():
+            try:
+                v.update_meta(get_cpu=True, get_gpu=True, save=True)
+                string = ''
+                cpu = v._meta.get('cpu', None)
+                if cpu is not None:
+                    cpu_use = sum(float(c.replace('%', '')) for c in cpu['usage']) / len(cpu['usage'])
+                    string += f"cpu={cpu_use}%"
+                gpu = v._meta.get('gpu', None)
+                if gpu is not None:
+                    string += '   '
+                    string += '   '.join(f"{kk} = {vv['name']} {vv['load']} {vv['memory']} {vv['temperature']}"
+                                       for kk, vv in gpu.items())
+                    string += '   '
+                monitor.log(string)
+            except AttributeError:
+                pass
 
 
 class Logger(Hook):
@@ -762,6 +784,7 @@ class Monitor(object):
             log_format='.3f',
             msg='a->X@1s',
             time=('@2s', '@1e'),
+            probe='X@10s',
             limit='@20s')
         for _ in m(range(2)):
             for _ in m(range(2)):
@@ -773,12 +796,12 @@ class Monitor(object):
                     c += 1
                 d += 1
             e += 1
-    
     """
     def __init__(self, *, hooks=[],
                  log=None, log_fn=None, log_format='',
                  time=(),
                  msg=None, msg_keep='latest', msg_leader=None, msg_expand=False, msg_prep=None,
+                 probe=None,
                  limit=None):
         """
         Args:
@@ -797,6 +820,8 @@ class Monitor(object):
                 and all other variables will be logged only if the keep condition is met for the leader
             msg_expand (bool, Iterable[str]): If True then dictionary variables with K keys will be expanded to give K variables
             msg_prep (bool, Iterable[str]): If True then each variable in the dictionary will be prepended by the dictionary name.
+            probe (str, Iterable[str]): A string of the form ``f"{regex}@{steps}"`` to log resource use to each
+                experiment that matches regex (or list of for different triggers).
             limit (str,  Iterable[str]): A modulo string of the form ``f"@{modulo}{triger}" used to limit the number of iterations of
                 an experiment at a particular trigger level. This is useful if an experiment is restarted for
                 example.
@@ -846,6 +871,13 @@ class Monitor(object):
             assert all(len(f) == len(msg) for f in (msg_keep, msg_leader, msg_expand, msg_prep)), warn
             for m, k, l, ex, pr in zip(msg, msg_keep, msg_leader, msg_expand, msg_prep):
                 self.hooks.append(XmenMessenger(m, k, l, ex, pr))
+
+        if probe is not None:
+            if not isinstance(probe, (list, tuple)):
+                probe = [probe]
+            for p in probe:
+                self.hooks.append(Probe(p))
+
         # Add user hooks
         self.n_user_hooks = len(hooks)
         self.hooks.extend(hooks)
@@ -1090,6 +1122,7 @@ class TorchMonitor(Monitor):
                  vid=None, vid_fn=None, vid_pref='', vid_prep=True,
                  time=(),
                  msg=None, msg_keep='latest', msg_leader=None, msg_expand=False, msg_prep=None,
+                 probe=None,
                  limit=None):
         """
         Args:
@@ -1160,6 +1193,8 @@ class TorchMonitor(Monitor):
                 and all other variables will be logged only if the keep condition is met for the leader
             msg_expand (bool, Iterable[bool]): If True then dictionary variables with K keys will be expanded to give K variables
             msg_prep (bool, Iterable[bool]): If True then each variable in the dictionary will be prepended by the dictionary name.
+            probe (str, Iterable[str]): A string of the form ``f"{regex}@{steps}"`` to log resource use to each
+                experiment that matches regex (or list of for different triggers).
             limit (str): A modulo string of the form ``f"@{modulo}{triger}" used to limit the number of iterations of
                 an experiment at a particular trigger level. This is useful if an experiment is restarted for
                 example.
@@ -1251,6 +1286,7 @@ class TorchMonitor(Monitor):
         """
         super().__init__(hooks=hooks, log=log, log_fn=log_fn, log_format=log_format, time=time,
                          msg=msg, msg_keep=msg_keep, msg_leader=msg_leader, msg_expand=msg_expand, msg_prep=msg_prep,
+                         probe=probe,
                          limit=limit)
 
         self.directory = directory

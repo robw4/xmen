@@ -24,13 +24,13 @@ def hello_world(
     root: xmen.Root,   # experiments are assigned a root before being executed
     a: str = 'Hello',  # the first
     # argument
-    b: str = 'World'   # the second argument
+    b: str = 'World',   # the second argument
 ):
     """A hello world experiment designed to demonstrate
     defining experiments through the functional experiment api"""
     print(f'{a}  {b}')
 
-    ...     # Whatever other experiment code you want
+    ...     # whatever other experiment code you want
 
     with open(root.directory + '/out.txt', 'w') as f:
         f.write(f'{a} {b}')
@@ -51,4 +51,5 @@ class HelloWorld(xmen.Experiment):
 
 if __name__ == '__main__':
     from xmen.functional import functional_experiment
-    Exp, _ = functional_experiment(hello_world)
+    Exp = functional_experiment(hello_world)
+    Exp().main()

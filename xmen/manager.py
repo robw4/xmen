@@ -374,29 +374,6 @@ class ExperimentManager(object):
             import subprocess
             subprocess.call([self._config.python_experiments[name], '--to_root', self.root])
 
-            # # for p in self._config.python_paths:
-            #     # if self._config.python_experiments[name].startswith(p):
-            #     #     # Find the module name from the relative path of the
-            #     #     # module
-            #     #     module = '.'.join(self._config.python_experiments[name].replace(p, '').split('/'))
-            #     #     if module.startswith('.'):
-            #     #         module = module[1:]
-            #     #     if module.endswith('.py'):
-            #     #         module = module[:-3]
-            #     #     import importlib.util
-            #     #     mod = importlib.import_module(module)
-            #     #
-            #     #     # Get experiment from module
-            #     #     Exp = getattr(mod, name)
-            #     #     Exp().to_root(self.root)
-            #     #     break
-            # else:
-            #     print('ERROR: Could not find experiment on current PYTHONPATH. Either add the relevant module '
-            #           'to the global config using xmen config --add PATH or generate a root directly from the '
-            #           'experiment definition using /path/to/exp.py --to_root ROOT and initialise an experiment using'
-            #           'xmen init ROOT')
-            #     exit()
-
             self.script = os.path.join(self.root, 'script.sh')
             self.defaults = os.path.join(self.root, 'defaults.yml')
             self.type = name
@@ -655,6 +632,15 @@ class ExperimentManager(object):
                 else:
                     version = None
 
+                meta = get_meta(get_conda=True)
+                conda_env = meta.get('conda', None)
+                if conda_env is not None and self._config:
+                    from ruamel.yaml import YAML
+                    yaml = YAML()
+                    yaml.default_flow_style = False
+                    with open(os.path.join(self.root, experiment_name, 'environment.yml'), 'w') as f:
+                        yaml.dump(conda_env, f)
+                
                 extra_params = {
                     '_root': self.root,
                     '_name': experiment_name,
@@ -784,12 +770,11 @@ class ExperimentManager(object):
                 if inp != 'y':
                     print('Aborting!')
                     return
+            print('The following experiments were deleted:')
             for d in subdirs:
                 if os.path.exists(os.path.join(d, 'params.yml')):
                     rmtree(d)
-                print('The following experiments were deleted:')
-                for p in subdirs:
-                    print(p)
+                    print(d)
         else:
             print('no folders found for deletion')
 
