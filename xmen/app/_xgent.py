@@ -127,6 +127,11 @@ config_parser.add_argument('--disable_save_conda', action='store_false',
 config_parser.add_argument('--enable_save_conda', action='store_false',
                            help='Turn conda environment saving on', default=None)
 
+config_parser.add_argument('--disable_requeue', action='store_false',
+                           help='Disable automatic requeue of experiments on timeout', default=None)
+config_parser.add_argument('--enable_requeue', action='store_false',
+                           help='Enable automatic requeue of experiments on timeout', default=None)
+
 config_parser.add_argument('--update_meta', default=None, action='store_true',
                            help='Update meta information in each experiment (both defaults.yml and params.yml). '
                                 'WARNING: Overwrites information in the params.yml or defaults.yml')
@@ -147,6 +152,10 @@ def _config(args):
         elif args.enable_save_conda is not None:
             config.save_conda = True
 
+        if args.disable_requeue is not None:
+            config.requeue = False
+        elif args.enable_requeue is not None:
+            config.requeue = True
 
         if args.update_meta is not None:
             config.update_meta()

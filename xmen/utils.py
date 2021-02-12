@@ -75,8 +75,9 @@ def get_size(bytes, suffix="B"):
         bytes /= factor
 
 
-def get_meta(get_platform=True, get_cpu=True, get_memory=True, get_disk=False,
-             get_slurm=False, get_conda=False, get_network=False, get_gpu=False, get_environ=False, live=False):
+def get_meta(get_platform=False, get_cpu=False, get_memory=False, get_disk=False,
+             get_slurm=False, get_conda=False, get_network=False, get_gpu=False,
+             get_environ=False, live=False):
     """Get Meta information for the system"""
     import uuid
     import socket
@@ -195,21 +196,31 @@ def get_meta(get_platform=True, get_cpu=True, get_memory=True, get_disk=False,
             pass
 
     if get_gpu:
+        print('GETTING GPU')
         try:
             import GPUtil
             gpus = {}
-            for gpu in GPUtil.getGPUs():
-                gpus.update({
-                  str(gpu.id): {
-                      'name': gpu.name,
-                      'load': f"{gpu.load*100}%",
-                      'memory': f"{gpu.memoryFree}MB",
-                      'used': f"{gpu.memoryUsed}MB",
-                      'temperature': f"{gpu.temperature}°C",
-                      'uuid': f"{gpu.uuid}"}
-                })
-            meta.update({'gpu': gpus})
-        except:
+            device = os.environ.get('CUDA_VISIBLE_DEVICES', None)
+            if device is not None:
+                if not isinstance(device, list):
+                    device = [device]
+                device = [int(d) for d in device]
+                for gpu in GPUtil.getGPUs():
+                    print(f'GPU DEVICE IS {gpu.id} vs {device}')
+                    if gpu.id in device:
+                        gpus.update({
+                          str(gpu.id): {
+                              'name': gpu.name,
+                              'load': f"{gpu.load*100}%",
+                              'memory': f"{gpu.memoryFree}MB",
+                              'used': f"{gpu.memoryUsed}MB",
+                              'temperature': f"{gpu.temperature}°C",
+                              'uuid': f"{gpu.uuid}"}
+                        })
+                meta.update({'gpu': gpus})
+        except Exception as m:
+            print('An error occurred')
+            print(m)
             pass
 
     if get_slurm:

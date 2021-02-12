@@ -42,8 +42,9 @@ helps = {
 
 from xmen.config import GlobalExperimentManager
 
-SAVE_CONDA = GlobalExperimentManager().save_conda
-
+_ = GlobalExperimentManager()
+SAVE_CONDA = _.save_conda
+REQUEUE = _.requeue
 
 import textwrap
 for k in helps:
@@ -66,7 +67,7 @@ experiment_parser.add_argument('--execute', '-x', type=str, default=None, help=h
 experiment_parser.add_argument('--to_root', '-r', type=str, default=None, help=helps['root'])
 # optional extras
 experiment_parser.add_argument('--debug', '-d', default=None, action='store_true', help=helps['debug'])
-experiment_parser.add_argument('--to_txt', '-t', default=None, action='store_true', help=helps['txt'])
+experiment_parser.add_argument('--no_txt', '-t', default=True, action='store_false', help=helps['txt'])
 experiment_parser.add_argument('--restart', '-f', default=None, action='store_true', help=helps['restart'])
 _SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta']
 
@@ -221,9 +222,11 @@ class Experiment(object, metaclass=TypedMeta):
         else:
             self._version = get_version(cls=self.__class__)
 
-    def update_meta(self, get_cpu=False, get_gpu=False, save=False):
-        self._meta = get_meta(
-            get_platform=True, get_cpu=get_cpu, get_gpu=get_gpu)
+    def update_meta(self, get_platform=False, get_cpu=False, get_memory=False, save=False, **kwargs):
+        self._meta = get_meta(get_platform, get_cpu, get_memory, **kwargs)
+        id = os.environ.get('SLURM_JOB_ID', None)
+        if id is not None:
+            self._meta.update({'slurm_job': f'{id}'})
         if save:
             self._to_yaml()
 
@@ -232,7 +235,6 @@ class Experiment(object, metaclass=TypedMeta):
          Any base class inheriting from Experiment can create a default file as::
 
             MyExperiment().to_yaml('/dir/to/defaults/root')
-
         """
         self.update_version()
         self.update_meta()
@@ -402,7 +404,7 @@ class Experiment(object, metaclass=TypedMeta):
         import stat
         # get_git is deliberately called outside to_defaults as git information is also added to script.sh
         self.update_version()
-        self.update_meta()
+        self.update_meta(save=False)
 
         from xmen.utils import get_run_script
         if hasattr(self, 'fn'):
@@ -421,7 +423,7 @@ class Experiment(object, metaclass=TypedMeta):
         os.chmod(path, st.st_mode | stat.S_IEXEC)
 
         open(os.path.join(root_dir, 'script.sh'), 'w').write(
-            f'#!{shell}\n{path} --execute ${{1}}')
+            f'#!{shell}\nexec {path} --execute ${{1}}')
 
         self.to_defaults(root_dir)
 
@@ -459,14 +461,21 @@ class Experiment(object, metaclass=TypedMeta):
         self.__dict__.update({key: value})
 
     def __enter__(self):
+        print('Enter called')
+
         def _sigusr1_handler(signum, handler):
-            raise TimeoutException()
+            print('Timout encountered')
+            raise TimeoutException
         signal.signal(signal.SIGUSR1, _sigusr1_handler)
-        meta = get_meta(
-            get_platform=True, get_cpu=True, get_memory=True, get_disk=True,
-            get_slurm=True, get_conda=SAVE_CONDA, get_network=True, get_gpu=True,
-            get_environ=True)
+        meta = get_meta(get_platform=True, get_cpu=True, get_memory=True, get_disk=True,
+                        get_slurm=True, get_conda=SAVE_CONDA, get_network=True, get_gpu=True,
+                        get_environ=True)
+        id = os.environ.get('SLURM_JOB_ID', None)
+        if id is not None:
+            meta.update({'slurm_job': f'{id}'})
         conda = meta.pop('conda', None)
+        self._meta = meta
+        self._to_yaml()
         from ruamel.yaml import YAML
         yaml = YAML()
         yaml.default_flow_style = False
@@ -484,10 +493,24 @@ class Experiment(object, metaclass=TypedMeta):
         if exc_type is None:
             self._update_status('finished')
         elif exc_type is KeyboardInterrupt:
+            print('########################')
+            print('Stopping experiment')
+            print('########################')
             self._update_status('stopped')
         elif exc_type is TimeoutException:
+            print('########################')
+            print('Timeout encountered')
+            print('########################')
             self._update_status('timeout')
+            slurm_job = os.environ.get('SLURM_JOBID', None)
+            if slurm_job is not None and REQUEUE:
+                import subprocess
+                self._update_status('requeue')
+                subprocess.call(['scontrol', 'requeue', f'{slurm_job}'])
         else:
+            print('########################')
+            print('An error occurred encountered')
+            print('########################')
             if self.status not in ['timeout', 'stopped']:
                 self._update_status('error')
 
@@ -629,7 +652,7 @@ class Experiment(object, metaclass=TypedMeta):
         if args is None:
             args = self.parse_args()
 
-        if all(a is None for a in (args.debug, args.execute, args.to_root, args.to_txt, args.update)):
+        if all(a is None for a in (args.debug, args.execute, args.to_root, args.no_txt, args.update)):
             print(self.__doc__)
             print('\nFor more help use --help.')
 
@@ -640,10 +663,11 @@ class Experiment(object, metaclass=TypedMeta):
 
         # Run the experiment
         if args.execute is not None:
-            assert self.status in ['registered', 'detached'], 'Experiment must be registered before execution'
+            assert self.status in ['registered', 'detached', 'timeout', 'requeue'],\
+                'Experiment must be registered before execution'
             # Configure standard out to print to the registered directory as well as
             # the original standard out
-            if args.to_txt:
+            if not args.no_txt:
                 self.stdout_to_txt()
             # Execute experiment
             try:

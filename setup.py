@@ -35,5 +35,7 @@ setup(
             'ruamel.yaml>=0.16.10',
             'pandas>=1.1.1',
             'GitPython>=3.1.7',
-            'psutil'],
+            'psutil',
+            'GPUtil'
+    ],
     packages=setuptools.find_packages())

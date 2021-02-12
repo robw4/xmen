@@ -29,6 +29,8 @@ from xmen.utils import get_meta, get_version, DATE_FORMAT, get_git
 import xmen.config
 
 
+
+
 class ExperimentNotFoundException(Exception):
     def __init__(self, root, name):
         self.root = root
@@ -670,7 +672,11 @@ class ExperimentManager(object):
                     header_str = open(header).read()
                 else:
                     header_str = self._config.header
-                script = f'#!{shell}\n{header_str}\n{shell} {os.path.join(self.script)} {os.path.join(experiment_path, "params.yml")}'
+                script = '\n'.join(
+                    [f'#!{shell}\n{header_str}',
+                     f'exec {shell} {os.path.join(self.script)} {os.path.join(experiment_path, "params.yml")}',
+                     'echo EXPERIMENT FINISHED!']
+                )
                 with open(os.path.join(self.root, experiment_name, 'run.sh'), 'w') as f:
                     f.write(script)
 

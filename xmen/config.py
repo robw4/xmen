@@ -36,6 +36,7 @@ class GlobalExperimentManager(object):
         self.python_paths = []         # A list of python paths needed to run each module
         self.prompt_for_message = True
         self.save_conda = True         # Whether to save conda info to file
+        self.requeue = True
         self.experiments = {}          # A list of all experiments registered with an Experiment Manager
         self.meta = get_meta()
         self.header = ''
@@ -113,6 +114,7 @@ class GlobalExperimentManager(object):
         """The current configuration as a string"""
         string = f'prompt for message: {self.prompt_for_message}\n'
         string += f'save conda: {self.save_conda}\n'
+        string += f'enable requeue: {self.requeue}\n'
         string += f'python Path:\n'
         for p in self.python_paths:
             string += f'  - {p}\n'
