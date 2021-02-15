@@ -127,6 +127,11 @@ config_parser.add_argument('--disable_save_conda', action='store_false',
 config_parser.add_argument('--enable_save_conda', action='store_false',
                            help='Turn conda environment saving on', default=None)
 
+config_parser.add_argument('--disable_stdout_to_txt', action='store_false',
+                           help='Disable logging to text file in each experiment folder', default=None)
+config_parser.add_argument('--enable_stdout_to_txt', action='store_false',
+                           help='Enable saving to text file in each experiment folder', default=None)
+
 config_parser.add_argument('--disable_requeue', action='store_false',
                            help='Disable automatic requeue of experiments on timeout', default=None)
 config_parser.add_argument('--enable_requeue', action='store_false',
@@ -151,6 +156,11 @@ def _config(args):
             config.save_conda = False
         elif args.enable_save_conda is not None:
             config.save_conda = True
+
+        if args.disable_stdout_to_txt is not None:
+            config.redirect_stdout = False
+        elif args.enable_stdout_to_txt is not None:
+            config.redirect_stdout = True
 
         if args.disable_requeue is not None:
             config.requeue = False

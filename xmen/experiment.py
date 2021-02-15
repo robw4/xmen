@@ -45,6 +45,7 @@ from xmen.config import GlobalExperimentManager
 _ = GlobalExperimentManager()
 SAVE_CONDA = _.save_conda
 REQUEUE = _.requeue
+TXT = not _.redirect_stdout
 
 import textwrap
 for k in helps:
@@ -67,7 +68,7 @@ experiment_parser.add_argument('--execute', '-x', type=str, default=None, help=h
 experiment_parser.add_argument('--to_root', '-r', type=str, default=None, help=helps['root'])
 # optional extras
 experiment_parser.add_argument('--debug', '-d', default=None, action='store_true', help=helps['debug'])
-experiment_parser.add_argument('--no_txt', '-t', default=True, action='store_false', help=helps['txt'])
+experiment_parser.add_argument('--txt', '-t', default=not TXT, action='store_true', help=helps['txt'])
 experiment_parser.add_argument('--restart', '-f', default=None, action='store_true', help=helps['restart'])
 _SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta']
 
@@ -461,10 +462,7 @@ class Experiment(object, metaclass=TypedMeta):
         self.__dict__.update({key: value})
 
     def __enter__(self):
-        print('Enter called')
-
         def _sigusr1_handler(signum, handler):
-            print('Timout encountered')
             raise TimeoutException
         signal.signal(signal.SIGUSR1, _sigusr1_handler)
         meta = get_meta(get_platform=True, get_cpu=True, get_memory=True, get_disk=True,
@@ -475,6 +473,7 @@ class Experiment(object, metaclass=TypedMeta):
             meta.update({'slurm_job': f'{id}'})
         conda = meta.pop('conda', None)
         self._meta = meta
+        # save the output in the params.yml file
         self._to_yaml()
         from ruamel.yaml import YAML
         yaml = YAML()
@@ -652,7 +651,7 @@ class Experiment(object, metaclass=TypedMeta):
         if args is None:
             args = self.parse_args()
 
-        if all(a is None for a in (args.debug, args.execute, args.to_root, args.no_txt, args.update)):
+        if all(a is None for a in (args.debug, args.execute, args.to_root, args.txt, args.update)):
             print(self.__doc__)
             print('\nFor more help use --help.')
 
@@ -667,7 +666,7 @@ class Experiment(object, metaclass=TypedMeta):
                 'Experiment must be registered before execution'
             # Configure standard out to print to the registered directory as well as
             # the original standard out
-            if not args.no_txt:
+            if args.txt:
                 self.stdout_to_txt()
             # Execute experiment
             try:

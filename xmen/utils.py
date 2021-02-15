@@ -196,30 +196,26 @@ def get_meta(get_platform=False, get_cpu=False, get_memory=False, get_disk=False
             pass
 
     if get_gpu:
-        print('GETTING GPU')
         try:
             import GPUtil
-            gpus = {}
             device = os.environ.get('CUDA_VISIBLE_DEVICES', None)
             if device is not None:
                 if not isinstance(device, list):
                     device = [device]
                 device = [int(d) for d in device]
+                gpus = {}
                 for gpu in GPUtil.getGPUs():
-                    print(f'GPU DEVICE IS {gpu.id} vs {device}')
+                    count = 0
                     if gpu.id in device:
                         gpus.update({
-                          str(gpu.id): {
-                              'name': gpu.name,
-                              'load': f"{gpu.load*100}%",
-                              'memory': f"{gpu.memoryFree}MB",
-                              'used': f"{gpu.memoryUsed}MB",
-                              'temperature': f"{gpu.temperature}°C",
-                              'uuid': f"{gpu.uuid}"}
-                        })
+                            str(count): {
+                                'name': gpu.name,
+                                'id': f"{gpu.id}",
+                                'stats': f"{gpu.temperature}°C, {gpu.load*100}%, {gpu.memoryUsed}/{gpu.memoryTotal}MB",
+                                'uuid': f"{gpu.uuid}"}})
+                        count += 1
                 meta.update({'gpu': gpus})
         except Exception as m:
-            print('An error occurred')
             print(m)
             pass
 

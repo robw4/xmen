@@ -798,14 +798,18 @@ class ExperimentManager(object):
             rmtree(self.root)
             print(f'Removed {self.root}')
 
-    def run(self, pattern, *args):
+    def run(self, pattern, *flags):
         """Run all experiments that match the global pattern using the run command given by args."""
         import subprocess
+        options = set(flags)
         experiments = [p for p in glob.glob(os.path.join(self.root, pattern)) if p in self.experiments]
         for p in experiments:
             P = self.load_params(p)
             if P['_status'] == 'registered':
-                args = list(args)
+                args = list(flags)
+                if 'sbatch' in options and '--job-name' not in options:
+                    args += [
+                        f'--job-name={P["_name"]}', f'--output={os.path.join(P["_root"], P["_name"], "slurm.out")}']
                 subprocess_args = args + [os.path.join(p, 'run.sh')]
                 print('\nRunning: {}'.format(" ".join(subprocess_args)))
                 subprocess.call(subprocess_args)

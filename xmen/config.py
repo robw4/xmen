@@ -36,6 +36,7 @@ class GlobalExperimentManager(object):
         self.python_paths = []         # A list of python paths needed to run each module
         self.prompt_for_message = True
         self.save_conda = True         # Whether to save conda info to file
+        self.redirect_stdout = True    # Whether to also log the stdout and stderr to a text file in each experiment dir
         self.requeue = True
         self.experiments = {}          # A list of all experiments registered with an Experiment Manager
         self.meta = get_meta()
@@ -115,6 +116,7 @@ class GlobalExperimentManager(object):
         string = f'prompt for message: {self.prompt_for_message}\n'
         string += f'save conda: {self.save_conda}\n'
         string += f'enable requeue: {self.requeue}\n'
+        string += f'redirect stdout: {self.redirect_stdout}\n'
         string += f'python Path:\n'
         for p in self.python_paths:
             string += f'  - {p}\n'
