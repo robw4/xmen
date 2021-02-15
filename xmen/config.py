@@ -135,12 +135,15 @@ class GlobalExperimentManager(object):
 
         return string
 
-    def find(self, mode='all', pattern="*", param_match=None, types_match=None, load_defaults=False, missing_entry=''):
+    def find(self, mode='all', last=None, pattern="*", param_match=None, types_match=None,
+             load_defaults=False, missing_entry=''):
         """Search through all experiments in the globally filtering by experiment location, parameters, and type.
 
         Args:
             mode (str): If 'all' then all experiments for each set will be concatenated and summarised individually
                 whilst if 'set' then experiments will be summarised and searched for based on the default parameters.
+            paths (List[str]): Extract all information from the passed list of path to experiments. If None then
+                a search will be performed instead.
             pattern (str): A unix glob pattern of experiments to consider
             param_match (list): A list of strings providing a condition to filter experiments by their parameters.
                 Compatible string formats are "regex", "regex op val" or "val1 op1 regex op2 val2" where op is in
@@ -193,120 +196,142 @@ class GlobalExperimentManager(object):
             table.update({'_experiments': []})
 
         # Filter experiment by name
-        experiments = fnmatch.filter(self.experiments.keys(), pattern)
         encountered = []
-        for root in experiments:
+        if last is None:
+            # find all possible paths to experiments
+            experiments = fnmatch.filter(self.experiments.keys(), pattern)
+            paths = []
+            for root in experiments:
                 em = xmen.manager.ExperimentManager(root)
                 if load_defaults:
                     defaults = em.load_defaults()
                 if types_match is not None:
                     if em.type not in types_match:
                         raise NoMatchException(root)
+                paths += em.experiments if mode == 'all' else [em.defaults]
 
-                paths = em.experiments if mode == 'all' else [em.defaults]
+        else:
+            paths = [os.path.join(r, n) for r, n in zip(last['_root'], last['_name'])]
+        # for root in experiments:
+        #     em = xmen.manager.ExperimentManager(root)
+        #     if load_defaults:
+        #         defaults = em.load_defaults()
+        #     if types_match is not None:
+        #         if em.type not in types_match:
+        #             raise NoMatchException(root)
+        #
+        #     paths = em.experiments if mode == 'all' else [em.defaults]
+        valid = []
+        managers = {}
+        for i, path in enumerate(paths):
+            try:
+                if mode == 'all':
+                    if not load_defaults:
+                        import ruamel.yaml
+                        with open(os.path.join(path, 'params.yml'), 'r') as params_yml:
+                            params = ruamel.yaml.load(params_yml, ruamel.yaml.RoundTripLoader)
+                        if params is None:
+                            print(path)
+                    else:
+                        from copy import deepcopy
+                        params = deepcopy(defaults)
+                        params.update(em.overides[i])
+                else:
+                    params = em.load_defaults()
 
-                for i, path in enumerate(paths):
-                    try:
-                        if mode == 'all':
-                            if not load_defaults:
-                                params = em.load_params(path)
-                                if params is None:
-                                    print(path)
-                            else:
-                                from copy import deepcopy
-                                params = deepcopy(defaults)
-                                params.update(em.overides[i])
+                # remove notes (_notes will be removed from version 0.2.5)
+                try:
+                    params.pop('_notes')
+                except KeyError:
+                    pass
+
+                # Find experiments who's parameters match all conditions
+                if param_match is not None:
+                    extracted = {}
+                    # Search through al param matches
+                    for m in param_match:
+                        # Condition from param string
+                        splits = re.split(r'(<=|==|>=|<|>|!=)', m.replace(' ', ''))
+                        if len(splits) == 1:
+                            reg = splits[0]
+                            valid = lambda x: True
+                        elif len(splits) == 3:
+                            reg, op, y = splits
+                            valid = lambda x: _comparison(str(x), op, y)
+                        elif len(splits) == 5:
+                            y1, op1, reg, op2, y2 = splits
+                            valid = lambda x: _comparison(y1, op1, str(x), op2, y2)
                         else:
-                            params = em.load_defaults()
+                            if len(splits) > 5:
+                                print('ERROR: Only strings of the form (3.0 | cat) < param <= (4.0 | dog) can be set but'
+                                      'got match_keys')
+                                exit()
 
-                        # remove notes (_notes will be removed from version 0.2.5)
-                        try:
-                            params.pop('_notes')
-                        except KeyError:
-                            pass
+                        # Keep keys if match or special (_...)
+                        keys = [k for k in params if re.match(reg, k)]
 
-                        # Find experiments who's parameters match all conditions
-                        if param_match is not None:
-                            extracted = {}
-                            # Search through al param matches
-                            for m in param_match:
-                                # Condition from param string
-                                splits = re.split(r'(<=|==|>=|<|>|!=)', m.replace(' ', ''))
-                                if len(splits) == 1:
-                                    reg = splits[0]
-                                    valid = lambda x: True
-                                elif len(splits) == 3:
-                                    reg, op, y = splits
-                                    valid = lambda x: _comparison(str(x), op, y)
-                                elif len(splits) == 5:
-                                    y1, op1, reg, op2, y2 = splits
-                                    valid = lambda x: _comparison(y1, op1, str(x), op2, y2)
+                        # the second term here operates as an and operator
+                        # in the case that the regex pattern matches multiple parameters in the params
+                        # file all parameters must satisfy the condition.
+                        if len(keys) == 0 or not all(valid(params[k]) for k in keys):
+                            keys += [k for k in params if k.startswith('_')]
+                            raise NoMatchException(root)
+
+                        # extract info
+                        keys += [k for k in params if k.startswith('_')]
+                        for key in keys:
+                            extracted[key] = params[key]
+
+                    if len(extracted) == 0:
+                        raise NoMatchException(root)
+                    else:
+                        # If we get here add parameters to experiments
+                        # (extracted must have at least one element)
+                        # Infer current length of table (same length for every entry)
+                        table_length = max([len(v) for v in table.values()])
+                        if any([len(next(iter(table.values()))) != len(v) for v in table.values()]):
+                            raise RuntimeError('This should not happen')
+
+                        for k, v in extracted.items():
+                            if k not in ['_root', '_purpose']:
+                                if k not in table:
+                                    encountered += [k]
+                                    table[k] = [missing_entry] * table_length + [v]
                                 else:
-                                    if len(splits) > 5:
-                                        print('ERROR: Only strings of the form (3.0 | cat) < param <= (4.0 | dog) can be set but'
-                                              'got match_keys')
-                                        exit()
+                                    table[k] += [v]
 
-                                # Keep keys if match or special (_...)
-                                keys = [k for k in params if re.match(reg, k)]
-                                
-                                # the second term here operates as an and operator
-                                # in the case that the regex pattern matches multiple parameters in the params
-                                # file all parameters must satisfy the condition.
-                                if len(keys) == 0 or not all(valid(params[k]) for k in keys):
-                                    keys += [k for k in params if k.startswith('_')]
-                                    raise NoMatchException(root)
-
-                                # extract info
-                                keys += [k for k in params if k.startswith('_')]
-                                for key in keys:
-                                    extracted[key] = params[key]
-
-                            if len(extracted) == 0:
-                                raise NoMatchException(root)
+                        if '_meta' not in extracted:
+                            table['_meta'] += [get_meta()]
+                        for k in encountered:
+                            if k not in extracted:
+                                table[k] += [missing_entry]
+                else:
+                    for k, v in params.items():
+                        if k.startswith('_') and k not in ['_root', '_purpose', '_notes']:
+                            if k not in table:
+                                table[k] = [v]
                             else:
-                                # If we get here add parameters to experiments
-                                # (extracted must have at least one element)
-                                # Infer current length of table (same length for every entry)
-                                table_length = max([len(v) for v in table.values()])
-                                if any([len(next(iter(table.values()))) != len(v) for v in table.values()]):
-                                    raise RuntimeError('This should not happen')
+                                table[k] += [v]
+                    if '_meta' not in params:
+                        table['_meta'] += [get_meta()]
 
-                                for k, v in extracted.items():
-                                    if k not in ['_root', '_purpose']:
-                                        if k not in table:
-                                            encountered += [k]
-                                            table[k] = [missing_entry] * table_length + [v]
-                                        else:
-                                            table[k] += [v]
+                root, _ = os.path.split(path)
+                if root not in managers:
+                    managers[root] = xmen.manager.ExperimentManager(root)
+                em = managers[root]
+                # Add data to table from experiment.yml
+                if load_defaults:
+                    table['_name'] += [path.replace(em.root, '')[1:]]
+                if mode != 'all':
+                    table['_experiments'] += [em.experiments]
 
-                                if '_meta' not in extracted:
-                                    table['_meta'] += [get_meta()]
-                                for k in encountered:
-                                    if k not in extracted:
-                                        table[k] += [missing_entry]
-                        else:
-                            for k, v in params.items():
-                                if k.startswith('_') and k not in ['_root', '_purpose', '_notes']:
-                                    if k not in table:
-                                        table[k] = [v]
-                                    else:
-                                        table[k] += [v]
-                            if '_meta' not in params:
-                                table['_meta'] += [get_meta()]
+                table['_root'] += [em.root]
+                table['_purpose'] += [em.purpose]
+                table['_type'] += [em.type]
+                table['_notes'] += [em.notes]
 
-                        # Add data to table from experiment.yml
-                        if load_defaults:
-                            table['_name'] += [path.replace(em.root, '')[1:]]
-                        if mode != 'all':
-                            table['_experiments'] += [em.experiments]
-
-                        table['_root'] += [em.root]
-                        table['_purpose'] += [em.purpose]
-                        table['_type'] += [em.type]
-                        table['_notes'] += [em.notes]
-                    except NoMatchException as m:
-                        continue
+            except NoMatchException as m:
+                continue
 
         if mode != 'all':
             table.pop('_name')
@@ -314,7 +339,7 @@ class GlobalExperimentManager(object):
 
     def find_to_dataframe(self, table, verbose=True, display_git=None,
                           display_purpose=None, display_date=None, display_messages=None, display_status=None,
-                          display_meta=None):
+                          display_meta=None, display_params=None):
         """Convert the output of the `find` method to a formatted data frame configured by args. If verbose then all
         entries will be displayed (independent of the other args)"""
 
@@ -330,6 +355,7 @@ class GlobalExperimentManager(object):
                 return out
 
         import pandas as pd
+        param_keys = [k for k in table if not k.startswith('_')]
         special_keys = [k for k in table if k.startswith('_')]
         display = {
             'root': table.pop('_root')}
@@ -421,7 +447,11 @@ class GlobalExperimentManager(object):
             if display_purpose:
                 display_keys += ['purpose']
 
-        display_keys += list(table.keys())
+            if display_params:
+                display_keys += [k for k in param_keys if re.match(display_params, k)]
+            else:
+                display_keys += list(table.keys())
+
         # Add other params
         display.update(table)
         df = pd.DataFrame(display)

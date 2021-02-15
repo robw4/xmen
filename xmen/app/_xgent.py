@@ -416,7 +416,7 @@ list_parser.add_argument('-P', '--display_purpose', action='store_true', default
 list_parser.add_argument('-s', '--display_status', action='store_true', default=None,
                          help="Display status for each experiment")
 list_parser.add_argument('-m', '--display_messages', default=None,
-                         const='^e$|^s$|^wall$|^end$|^next$|^.*step$|^.*load$',
+                         const='^last$|^e$|^s$|^wall$|^end$|^next$|^.*step$|^.*load$',
                          type=str, help="Display messages for each experiment", nargs='?')
 list_parser.add_argument('-M', '--display_meta', default=None,
                          const='^root$|^name$|^mac$|^host$|^user$|^home$',
@@ -434,9 +434,39 @@ list_parser.add_argument('--max_width', default=60, help='The maximum width of a
                                                            'If None then will print for ever', type=int)
 list_parser.add_argument('--max_rows', default=None, help='Display tables with this number of rows.', type=int)
 list_parser.add_argument('--csv', action='store_true', help='Display the table as csv.', default=None)
+list_parser.add_argument('-i', '--interval', type=float, default=None, const=5., nargs='?',
+                         help='If set then the table will be updated every this number of seconds')
 
 
-def _list(args):
+def _curses_list(args):
+    import curses
+    if args.interval is not None:
+        args.param_match = "^$"
+        curses.wrapper(_list, args)
+    else:
+        _list(None, args)
+
+
+def request_results(q, last, args):
+    import time
+    global_exp_manager = GlobalExperimentManager()
+    results = None
+    last_time = time.time()
+    while True:
+        if time.time() - last_time > args.interval:
+            # update results
+            results = global_exp_manager.find(
+                mode='all',
+                pattern=args.pattern,
+                last=last,
+                param_match=['.*'],
+                types_match=args.type_match,
+                load_defaults=args.load_defaults)
+            last_time = time.time()
+            q.put((results, last_time))
+
+
+def _list(stdscr, args):
     import pandas as pd
     from xmen.utils import recursive_print_lines
     pd.set_option('display.width', 1000)
@@ -464,10 +494,12 @@ def _list(args):
     else:
         if args.pattern[0] == '':
             pattern += '*'
+            args.pattern = pattern
+
         global_exp_manager = GlobalExperimentManager()
         if args.list:
-            results = global_exp_manager.find(
-                mode='set', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
+            results, last = global_exp_manager.find(
+                mode='set', pattern=args.pattern, param_match=args.param_match, types_match=args.type_match,
                 load_defaults=True)
             notes = []
             for i, (r, e, p, n, d, t, v) in enumerate(
@@ -491,30 +523,239 @@ def _list(args):
                 notes += [note]
             print('\n'.join(notes))
         else:
-            print(pattern)
-            results = global_exp_manager.find(
-                mode='all', pattern=pattern, param_match=args.param_match, types_match=args.type_match,
-                load_defaults=args.load_defaults)
-            data_frame, root = global_exp_manager.find_to_dataframe(
-                results,
-                verbose=args.verbose,
-                display_git=args.display_git,
-                display_purpose=args.display_purpose,
-                display_date=args.display_date,
-                display_messages=args.display_messages,
-                display_meta=args.display_meta,
-                display_status=args.display_status)
-            if data_frame.empty:
-                print(f'No experiments found which match glob pattern {pattern}. With parameter filter = {args.param_match}'
-                      f' and type filter = {args.type_match}.')
-            else:
-                if args.csv:
-                    print(data_frame.to_csv())
+            try:
+                def generate_table(results, args, return_root=False):
+                    data_frame, root = global_exp_manager.find_to_dataframe(
+                        copy.deepcopy(results),
+                        verbose=args.verbose,
+                        display_git=args.display_git,
+                        display_purpose=args.display_purpose,
+                        display_date=args.display_date,
+                        display_messages=args.display_messages if not args.display_messages == '' else False,
+                        display_meta=args.display_meta,
+                        display_status=args.display_status,
+                        display_params=args.param_match if not args.param_match == '' else '^$')
+                    if return_root:
+                        return data_frame, root
+                    else:
+                        return data_frame
+
+                # print(pattern, end='\r')
+                import copy
+                import time
+                results = global_exp_manager.find(
+                    mode='all',
+                    pattern=args.pattern,
+                    param_match=['.*'], types_match=args.type_match,
+                    load_defaults=args.load_defaults)
+                data_frame, root = generate_table(results, args, return_root=True)
+
+                if args.interval is not None:
+                    import curses
+                    import multiprocessing as mp
+                    import queue
+
+                    q = mp.Queue(maxsize=1)
+                    p = mp.Process(target=request_results, args=(q, results, args))
+                    p.start()
+
+                    last_time = time.time()
+                    meta = []
+                    message = []
+                    params = []
+                    user_message = []
+                    if args.display_meta is None:
+                        args.display_meta = ''
+
+                    args.display_messages = ''
+                    args.param_match = "^$"
+
+                    def update_meta(string):
+                        if string in meta:
+                            meta.remove(string)
+                        else:
+                            meta.append(string)
+                        args.display_meta = '|'.join(meta)
+
+                    def update_message(string=None):
+                        if string is not None:
+                            if string in message:
+                                message.remove(string)
+                            else:
+                                message.append(string)
+                        args.display_messages = '|'.join(message + user_message)
+
+                    def update_params(string=None):
+                        if string is not None:
+                            if string in params:
+                                params.remove(string)
+                            else:
+                                params.append(string)
+                        args.param_match = '|'.join(params)
+
+                    def display_table(table):
+                        # generate
+                        import curses
+                        from curses.textpad import Textbox
+                        # colors
+                        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
+                        curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
+                        curses.init_pair(3, curses.COLOR_CYAN, curses.COLOR_BLACK)
+                        curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+                        curses.init_pair(5, curses.COLOR_GREEN, curses.COLOR_BLACK)
+                        curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+
+                        # display
+                        stdscr.clear()
+                        from tabulate import tabulate
+                        x = tabulate(table, headers='keys', tablefmt='github').split('\n')
+                        status = [ii for ii, hh in enumerate(x[0].split('|')) if hh.strip() == 'status']
+
+                        import curses
+                        stdscr.addstr(0, 0, f'Experiments matching {args.pattern}')
+                        stdscr.addstr(1, 0, f'Roots relative to {root}')
+                        # stdscr.addstr(0, 0, f'SOME TEXT')
+                        stdscr.addstr(2, 0, f'Last update @ {time.time() - last_time:.3f} seconds ago', curses.A_DIM)
+                        x.pop(1)
+                        for i, xx in enumerate(x):
+                            # stdscr.addstr(i + 2, 1, xx)
+                            if i == 0:
+                                xx = xx.replace('|', '')
+                                stdscr.addstr(i + 3, 1, xx, curses.A_BOLD)
+                            else:
+                                componenents = xx.split('|')
+                                if status:
+                                    for j, c in enumerate(componenents):
+                                        if j == status[0]:
+                                            col = {'registered': curses.color_pair(1), 'timeout': curses.color_pair(4),
+                                                   'running': curses.color_pair(3), 'error': curses.color_pair(2)}
+                                            cc = col.get(c.strip(), None)
+                                            if cc is None:
+                                                stdscr.addstr(i + 3, sum(len(_) for _ in componenents[:j]) + 1, c)
+                                            else:
+                                                stdscr.addstr(i + 3, sum(len(_) for _ in componenents[:j]) + 1, c, cc)
+                                        else:
+                                            stdscr.addstr(i + 3, sum(len(_) for _ in componenents[:j]) + 1, c)
+                                else:
+                                    stdscr.addstr(i + 3, 1, ''.join(componenents))
+                        import curses
+                        # win.refresh()
+                        rows, cols = stdscr.getmaxyx()
+                        stdscr.addstr(rows - 3, 0, 'Toggles:', curses.A_BOLD)
+                        stdscr.addstr(rows - 2, 0, f'meta = {meta}, messages={message + user_message}, params={params}')
+                        stdscr.addstr(rows - 1, 0, 'd=date s=status g=git p=purpose m=specify-message t=monitor-message M=meta G=gpu S=slurm c=cpu n=network v=virtual w=swap o=os D=disks')
+                        stdscr.refresh()
+
+                    # display_table(data_frame)
+                    while True:
+                        try:
+                            results, last_time = q.get(False)
+                            data_frame = generate_table(results, args)
+                            if data_frame.empty:
+                                print(
+                                    f'No experiments found which match glob pattern {pattern}. With parameter filter = {args.param_match}'
+                                    f' and type filter = {args.type_match}.')
+                                break
+                            if args.csv:
+                                print(data_frame.to_csv())
+                                break
+                        except queue.Empty:
+                            pass
+
+                        import sys
+                        import time
+
+                        if stdscr is not None:
+                            stdscr.timeout(500)
+                            c = stdscr.getch()
+                            if c == ord('d'):
+                                args.display_date = not args.display_date
+                                data_frame = generate_table(results, args)
+                            if c == ord('g'):
+                                args.display_git = not args.display_git
+                                data_frame = generate_table(results, args)
+                            if c == ord('s'):
+                                args.display_status = not args.display_status
+                                data_frame = generate_table(results, args)
+                            if c == ord('p'):
+                                args.display_purpose = not args.display_purpose
+                                data_frame = generate_table(results, args)
+                            if c == ord('M'):
+                                update_meta('slurm_job|^root$|^name$|^mac$|^host$|^user$|^home$')
+                                data_frame = generate_table(results, args)
+                            if c == ord('v'):
+                                update_meta('virtual.*')
+                                data_frame = generate_table(results, args)
+                            if c == ord('w'):
+                                update_meta('swap.*')
+                                data_frame = generate_table(results, args)
+                            if c == ord('o'):
+                                update_meta('system.*')
+                                data_frame = generate_table(results, args)
+                            if c == ord('D'):
+                                update_meta('disks.*')
+                                data_frame = generate_table(results, args)
+                            if c == ord('c'):
+                                update_meta('cpu.*')
+                                data_frame = generate_table(results, args)
+                            if c == ord('G'):
+                                update_meta('gpu.*')
+                                data_frame = generate_table(results, args)
+                            if c == ord('n'):
+                                update_meta('network.*')
+                                data_frame = generate_table(results, args)
+                            if c == ord('S'):
+                                update_meta('slurm.*')
+                                data_frame = generate_table(results, args)
+                            if c == ord('t'):
+                                update_message('^e$|^s$|^wall$|^end$|^next$|^.*step$|^.*load$')
+                                data_frame = generate_table(results, args)
+
+                            if c == ord('m'):
+                                from curses.textpad import Textbox, rectangle
+                                rows, cols = stdscr.getmaxyx()
+                                win = curses.newwin(1, cols, rows - 1, 0)
+                                stdscr.addstr(rows - 3, 0, 'Message:                                          ', curses.A_BOLD)
+                                stdscr.addstr(rows - 2, 0, '(ctrl-h=backspace, "" to delete user message)                      ')
+                                stdscr.addstr(rows - 1, 9, '' * 15)
+                                # rectangle(stdscr, rows - 1, 0, rows, cols - 1)
+                                stdscr.refresh()
+                                text_box = Textbox(win)
+                                text = text_box.edit().strip()
+                                if text != '':
+                                    user_message += [text]
+                                else:
+                                    user_message = []
+                                update_message()
+                                data_frame = generate_table(results, args)
+
+                            if c == ord('P'):
+                                from curses.textpad import Textbox, rectangle
+                                rows, cols = stdscr.getmaxyx()
+                                win = curses.newwin(1, cols, rows - 1, 0)
+                                stdscr.addstr(rows - 3, 0, 'Params:                                          ', curses.A_BOLD)
+                                stdscr.addstr(rows - 2, 0, '(ctrl-h=backspace, "" to delete user message)                      ')
+                                stdscr.addstr(rows - 1, 9, '' * 15)
+                                # rectangle(stdscr, rows - 1, 0, rows, cols - 1)
+                                stdscr.refresh()
+                                text_box = Textbox(win)
+                                text = text_box.edit().strip()
+                                if text != '':
+                                    params += [text]
+                                else:
+                                    params = []
+                                update_params()
+                                data_frame = generate_table(results, args)
+
+                            display_table(data_frame)
                 else:
                     print(data_frame)
-                print(f'\nRoots relative to: {root}')
+            except KeyboardInterrupt as e:
+                return
 
-list_parser.set_defaults(func=_list)
+
+
+list_parser.set_defaults(func=_curses_list)
 
 #######################################################################################################################
 #  main
