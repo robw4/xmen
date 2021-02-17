@@ -36,6 +36,7 @@ setup(
             'pandas>=1.1.1',
             'GitPython>=3.1.7',
             'psutil',
-            'GPUtil'
+            'GPUtil',
+            'tabulate'
     ],
     packages=setuptools.find_packages())

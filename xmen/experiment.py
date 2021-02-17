@@ -47,6 +47,8 @@ SAVE_CONDA = _.save_conda
 REQUEUE = _.requeue
 TXT = not _.redirect_stdout
 
+HOST, PORT = '193.62.124.26', 6011
+
 import textwrap
 for k in helps:
     helps[k] = '\n'.join(textwrap.wrap(helps[k], 50))
@@ -251,6 +253,7 @@ class Experiment(object, metaclass=TypedMeta):
     def _to_yaml(self, defaults_dir=None):
         """Save experiment to either a defaults.yml file or a params.yml file depending on its status"""
         import ruamel.yaml
+        from ruamel.yaml import StringIO
         from ruamel.yaml.comments import CommentedMap
 
         self.update_version()
@@ -287,6 +290,21 @@ class Experiment(object, metaclass=TypedMeta):
 
         with open(path, 'w') as file:
             yaml.dump(defaults, file)
+
+        stream = StringIO()
+        yaml.dump(defaults, stream)
+        buffer = stream.getvalue().encode()
+        self.send_to_server(buffer)
+
+    def send_to_server(self, buffer):
+        import socket, struct
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                host = HOST
+                s.connect((host, PORT))
+                s.sendall(struct.pack('Q', len(buffer)) + buffer)
+        except ConnectionRefusedError:
+            print('Connection refused on PORT')
 
     def debug(self):
         """Inherited classes may overload debug. Used to define a set of setup for minimum example"""
