@@ -675,6 +675,35 @@ def get_run_script(module, name, shell='/usr/bin/env python3', comment='#'):
     return '\n'.join(sh)
 
 
+def load_params(paths):
+    """Load params.yml files into a list of dictionaries from a list of paths"""
+    import ruamel.yaml
+    from xmen.utils import commented_to_py
+    out = []
+    for path in paths:
+        with open(os.path.join(path, 'params.yml'), 'r') as params_yml:
+            params = ruamel.yaml.load(params_yml, ruamel.yaml.RoundTripLoader)
+        params = {k: commented_to_py(v) for k, v in params.items()}
+        out.append(params)
+    return out
+
+
+def dics_to_pandas(dics, reg):
+    """Convert a list of nested dictionaries into a pandas data frame keeping only keys that match reg
+    (after flattening)"""
+    import re
+    frames = []
+    import pandas as pd
+    from xmen.utils import flatten
+    for dic in dics:
+        dic = flatten(dic)
+        dic = {k: v for k, v in dic.items() if re.match(reg, k)}
+        dic = {k: [v] for k, v in dic.items()}
+        frames.append(pd.DataFrame(dic))
+    return pd.concat(frames, axis=0, sort=False, ignore_index=True)
+
+
+
 if __name__ == '__main__':
     from xmen.experiment import Experiment
 

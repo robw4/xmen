@@ -506,6 +506,7 @@ class GlobalExperimentManager(object):
         self._to_yml()
 
     def paths(self, pattern=None, types_match=None):
+        import fnmatch
         experiments = self.experiments.keys()
         if pattern is not None:
             experiments = fnmatch.filter(experiments, pattern)
@@ -519,51 +520,5 @@ class GlobalExperimentManager(object):
         return paths
 
 
-def load_params(paths):
-    import ruamel.yaml
-    from xmen.utils import commented_to_py
-    out = []
-    for path in paths:
-        with open(os.path.join(path, 'params.yml'), 'r') as params_yml:
-            params = ruamel.yaml.load(params_yml, ruamel.yaml.RoundTripLoader)
-        params = {k: commented_to_py(v) for k, v in params.items()}
-        out.append(params)
-    return out
 
 
-def params_to_data_frame(params):
-    import pandas as pd
-    from xmen.utils import flatten
-    frames = []
-    for dic in params:
-        dic = flatten(dic)
-        dic = {k: [v] for k, v in dic.items()}
-        # keys, data = zip(*[(k, v) for k, v in dic.items()])
-        frames.append(pd.DataFrame(dic))
-    df = pd.concat(frames, axis=0, sort=False)
-    return df
-
-
-def combine(dics, missing_entry=''):
-    out = {}
-    for i, dic in enumerate(dics):
-        dic = flatten(dic)
-        for k, v in dic.items():
-            if k not in out:
-                out[k] = [missing_entry] * i + [v]
-            else:
-                out[k] += [v]
-    return out
-
-if __name__ == '__main__':
-    import fnmatch
-    from xmen.utils import flatten
-    import pandas as pd
-    config = GlobalExperimentManager()
-    paths = config.paths()
-    params = load_params(paths)
-    # out = combine(params)
-    # print(pd.DataFrame(out))
-    data_frame = params_to_data_frame(params)
-    # print(flatten(data_frame))
-    print('Here')

@@ -107,9 +107,7 @@ def _python(args):
         subprocess.call(args)
 
 
-
 python_parser.set_defaults(func=_python)
-
 #######################################################################################################################
 #  config
 #######################################################################################################################
@@ -179,7 +177,7 @@ def _config(args):
         if args.host:
             config.host = args.host
         if args.port:
-            args.port = args.port
+            config.port = args.port
 
         if args.list is not None:
             print(config)
@@ -402,40 +400,71 @@ relink_parser.set_defaults(func=_relink)
 #  list
 #######################################################################################################################
 list_parser = subparsers.add_parser('list', help='list experiments to screen')
-list_parser.add_argument('pattern', type=str, help='List experiments which match pattern.', default=[''], nargs='*')
-list_parser.add_argument('-p', '--param_match', type=str, default=None,
-                         help="List only experiments with certain parameter conditions of the form reg, reg==val or "
-                              "val1==reg==val2. Here reg is a regex matching a set of parameters. "
-                              "==, <, >, !=, >=, <=  are all supported with meaning defined as in python. Eg. "
-                              "a.*==cat and 1.0<a.*<=2.0 will return any experiment that has parameters that match "
-                              "a.* provided that each match satisfies the condition.")
-list_parser.add_argument('-n', '--type_match', type=str, default=None, nargs='*',
-                         help="List only experiments with this type (class).")
-list_parser.add_argument('-v', '--verbose', action='store_true', default=None,
-                         help="Display all information for each experiment")
-list_parser.add_argument('-d', '--display_date', action='store_true', default=None,
-                         help="Display created date for each experiment")
-list_parser.add_argument('-g', '--display_git', action='store_true', default=None,
-                         help="Display git commit for each experiment")
-list_parser.add_argument('-P', '--display_purpose', action='store_true', default=None,
-                         help="Display purpose for each experiment")
-list_parser.add_argument('-s', '--display_status', action='store_true', default=None,
-                         help="Display status for each experiment")
-list_parser.add_argument('-m', '--display_messages', default=None,
-                         const='^last$|^e$|^s$|^wall$|^end$|^next$|^.*step$|^.*load$',
-                         type=str, help="Display messages for each experiment", nargs='?')
-list_parser.add_argument('-M', '--display_meta', default=None,
-                         const='^root$|^name$|^mac$|^host$|^user$|^home$',
-                         type=str,
-                         help="Display meta information for each experiment. The regex "
-                              "'^root$|^name$|^mac$|^host$|^user$|^home$' gives basic meta information "
-                              "logged with every experiment. Other information is separated into groups including "
-                              "'network.*', 'gpu.*', 'cpu.*', 'system.*', 'virtual.*', 'swap.*' ", nargs='?')
-list_parser.add_argument('-l', '--list', action='store_true', default=None,
-                         help="Display as list and not a table")
-list_parser.add_argument('--load_defaults', action='store_true', default=None,
-                         help='Infer parameters from defaults.yml and overides instead of params.yml. Potentially '
-                              'faster but no messages are available.')
+list_parser.add_argument(
+    '--pattern',
+    type=str,
+    help='List experiments which match pattern.',
+    default=[''],
+    nargs='*')
+list_parser.add_argument(
+    '-n', '--type_match',
+    type=str,
+    default=['^$'],
+    nargs="*",
+    help="List only experiments with this type (class).")
+list_parser.add_argument(
+    '-v', '--display_version',
+    default=r'^$',
+    const='version',
+    nargs="?",
+    help="Display version information for each experiment")
+list_parser.add_argument(
+    '-P', '--display_purpose',
+    default=r'^$',
+    const=r'purpose$',
+    nargs="?",
+    help="Display purpose for each experiment")
+list_parser.add_argument(
+    '-d', '--display_date',
+    default=r'^$',
+    const="created$",
+    nargs="?",
+    help="Display created date for each experiment")
+list_parser.add_argument(
+    '-s', '--display_status',
+    default=r'^$',
+    const=r'status$',
+    nargs="?",
+    help="Display status for each experiment")
+list_parser.add_argument(
+    '-m', '--display_messages',
+    nargs="?",
+    default='^$',
+    const='messages_(^last$|^e$|^s$|^wall$|^end$|^next$|^.*step$|^.*load$)',
+    help="Display messages for each experiment")
+list_parser.add_argument(
+    '-f', '--filters',
+    nargs="*",
+    default=['^$'],
+    help="Apply a filter to the experiments")
+list_parser.add_argument(
+    '-p', '--filter_params',
+    default=['^$'],
+    nargs='*',
+    help='List all the experiments with parameters matching the passed filter')
+list_parser.add_argument(
+    '-M', '--display_meta',
+    nargs="?",
+    default="^$",
+    const='meta_^root$|^name$|^mac$|^host$|^user$|^home$',
+    help="Display meta information for each experiment. The regex "
+         "'' gives basic meta information "
+         "logged with every experiment. Other information is separated into groups including "
+         "'network.*', 'gpu.*', 'cpu.*', 'system.*', 'virtual.*', 'swap.*'")
+list_parser.add_argument(
+    '-l', '--list',
+    action='store_true', default=None,
+    help="Display as list and not a table")
 list_parser.add_argument('--max_width', default=60, help='The maximum width of an individual collumn. '
                                                            'If None then will print for ever', type=int)
 list_parser.add_argument('--max_rows', default=None, help='Display tables with this number of rows.', type=int)
@@ -445,6 +474,7 @@ list_parser.add_argument('-i', '--interval', type=float, default=None, const=1.,
 
 
 def _curses_list(args):
+    from xmen.list import NotEnoughRows
     import curses
     if args.interval is not None:
         try:
@@ -458,378 +488,8 @@ def _curses_list(args):
         _list(None, args)
 
 
-def updates_client(q, args):
-    from xmen.utils import commented_to_py
-    import os
-    import socket
-    import time
-    # get the hostname
-    import struct
-    import ruamel.yaml
-    from xmen.experiment import IncompatibleYmlException, HOST, PORT
-
-    server_socket = socket.socket()  # get instance
-    # look closely. The bind() function takes tuple as argument
-    server_socket.bind((HOST, PORT))  # bind host address and port together
-
-    # configure how many client the server can listen simultaneously
-    server_socket.listen(100)
-
-    while True:
-        try:
-            updates = {}
-            last = time.time()
-            while time.time() - last < args.interval:
-                conn, address = server_socket.accept()
-                # print("Connection from: " + str(address))
-                length = conn.recv(struct.calcsize('Q'))
-                if length:
-                    length, = struct.unpack('Q', length)
-                    # print('length = ', length)
-                    params = conn.recv(length, socket.MSG_WAITALL).decode()
-                    yaml = ruamel.yaml.YAML()
-                    try:
-                        params = yaml.load(params)
-                    except:
-                        raise IncompatibleYmlException
-                    params = {k: commented_to_py(v) for k, v in params.items()}
-                    # print(params)
-                    updates[os.path.join(params['_root'], params['_name'])] = params
-                conn.close()  # close the connection
-            if updates:
-                q.put((updates, last))
-        except Exception as m:
-            q.put((None, m))
-            with open('/data/engs-robot-learning/kebl4674/usup/tmp/xmen-error-log.txt', 'w') as f:
-                f.write(m)
-            break
-
-
-class NotEnoughRows(Exception):
-    pass
-
-
-def interactive_display(stdscr, results, args):
-    import curses
-    import multiprocessing as mp
-    import queue
-    import time
-    import copy
-
-    global root
-
-    stdscr.refresh()
-    global_experiment_manager = GlobalExperimentManager()
-    rows, cols = stdscr.getmaxyx()
-
-    if rows < 9:
-        raise NotEnoughRows
-
-    pos_x, pos_y = 0, 0
-    last_time = time.time()
-    meta = []
-    message = []
-    params = []
-    user_message = []
-    if args.display_meta is None:
-        args.display_meta = ''
-
-    args.display_messages = ''
-    args.param_match = "^$"
-
-    # initialise colours
-    if curses.has_colors():
-        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
-        curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
-        curses.init_pair(3, curses.COLOR_CYAN, curses.COLOR_BLACK)
-        curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-        curses.init_pair(5, curses.COLOR_GREEN, curses.COLOR_BLACK)
-        curses.init_pair(6, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
-
-    WHITE = curses.color_pair(1)
-    RED = curses.color_pair(2)
-    CYAN = curses.color_pair(3)
-    YELLOW = curses.color_pair(4)
-    GREEN = curses.color_pair(5)
-    MAGNETA = curses.color_pair(6)
-
-    global window
-    window = curses.newwin(rows, cols, 0, 0)
-
-    def generate_table(results, args, return_root=False):
-        import pandas as pd
-        data_frame, root = global_experiment_manager.find_to_dataframe(
-            copy.deepcopy(results),
-            verbose=args.verbose,
-            display_git=args.display_git,
-            display_purpose=args.display_purpose,
-            display_date=args.display_date,
-            display_messages=args.display_messages if not args.display_messages == '' else False,
-            display_meta=args.display_meta,
-            display_status=args.display_status,
-            display_params=args.param_match if not args.param_match == '' else '^$')
-        return data_frame, root
-
-    def update_meta(string):
-        if string in meta:
-            meta.remove(string)
-        else:
-            meta.append(string)
-        args.display_meta = '|'.join(meta)
-
-    def update_message(string=None):
-        if string is not None:
-            if string in message:
-                message.remove(string)
-            else:
-                message.append(string)
-        args.display_messages = '|'.join(message + user_message)
-
-    def update_params(string=None):
-        if string is not None:
-            if string in params:
-                params.remove(string)
-            else:
-                params.append(string)
-        args.param_match = '|'.join(params)
-
-    def display_row(i, pad, table=None, x=None):
-        from tabulate import tabulate
-        if x is None:
-            x = tabulate(table, headers='keys', tablefmt='github').split('\n')
-        x0 = x[0]
-        xi = x[i]
-        # stdscr.addstr(i + 2, 1, xx)
-        status = [ii for ii, hh in enumerate(x0.split('|')) if hh.strip() == 'status']
-        if i == 0:
-            xi = xi.replace('|', '')
-            pad.addstr(i, 1, xi, curses.A_BOLD)
-        else:
-            componenents = xi.split('|')
-            if status:
-                for j, c in enumerate(componenents):
-                    if j == status[0]:
-                        col = {
-                            'registered': WHITE, 'timeout': YELLOW,
-                            'running': GREEN, 'error': RED}
-                        cc = col.get(c.strip(), None)
-                        if cc is None:
-                            offset = sum(len(_) for _ in componenents[:j]) + 1
-                            pad.addstr(i, offset, c)
-                        else:
-                            pad.addstr(i, sum(len(_) for _ in componenents[:j]) + 1, c, cc)
-                    else:
-                        pad.addstr(i, sum(len(_) for _ in componenents[:j]) + 1, c)
-            else:
-                pad.addstr(i, 1, ''.join(componenents))
-
-    def display_table(table, root):
-        global pad, window
-        import curses
-        rows, cols = stdscr.getmaxyx()
-        # generate
-        import curses
-        from curses.textpad import Textbox
-        # if rows is None:
-        window.erase()
-
-        from tabulate import tabulate
-        x = tabulate(table, headers='keys', tablefmt='github').split('\n')
-        x.pop(1)
-
-        # display_time(window)
-
-        # if rows is None:
-        import curses
-        window.addstr(0, 0, f'Experiments matching {args.pattern}')
-        window.addstr(1, 0, f'Roots relative to {root}')
-        window.addstr(2, 0, f'Last update @ {time.time() - last_time:.3f} seconds ago', curses.A_DIM)
-
-        import curses
-
-        window.addstr(rows - 3, 0, 'Toggles:', curses.A_BOLD)
-        window.addstr(rows - 2, 0, f'meta = {meta}, messages={message + user_message}, params={params}')
-        window.addstr(rows - 1, 0,
-                      'd=date s=status g=git p=purpose m=specify-message t=monitor-message M=meta G=gpu S=slurm c=cpu n=network v=virtual w=swap o=os D=disks')
-        if len(x) > rows - 5:
-            filler = '|'.join([' ...'.ljust(len(xx), ' ') if xx else ''
-                                 for ii, xx in enumerate(x[1].split('|'))])
-            filler = filler.replace('...', '   ', 1)
-            x = [x[0], filler] + x[-(rows - 3):]
-
-        n = 10
-        pad = curses.newpad(len(x), len(x[0]))
-        for i, xx in enumerate(x):
-            display_row(i, pad, x=x)
-
-        # for y in range(0, n * rows - 1):
-        #     for x in range(0, n * cols - 1):
-        #         pad.addch(y, x, ord('a') + (x * x + y * y) % 26)
-        window.noutrefresh()
-        pad.noutrefresh(pos_x, 0, 3, 0, rows - 5, cols - 1)
-        curses.doupdate()
-        pass
-
-    def visualise_results(results, args):
-        data_frame, root = generate_table(results, args)
-        display_table(data_frame, root)
-
-    visualise_results(results, args)
-    rows, cols = stdscr.getmaxyx()
-
-    try:
-        import multiprocessing
-        q = mp.Queue(maxsize=1)
-        p = multiprocessing.Process(target=updates_client, args=(q, args))
-        p.start()
-
-        while True:
-            try:
-                updates, last_time = q.get(False)
-                if updates is None:
-                    raise RunTimeError(last_time)
-
-                paths = [os.path.join(results['_root'][i], results['_name'][i])
-                         for i in range(len(results['_root']))]
-                idx = [(i, n) for i, n in enumerate(paths) if n in updates]
-                if idx:
-                    for i, n in idx:
-                        for k, v in updates[n].items():
-                            results[k][i] = v
-                    visualise_results(results, args)
-
-            except queue.Empty:
-                pass
-
-            import sys
-            import time
-
-            if stdscr is not None:
-                stdscr.timeout(1000)
-                c = stdscr.getch()
-                # if c == curses.KEY_RIGHT:
-                #     pos_x += rows
-                #     visualise_results(results, args)
-                # if c == curses.KEY_LEFT:
-                #     pos_x -= rows
-                #     visualise_results(results, args)
-
-                if c == ord('d'):
-                    args.display_date = not args.display_date
-                    visualise_results(results, args)
-                if c == ord('g'):
-                    args.display_git = not args.display_git
-                    visualise_results(results, args)
-                if c == ord('s'):
-                    args.display_status = not args.display_status
-                    visualise_results(results, args)
-                if c == ord('p'):
-                    args.display_purpose = not args.display_purpose
-                    visualise_results(results, args)
-                if c == ord('M'):
-                    update_meta('slurm_job|^root$|^name$|^mac$|^host$|^user$|^home$')
-                    visualise_results(results, args)
-                if c == ord('v'):
-                    update_meta('virtual.*')
-                    visualise_results(results, args)
-                if c == ord('w'):
-                    update_meta('swap.*')
-                    visualise_results(results, args)
-                if c == ord('o'):
-                    update_meta('system.*')
-                    visualise_results(results, args)
-                if c == ord('D'):
-                    update_meta('disks.*')
-                    visualise_results(results, args)
-                if c == ord('c'):
-                    update_meta('cpu.*')
-                    visualise_results(results, args)
-                if c == ord('G'):
-                    update_meta('gpu.*')
-                    visualise_results(results, args)
-                if c == ord('n'):
-                    update_meta('network.*')
-                    visualise_results(results, args)
-                if c == ord('S'):
-                    update_meta('slurm.*')
-                    visualise_results(results, args)
-                if c == ord('t'):
-                    update_message('last|^e$|^s$|^wall$|^end$|^next$|^m_step$|^m_load$')
-                    visualise_results(results, args)
-
-                if c == ord('m'):
-                    from curses.textpad import Textbox, rectangle
-                    rows, cols = stdscr.getmaxyx()
-                    win = curses.newwin(1, cols, rows - 1, 0)
-                    stdscr.addstr(rows - 3, 0, 'Message:                                          ', curses.A_BOLD)
-                    stdscr.addstr(rows - 2, 0, '(ctrl-h=backspace, "" to delete user message)                      ')
-                    stdscr.addstr(rows - 1, 9, '' * 15)
-                    # rectangle(stdscr, rows - 1, 0, rows, cols - 1)
-                    stdscr.refresh()
-                    text_box = Textbox(win)
-                    text = text_box.edit().strip()
-                    if text != '':
-                        user_message += [text]
-                    else:
-                        user_message = []
-                    update_message()
-                    visualise_results(results, args)
-
-                if c == ord('P'):
-                    from curses.textpad import Textbox, rectangle
-                    rows, cols = stdscr.getmaxyx()
-                    win = curses.newwin(1, cols, rows - 1, 0)
-                    stdscr.addstr(rows - 3, 0, 'Params:                                          ', curses.A_BOLD)
-                    stdscr.addstr(rows - 2, 0, '(ctrl-h=backspace, "" to delete user message)                      ')
-                    stdscr.addstr(rows - 1, 9, '' * 15)
-                    # rectangle(stdscr, rows - 1, 0, rows, cols - 1)
-                    stdscr.refresh()
-                    text_box = Textbox(win)
-                    text = text_box.edit().strip()
-                    if text != '':
-                        params += [text]
-                    else:
-                        params = []
-                    update_params()
-                    visualise_results(results, args)
-    except KeyboardInterrupt:
-        p.terminate()
-        raise KeyboardInterrupt
-
-
-            # elif c == curses.KEY_UP:
-            #     mypad_pos -= 1
-            #     mypad.refresh(mypad_pos, 0, 5, 5, 10, 60)
-
-
-def notebook_display(results):
-    from xmen.utils import recursive_print_lines
-    notes = []
-    for i, (r, e, p, n, d, t, v) in enumerate(
-            zip(*[results[j] for j in ('_root', '_experiments', '_purpose',
-                                       '_notes', '_created', '_type', '_version')])):
-        k = 5
-        i = str(i)
-        note = ' ' * (k // 2 - len(str(i))) + str(i) + ' ' * (k // 2 - 1) + r + '\n' + ' ' * k
-        if len(e) > 0:
-            note += ('\n' + ' ' * k).join(['|- ' + ee[len(r) + 1:] for ee in e]) + '\n' + ' ' * k
-        note += 'purpose: ' + p + '\n' + ' ' * k
-        note += 'created: ' + d + '\n' + ' ' * k
-        if len(v) > 0:
-            note += 'version: ' + '\n' + ' ' * (k + 2) + ('\n' + ' ' * (k + 2)).join(
-                [l for l in recursive_print_lines(v)])
-        if len(n) > 0:
-            note += '\n' + ' ' * k + 'notes: ' + '\n' + ' ' * (k + 2)
-            note += ('\n' + ' ' * (k + 2)).join(
-                ['\n'.join(textwrap.wrap(nn, width=1000, subsequent_indent=' ' * (k + 3))) for i, nn in
-                 enumerate(n)])
-        notes += [note]
-    print('\n'.join(notes))
-
-
 def _list(stdscr, args):
     import pandas as pd
-
     pd.set_option('display.width', 1000)
     pd.set_option('display.max_columns', 1000)
     pd.set_option('display.max_colwidth', args.max_width)
@@ -837,10 +497,8 @@ def _list(stdscr, args):
     if len(args.pattern) > 1:
         print(f'ERROR: Only one pattern may be passed but got {args.pattern}')
     pattern = os.path.abspath(os.path.expanduser(args.pattern[0]))
-
     if pattern == '':
         pattern = os.path.join(os.getcwd())
-
     params = os.path.join(pattern, 'params.yml')
     if os.path.exists(params):
         # print the params.yml file to screen
@@ -856,45 +514,27 @@ def _list(stdscr, args):
         if args.pattern[0] == '':
             pattern += '*'
             args.pattern = pattern
-
         global_exp_manager = GlobalExperimentManager()
         if args.list:
+            from xmen.list import notebook_display
             results, last = global_exp_manager.find(
                 mode='set', pattern=args.pattern, param_match=[args.param_match], types_match=args.type_match,
                 load_defaults=True)
             notebook_display(results)
         elif args.interval is None:
-            print('args.param_match', args.param_match)
-            # print(pattern, end='\r')
-            import copy
-            import time
-            results = global_exp_manager.find(
-                mode='all',
-                pattern=args.pattern,
-                param_match=args.param_match,
-                types_match=args.type_match,
-                load_defaults=args.load_defaults)
-            data_frame, root = global_exp_manager.find_to_dataframe(
-                copy.deepcopy(results),
-                verbose=args.verbose,
-                display_git=args.display_git,
-                display_purpose=args.display_purpose,
-                display_date=args.display_date,
-                display_messages=args.display_messages if not args.display_messages == '' else False,
-                display_meta=args.display_meta,
-                display_status=args.display_status,
-                display_params=args.param_match if not args.param_match == '' else '^$')
+            from xmen.utils import load_params
+            from xmen.list import args_to_filters, visualise_params
+            paths = global_exp_manager.paths(pattern=args.pattern)
+            params = load_params(paths)
+            data_frame, root = visualise_params(params, *args_to_filters(args))
+            print(f'Roots relative to {root}')
             print(data_frame)
         else:
-            results = global_exp_manager.find(
-                mode='all',
-                pattern=args.pattern,
-                param_match=[".*"],
-                types_match=args.type_match,
-                load_defaults=args.load_defaults)
-            interactive_display(stdscr, results, args)
-
-
+            from xmen.utils import load_params
+            from xmen.list import interactive_display
+            paths = global_exp_manager.paths(pattern=args.pattern)
+            params = load_params(paths)
+            interactive_display(stdscr, params, args)
 
 
 list_parser.set_defaults(func=_curses_list)
