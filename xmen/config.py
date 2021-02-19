@@ -32,15 +32,19 @@ class NoMatchException(Exception):
 class GlobalExperimentManager(object):
     """A helper class used to manage global configuration of the Experiment Manager"""
     def __init__(self):
+        import socket
         self.python_experiments = {}   # A dictionary of paths to python modules compatible with the experiment api
         self.python_paths = []         # A list of python paths needed to run each module
         self.prompt_for_message = True
         self.save_conda = True         # Whether to save conda info to file
         self.redirect_stdout = True    # Whether to also log the stdout and stderr to a text file in each experiment dir
         self.requeue = True
-        self.experiments = {}          # A list of all experiments registered with an Experiment Manager
+        self.experiments = {}             # A list of all experiments roots with an Experiment Manager
+        # self.experiments = {}
         self.meta = get_meta()
         self.header = ''
+        self.host = socket.gethostname()
+        self.port = 2030
         self._dir = os.path.join(os.getenv('HOME'), '.xmen')
 
         if not os.path.isdir(self._dir):
@@ -116,6 +120,8 @@ class GlobalExperimentManager(object):
         string = f'prompt for message: {self.prompt_for_message}\n'
         string += f'save conda: {self.save_conda}\n'
         string += f'enable requeue: {self.requeue}\n'
+        string += f'host: {self.host}\n'
+        string += f'host: {self.port}\n'
         string += f'redirect stdout: {self.redirect_stdout}\n'
         string += f'python Path:\n'
         for p in self.python_paths:
@@ -175,6 +181,7 @@ class GlobalExperimentManager(object):
         """
         import fnmatch
         import re
+
         def _comparison(*args):
             arg = ''.join(args)
             try:
@@ -428,16 +435,15 @@ class GlobalExperimentManager(object):
             display_keys = list(display.keys())
         else:
             display_keys = [v for v in ('root', 'name') if v in display]
-            if display_git:
-                display_keys += git_keys
-            if display_status:
-                display_keys += ['status']
             if display_date:
                 display_keys += ['created']
+            if display_status:
+                display_keys += ['status']
+            if display_git:
+                display_keys += git_keys
             if display_meta:
                 display_keys += [k for k in meta_dict.keys() if re.match(display_meta if isinstance(
                     display_meta, str) else '.*', k)]  + ['origin']
-                # 
                 # display_keys += list(meta_dict.keys()) + ['origin']
             if (isinstance(display_messages, str) or display_messages) and '_messages' in special_keys:
                 display_keys += [k for k in message_dict.keys() if re.match(display_messages if isinstance(
@@ -462,7 +468,23 @@ class GlobalExperimentManager(object):
             roots = [r[len(prefix) + 1:] for r in roots]
         df.update({'root': roots})
         # Finally filter
+        df['name'] = df['root'] + '/' + df['name']
+
+        # display_keys += ['path']
+        # display_keys.remove('name')
+        display_keys.remove('root')
         df = df.filter(items=display_keys)
+
+        keys = [s.replace('slurm_', 's') for s in display_keys]
+        keys = [s.replace('virtual_', 'v') for s in keys]
+
+        updated_keys = {o: n for o, n in zip(display_keys, keys)}
+        get_rid = {'sid', 'sMCS_label', 'sQOS', 'sTimeMin', 'sEligibleTime', 'sAccrueTime', 'sDeadline',
+                   'sSecsPreSuspend', 'sJobName',  'sSuspendTime',  'sLastSchedEval', 'sReqNodeList', 'sExcNodeList',
+                   'sNice'}
+
+        df = df.rename(updated_keys, axis='columns')
+        df = df.filter(items=[k for k in keys if k not in get_rid])
         return df, prefix
 
     def add_experiment(self, module, name):

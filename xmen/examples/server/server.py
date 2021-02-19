@@ -23,12 +23,13 @@ def client_task(conn):
 
 def multi_client_server():
     # get the hostname
-    host = socket.gethostname()
-    port = 6011  # initiate port no above 1024
+    from xmen.experiment import HOST, PORT
+    # host = socket.gethostname()
+    # port = 6011  # initiate port no above 1024
 
     server_socket = socket.socket()  # get instance
     # look closely. The bind() function takes tuple as argument
-    server_socket.bind((host, port))  # bind host address and port together
+    server_socket.bind((HOST, PORT))  # bind host address and port together
 
     # configure how many client the server can listen simultaneously
     server_socket.listen(10)
@@ -113,6 +114,7 @@ def updates_client(q, interval):
                 except:
                     raise IncompatibleYmlException
                 params = {k: commented_to_py(v) for k, v in params.items()}
+                print(params['_name'])
                 # print(params)
                 updates[os.path.join(params['_root'], params['_name'])] = params
             conn.close()  # close the connection
@@ -162,7 +164,7 @@ if __name__ == '__main__':
     while True:
         try:
             updates, last = q.get(False)
-            print(last)
+            print(updates.keys())
         except queue.Empty:
             pass
 

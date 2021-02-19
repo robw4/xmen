@@ -46,8 +46,8 @@ _ = GlobalExperimentManager()
 SAVE_CONDA = _.save_conda
 REQUEUE = _.requeue
 TXT = not _.redirect_stdout
-
-HOST, PORT = '193.62.124.26', 6011
+HOST = _.host
+PORT = _.port
 
 import textwrap
 for k in helps:
@@ -290,21 +290,24 @@ class Experiment(object, metaclass=TypedMeta):
 
         with open(path, 'w') as file:
             yaml.dump(defaults, file)
+        # stream = StringIO()
+        # yaml.dump(defaults, stream)
+        # buffer = stream.getvalue().encode()
+        # buffer = stream.getvalue().encode()
+        self.send_to_server(defaults)
 
-        stream = StringIO()
-        yaml.dump(defaults, stream)
-        buffer = stream.getvalue().encode()
-        self.send_to_server(buffer)
-
-    def send_to_server(self, buffer):
-        import socket, struct
+    def send_to_server(self, dic):
+        import socket, ssl
+        from xmen.app._server import send
+        # context = ssl.create_default_context()
+        # context.load_verify_locations(os.path.join('/home/kebl4674/.ssl', 'cert.pem'))
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                host = HOST
-                s.connect((host, PORT))
-                s.sendall(struct.pack('Q', len(buffer)) + buffer)
-        except ConnectionRefusedError:
-            print('Connection refused on PORT')
+                # with context.wrap_socket(ss, server_hostname=HOST) as s:
+                s.connect((HOST, PORT))
+                send(dic, s)
+        except socket.error:
+            pass
 
     def debug(self):
         """Inherited classes may overload debug. Used to define a set of setup for minimum example"""
