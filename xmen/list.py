@@ -14,6 +14,7 @@ def args_to_filters(args):
         args.display_status,
         args.display_purpose,
         args.display_messages,
+        args.display_host,
         args.display_version,
         args.display_meta,
         *args.filters,
@@ -64,16 +65,18 @@ def visualise_params(dics, *filters):
                 df = _['df']
 
     # fix table order
-    display_keys = ['_root', '_name', '_status', '_created', '_purpose']
+    display_keys = ['_root', '_name', '_status', '_user', '_host', '_purpose']
     display_keys += [k for k in keys if not k.startswith('_')]
+    display_keys += [k for k in keys if k.startswith('_timestamps')]
     display_keys += [k for k in keys if k.startswith('_messages')]
     display_keys += [k for k in keys if k.startswith('_meta')]
     display_keys += [k for k in keys if k not in display_keys]
     df = df.filter(items=display_keys)
     # update the names of the table
     names = {
-        '_root': 'root', '_name': 'name', '_status': 'status', '_purpose': 'purpose',
-        '_created': 'created', '_messages_': '', '_version_': '', '_meta_': ''}
+        '_root': 'root', '_name': 'name', '_status': 'status', '_purpose': 'purpose', '_host': 'host',
+        '_user': 'user',
+        '_created': 'created', '_messages_': '', '_version_': '', '_meta_': '', '_timestamps_': ''}
     updates = {}
     for k in keys:
         for s, n in names.items():
@@ -91,31 +94,60 @@ def visualise_params(dics, *filters):
     return df, prefix
 
 
-def notebook_display(results):
+def notebook_display(results, *filters):
     """Display experiments in notebook mode"""
-    import textwrap
-    from xmen.utils import recursive_print_lines
-    notes = []
-    for i, (r, e, p, n, d, t, v) in enumerate(
-            zip(*[results[j] for j in ('_root', '_experiments', '_purpose',
-                                       '_notes', '_created', '_type', '_version')])):
-        k = 5
-        i = str(i)
-        note = ' ' * (k // 2 - len(str(i))) + str(i) + ' ' * (k // 2 - 1) + r + '\n' + ' ' * k
-        if len(e) > 0:
-            note += ('\n' + ' ' * k).join(['|- ' + ee[len(r) + 1:] for ee in e]) + '\n' + ' ' * k
-        note += 'purpose: ' + p + '\n' + ' ' * k
-        note += 'created: ' + d + '\n' + ' ' * k
-        if len(v) > 0:
-            note += 'version: ' + '\n' + ' ' * (k + 2) + ('\n' + ' ' * (k + 2)).join(
-                [l for l in recursive_print_lines(v)])
-        if len(n) > 0:
-            note += '\n' + ' ' * k + 'notes: ' + '\n' + ' ' * (k + 2)
-            note += ('\n' + ' ' * (k + 2)).join(
-                ['\n'.join(textwrap.wrap(nn, width=1000, subsequent_indent=' ' * (k + 3))) for i, nn in
-                 enumerate(n)])
-        notes += [note]
-    print('\n'.join(notes))
+    from xmen.utils import dics_to_pandas
+    import os
+
+    results = dics_to_pandas(results, '|'.join(f[0] for f in filters))
+    sets = [os.path.split(r) for r in results['_root'].to_list()]
+
+    notebook = {}
+    for i, (s, name) in enumerate(sets):
+        if s not in notebook:
+            notebook[s] = []
+        data = results.T[i].to_dict()
+        data['_name'] = name
+        notebook[s] += [data]
+
+    note = ['']
+    k = 2
+    for i, (s, v) in enumerate(notebook.items()):
+        note += [str(i) + ':' + s]
+        purpose, notes, last, git = [], [], [], []
+        for vv in v:
+            note += [(' ' * k) + '|- ' + vv['_name']]
+            purpose += [vv['_purpose']]
+            n = vv.get('_notes', None)
+            if n is None:
+                n = []
+            notes.extend(n)
+            ts = vv.get('_timestamps_last', None)
+            if ts is None:
+                ts = vv.get('_timestamps_registered', None)
+            if ts is None:
+                ts = vv.get('_created', '')
+            last += [ts]
+
+            g = vv.get('_version_git_local', '')
+            g += ' ' + vv.get('_version_git_branch', '')
+            g += ' ' + vv.get('_version_git_commit', '')
+            if g != '  ':
+                git += [g]
+
+        purpose, notes, git = set(purpose), set(notes), set(git)
+        note += [f'Last: {max(last)}']
+        note += [f'Git:']
+        for g in git:
+            note.extend([(' ' * k) + gg for gg in g.split(' ')])
+        note += ['Purpose:']
+        if purpose:
+            note += [(' ' * k) + p for p in purpose]
+        note += ['Notes:']
+        if notes:
+            note += [(' ' * k) + p for p in set(notes)]
+        note += ['']
+    print('\n'.join(note))
 
 
 class NotEnoughRows(Exception):

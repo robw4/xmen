@@ -141,8 +141,8 @@ config_parser.add_argument('--update_meta', default=None, action='store_true',
 config_parser.add_argument('-H', '--header', type=str, help='Update the default header used when generating experiments'
                                                             ' to HEADER (a .txt file)')
 config_parser.add_argument('--list', default=None, help='Display the current configuration', action='store_false')
-config_parser.add_argument('--host',  type=str, help='Update the default host used by xmen')
-config_parser.add_argument('--port', default=2030, type=int, help='Update the default port used by xmen')
+config_parser.add_argument('--host',  type=str, help='Update the default host used by xmen', nargs='?')
+config_parser.add_argument('--port', type=int, help='Update the default port used by xmen', nargs='?')
 
 
 def _config(args):
@@ -175,8 +175,10 @@ def _config(args):
             else:
                 config.header = args.header
         if args.host:
+            print(f'Updating host to {args.host}')
             config.host = args.host
         if args.port:
+            print(f'Updating port to {args.port}')
             config.port = args.port
 
         if args.list is not None:
@@ -270,17 +272,21 @@ run_parser.set_defaults(func=_run)
 #  note
 #######################################################################################################################
 note_parser = subparsers.add_parser('note', help='add notes to an experiment')
-note_parser.add_argument('message', help='Add note to experiment set')
+note_parser.add_argument('pattern', help='Add messages to these experiments')
+note_parser.add_argument('message', help='Message to add to the experiments')
 note_parser.add_argument('-r', '--root', metavar='DIR', default='',
-                         help='Path to the root experiment folder. If None then the current work directory will be '
+                         help='Path to the root of the experiment. If None then the current work directory will be '
                               'used')
 note_parser.add_argument('-d', '--delete', default='', action='store_true',
                          help='Delete the note corresponding to message.')
 
 
 def _note(args):
+    if not args.root:
+        args.root = os.getcwd()
+    print(f'Leaving note with experiment {args.root}')
     experiment_manager = ExperimentManager(args.root)
-    experiment_manager.note(args.message, args.delete)
+    experiment_manager.note(args.pattern, args.message, args.delete)
 
 
 note_parser.set_defaults(func=_note)
@@ -419,6 +425,12 @@ list_parser.add_argument(
     nargs="?",
     help="Display version information for each experiment")
 list_parser.add_argument(
+    '-H', '--display_host',
+    default=r'^$',
+    const=r'host|user',
+    nargs="?",
+    help="Display host and user information")
+list_parser.add_argument(
     '-P', '--display_purpose',
     default=r'^$',
     const=r'purpose$',
@@ -427,7 +439,7 @@ list_parser.add_argument(
 list_parser.add_argument(
     '-d', '--display_date',
     default=r'^$',
-    const="created$",
+    const="timestamps|created",
     nargs="?",
     help="Display created date for each experiment")
 list_parser.add_argument(
@@ -440,7 +452,7 @@ list_parser.add_argument(
     '-m', '--display_messages',
     nargs="?",
     default='^$',
-    const='messages_(^last$|^e$|^s$|^wall$|^end$|^next$|^.*step$|^.*load$)',
+    const='messages_(last$|e$|s$|wall$|end$|next$|.*step$|.*load$)',
     help="Display messages for each experiment")
 list_parser.add_argument(
     '-f', '--filters',
@@ -456,7 +468,7 @@ list_parser.add_argument(
     '-M', '--display_meta',
     nargs="?",
     default="^$",
-    const='meta_^root$|^name$|^mac$|^host$|^user$|^home$',
+    const='meta_(root$|name$|mac$|host$|user$|home$)',
     help="Display meta information for each experiment. The regex "
          "'' gives basic meta information "
          "logged with every experiment. Other information is separated into groups including "
@@ -516,11 +528,15 @@ def _list(stdscr, args):
             args.pattern = pattern
         global_exp_manager = GlobalExperimentManager()
         if args.list:
-            from xmen.list import notebook_display
-            results, last = global_exp_manager.find(
-                mode='set', pattern=args.pattern, param_match=[args.param_match], types_match=args.type_match,
-                load_defaults=True)
-            notebook_display(results)
+            from xmen.list import notebook_display, args_to_filters
+            from xmen.utils import load_params
+            # results, last = global_exp_manager.find(
+            #     mode='set', pattern=args.pattern, param_match=[args.param_match], types_match=args.type_match,
+            #     load_defaults=True)
+            args.filters += ['notes', 'created|timestamps', 'purpose', 'version']
+            paths = global_exp_manager.paths(pattern=args.pattern)
+            params = load_params(paths)
+            notebook_display(params, *args_to_filters(args))
         elif args.interval is None:
             from xmen.utils import load_params
             from xmen.list import args_to_filters, visualise_params

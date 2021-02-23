@@ -20,6 +20,54 @@ import re
 
 import xmen.manager
 from xmen.utils import get_meta
+import socket
+
+
+class Config(object):
+    def __init__(self):
+        self.server_host = 'xmen.rob-otics.co.uk'
+        self.server_port = 8000
+        self.user = 'robw'
+        self.host = socket.gethostname()
+        self.python_experiments = {}
+        self.prompt_for_message = True
+        self.save_conda = True  # Whether to save conda info to file
+        self.redirect_stdout = True  # Whether to also log the stdout and stderr to a text file in each experiment dir
+        self.meta = get_meta()
+        self.requeue = True   # Whether to requeue expeirments if SLURM is available
+
+        # private attributes (not saved)
+        self._dir = os.path.join(os.getenv('HOME'), '.xmen')
+
+        if not os.path.isdir(self._dir):
+            os.makedirs(self._dir)
+            self._to_yml()
+        else:
+            self._from_yml()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._to_yml()
+
+    def _to_yml(self):
+        """Save the current config to an ``config.yaml``"""
+        import ruamel.yaml
+        params = {k: v for k, v in self.__dict__.items() if k[0] != '_'}
+        with open(os.path.join(self._dir, 'config.yml'), 'w') as file:
+            ruamel.yaml.dump(params, file, Dumper=ruamel.yaml.RoundTripDumper)
+
+    def _from_yml(self):
+        """Load the experiment config from a ``config.yml`` file"""
+        with open(os.path.join(self._dir, 'config.yml'), 'r') as file:
+            import ruamel.yaml
+            from ruamel.yaml.comments import CommentedMap
+            params = ruamel.yaml.load(file, ruamel.yaml.RoundTripLoader)
+            for k, v in params.items():
+                self.__dict__[k] = v
+
+        self._to_yml()
 
 
 class NoMatchException(Exception):
@@ -121,7 +169,7 @@ class GlobalExperimentManager(object):
         string += f'save conda: {self.save_conda}\n'
         string += f'enable requeue: {self.requeue}\n'
         string += f'host: {self.host}\n'
-        string += f'host: {self.port}\n'
+        string += f'port: {self.port}\n'
         string += f'redirect stdout: {self.redirect_stdout}\n'
         string += f'python Path:\n'
         for p in self.python_paths:

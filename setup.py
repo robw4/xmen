@@ -32,7 +32,7 @@ setup(
                 'xmen=xmen.app._xgent:main'
             ]},
     install_requires=[
-            'ruamel.yaml>=0.16.10',
+            'ruamel.yaml',
             'pandas>=1.1.1',
             'GitPython>=3.1.7',
             'psutil',

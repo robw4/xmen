@@ -68,7 +68,7 @@ class AnExperiment(BaseExperiment):
 
     @property
     def h(self):
-        return 'h has been overloaded as propery and will no longer' \
+        return 'h has been overloaded as property and will no longer' \
                'considered as a parameter'
 
 

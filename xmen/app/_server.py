@@ -1,3 +1,5 @@
+#! python3
+
 import socket
 import struct
 import os
@@ -14,49 +16,16 @@ HOST = CONFIG.host
 PORT = CONFIG.port
 
 
-# Convert to yaml
-def dict_to_yaml(dic):
-    yaml = ruamel.yaml.YAML()
-    stream = StringIO()
-    yaml.dump(dic, stream)
-    string = stream.getvalue()
-    return string
-
-
-def receive(conn):
-    length = conn.recv(struct.calcsize('Q'))
-    dic = None
-    if length:
-        length, = struct.unpack('Q', length)
-        print(length)
-        buffer = conn.recv(length, socket.MSG_WAITALL).decode()
-        yaml = ruamel.yaml.YAML()
-        try:
-            dic = yaml.load(buffer)
-        except:
-            raise IncompatibleYmlException
-        dic = {k: commented_to_py(v) for k, v in dic.items()}
-    return dic
-
-
-def send(dic, conn):
-    string = dict_to_yaml(dic)
-    buffer = string.encode()
-    try:
-        conn.sendall(struct.pack('Q', len(buffer)) + buffer)
-    except socket.error:
-        pass
-
 
 def sender_server(q, host, port, experiments):
     import socket, ssl
 
-    # context = ssl.create_default_context()
+    #context = ssl.create_default_context()
     # context.load_cert_chain(
     #     certfile=os.path.join('/home/kebl4674/.ssl', 'cert.pem'),
     #     keyfile=os.path.join('/home/kebl4674/.ssl', 'key.pem'))
     server_socket = socket.socket()
-    server_socket.bind((host, port))
+    server_socket.bind(('', port))
     server_socket.listen(10)
 
     while True:
@@ -91,28 +60,30 @@ def receiver_server(q, interval, host, port):
     import socket
     import time
     import ssl
+    # context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 
-    # context =  ssl.create_default_context()
-    # context.load_cert_chain(
-    #     certfile=os.path.join('/home/kebl4674/.ssl', 'cert.pem'),
-    #     keyfile=os.path.join('/home/kebl4674/.ssl', 'key.pem')
-    # )
-    # context.check_hostname = False
+    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    context.load_cert_chain(
+         certfile='/etc/letsencrypt/live/xmen.rob-otics.co.uk/fullchain.pem',
+         keyfile='/etc/letsencrypt/live/xmen.rob-otics.co.uk/privkey.pem'
+    )
+    #context.check_hostname = False
 
     # get the hostname
     server_socket = socket.socket()
-    server_socket.bind((host, port))  # bind host address and port together
+    print('Binding on', ('', port))
+    server_socket.bind(('', port))  # bind host address and port together
 
     # configure how many client the server can listen simultaneously
     server_socket.listen(10)
-
     while True:
+        print('Beginning...')
         try:
             updates = {}
             last = time.time()
             while time.time() - last < interval:
                 conn, address = server_socket.accept()
-                # conn = context.wrap_socket(conn, server_side=True)
+                conn = context.wrap_socket(conn, server_side=True)
                 # try:
                 #
                 # except ssl.SSLError as m:
@@ -150,7 +121,7 @@ if __name__ == '__main__':
         get_q = queue.Queue()
         send_q = queue.Queue(maxsize=1)
 
-        thread_receive = threading.Thread(target=receiver_server, args=(get_q, 1., gem.host, gem.port))
+        thread_receive = threading.Thread(target=receiver_server, args=(get_q, 1., gem.host, 8000))
         thread_send = threading.Thread(target=sender_server, args=(send_q, gem.host, gem.port + 1, gem.experiments))
         thread_receive.start()
         thread_send.start()
@@ -158,7 +129,7 @@ if __name__ == '__main__':
         while True:
             try:
                 updates, last = get_q.get(True)
-                gem.experiments.update(updates)
+                #gem.experiments.update(updates)
                 send_q.put(gem.experiments)
 
             except queue.Empty:

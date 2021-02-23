@@ -21,10 +21,15 @@ and the Experiment classes."""
 import os
 import inspect
 import logging
-DATE_FORMAT = "%Y-%m-%d-%H-%M-%S"
+DATE_FORMAT = "%y-%m-%d-%H-%M-%S-%f"
+
+
+class IncompatibleYmlException(Exception):
+    pass
 
 
 def flatten(d, parent_key='', sep='_'):
+    """Flatten a nested dictionary to a single dictionary. The keys of nested entries will be joined using sep"""
     import collections
     items = []
     for k, v in d.items():
@@ -34,6 +39,34 @@ def flatten(d, parent_key='', sep='_'):
         else:
             items.append((new_key, v))
     return dict(items)
+
+
+# Convert to yaml
+def dic_to_yaml(dic):
+    """Convert dictionary to a yaml string (``dic`` can also be a CommentedMap)"""
+    import ruamel.yaml
+    from ruamel.yaml import StringIO
+    yaml = ruamel.yaml.YAML()
+    stream = StringIO()
+    yaml.dump(dic, stream)
+    string = stream.getvalue()
+    return string
+
+
+def dic_from_yml(*, string=None, path=None):
+    """Load from either a yaml string or path to a yaml file"""
+    assert (string is None) != (path is None), 'One of string and path must be set'
+    import ruamel.yaml
+    yaml = ruamel.yaml.YAML()
+    try:
+        if path is not None:
+            with open(path, 'r') as file:
+                params = yaml.load(file)
+        else:
+            params = yaml.load(string)
+    except:
+        raise IncompatibleYmlException
+    return params
 
 
 def recursive_print_lines(dic, helps=None, start=''):

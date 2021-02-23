@@ -29,8 +29,6 @@ from xmen.utils import get_meta, get_version, DATE_FORMAT, get_git
 import xmen.config
 
 
-
-
 class ExperimentNotFoundException(Exception):
     def __init__(self, root, name):
         self.root = root
@@ -244,7 +242,7 @@ class ExperimentManager(object):
             defaults = ruamel.yaml.load(file, ruamel.yaml.RoundTripLoader)
         return defaults
 
-    def save_params(self, params, experiment_name):
+    def save_params(self, params, root):
         """Save a dictionary of parameters at ``{root}/{experiment_name}/params.yml``
 
         Args:
@@ -252,8 +250,7 @@ class ExperimentManager(object):
             experiment_name (str): The name of the experiment
         """
         import ruamel.yaml
-        experiment_path = os.path.join(self.root, experiment_name)
-        with open(os.path.join(experiment_path, 'params.yml'), 'w') as out:
+        with open(os.path.join(root, 'params.yml'), 'w') as out:
             yaml = ruamel.yaml.YAML()
             yaml.dump(params, out)
 
@@ -432,18 +429,25 @@ class ExperimentManager(object):
             values = new_values
         return values, keys
 
-    def note(self, msg, remove=False):
+    def note(self, pattern, msg, remove=False):
         """Add a note to the epxeriment manager. If remove is True msg is deleted instead."""
         self.check_initialised()
-        if not remove:
-            self.notes += [msg.strip()]
-        else:
-            self.notes = [n for n in self.notes if msg.strip() != n]
-
-        # Add experiment to global config
-        with self._config:
-            self._config.experiments[self.root]['notes'] = self.notes
-        self._to_yml()
+        experiments = [p for p in glob.glob(os.path.join(self.root, pattern)) if p in self.experiments]
+        for root in experiments:
+            import ruamel.yaml.comments
+            params = self.load_params(root)
+            if '_notes' not in params or params['_notes'] is None:
+                params['_notes'] = []
+            if not remove:
+                params['_notes'] += [msg.strip()]
+            else:
+                from ruamel.yaml.comments import CommentedSeq
+                if msg in params['_notes']:
+                    params['_notes'].remove(msg)
+                    if not params['_notes']:
+                        params['_notes'] = None
+                # params['_notes'] = CommentedSeq([n for n in params['_notes'] if msg.strip() != n])
+            self.save_params(params, root)
 
     def replant(self, root):
         # Relink experiments under root
@@ -480,7 +484,6 @@ class ExperimentManager(object):
             params["_root"] = root
             self.save_params(params, os.path.basename(path))
 
-
         self._to_yml()
 
     def move(self, dest):
@@ -493,30 +496,6 @@ class ExperimentManager(object):
         os.renames(self.root, dest)
         # self.root = dest
         self.replant(dest)
-        #
-        # # Update params.yml file
-        # for i, path in enumerate(self.experiments):
-        #     params = self.load_params(path)
-        #     params["_root"] = dest
-        #     self.save_params(params, os.path.basename(path))
-        #     self.experiments[i] = path.replace(self.root, dest)
-        #
-        # # Change location of defaults.yml and script.sh
-        # self.defaults = self.defaults.replace(self.root, dest)
-        # self.script = self.script.replace(self.root, dest)
-        #
-        # # Update global config
-        # with self._config as config:
-        #     entry = self._config.experiments.pop(self.root, None)
-        #     if entry is not None:
-        #         config.experiments[dest] = self._config.experiments.pop(self.root)
-        #     else:  # We will need to do a bit more work
-        #         print('More work needed')
-        #
-        # # Do the move
-        # os.renames(self.root, dest)
-        # self.root = dest
-        # self._to_yml()
 
     def register(self, name=None, string_params=None, purpose='', header=None, shell='/bin/bash', repeats=1):
         """Register a set of experiments with the experiment manager.
@@ -642,13 +621,17 @@ class ExperimentManager(object):
                     yaml.default_flow_style = False
                     with open(os.path.join(self.root, experiment_name, 'environment.yml'), 'w') as f:
                         yaml.dump(conda_env, f)
-                
+
+                from xmen.experiment import CONFIG, get_timestamps, get_time
+                ts = get_time()
                 extra_params = {
-                    '_root': self.root,
-                    '_name': experiment_name,
+                    '_root': os.path.join(self.root, experiment_name),
                     '_status': 'registered',
-                    '_created': datetime.datetime.now().strftime(DATE_FORMAT),
-                    '_purpose': purpose,
+                    '_purpose': self.purpose,
+                    '_notes': None,
+                    '_user': CONFIG.user,
+                    '_host': CONFIG.host,
+                    '_timestamps': get_timestamps(created=ts, registered=ts),
                     '_messages': {},
                     '_version': version,
                     '_meta': get_meta()}
@@ -699,66 +682,7 @@ class ExperimentManager(object):
         for p in experiments:
             P = self.load_params(p)
             P['_status'] = status
-            self.save_params(P, P['_name'])
-
-    def list(self):
-        """List all experiments currently created with the experiment manager."""
-        self.check_initialised()
-        import pandas as pd
-
-        if self.purpose is not None:
-            print('Purpose: ' + self.purpose)
-        print()
-
-        # Construct dictionary
-        if self.experiments != []:
-            table = {'overrides': [], 'purpose': [], 'created': [], 'status': [], 'messages': [], 'commit': []}
-            keys = ['_name', '_purpose', '_created', '_status', '_messages', '_version']
-            for i, p in enumerate(self.experiments):
-                P = self.load_params(p)
-                for k_table, k_params in zip(table, keys):
-                    if k_params == '_version':
-                        if 'git' in P[k_params]:
-                            v = P[k_params]['git']['commit']
-                        else:
-                            v = None
-                        # print(P[k_params].keys())
-                        # v = P[k_params]['comit']
-                    else:
-                        v = P[k_params]
-                    table[k_table] += [v]
-            table = pd.DataFrame(table)
-            # with pd.option_context('display.max_rows', None, 'display.max_columns',
-            #                        None):  # more options can be specified also
-            print(table)
-        else:
-            print('No experiments currently registered!')
-        print()
-
-        # Print Notes
-        if len(self.notes) > 0:
-            print('Notes:')
-            for n in self.notes:
-                print('- ' + n)
-
-        # Get defaults information
-        defaults = self.load_defaults()
-        if '_created' in defaults:
-            print(f'Defaults: \n'
-                  f'- created: {defaults["_created"]}')
-        if '_version' in defaults:
-            version = defaults["_version"]
-            if 'path' in version:
-                print(f'- path: {version["path"]}')
-            else:
-                print(f'- module: {version["module"]}')
-                print(f'- class: {version["class"]}')
-            if 'git' in version:
-                git = version['git']
-                print('- git:')
-                print(f'   local: {git["local"]}')
-                print(f'   commit: {git["commit"]}')
-                print(f'   remote: {git["remote"]}')
+            self.save_params(P, P['_root'])
 
     def clean(self):
         """Remove directories no longer linked to the experiment manager"""

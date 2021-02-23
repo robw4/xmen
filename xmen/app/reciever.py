@@ -8,6 +8,7 @@ if __name__ == '__main__':
 
     gem = GlobalExperimentManager()
     with gem:
+        print(f'Making connection on port {gem.port + 1} ')
         thread_receive = threading.Thread(target=receiver_client, args=(gem.host, gem.port + 1))
         thread_receive.start()
         thread_receive.join()

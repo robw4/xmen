@@ -38,16 +38,12 @@ helps = {
     'root': 'Generate a run script and defaults.yml file for interfacing with xgent',
     'debug': 'Run experiment in debug mode. The experiments debug will be called before registering.',
     'txt': 'Also log stdout and stderr to an out.txt file. Enabled by default',
-    'restart': 'Restart the experiment'}
+    'restart': 'Restart the experiment',
+    'purpose': 'A string giving the purpose of the current experiment'}
 
-from xmen.config import GlobalExperimentManager
+from xmen.config import Config
 
-_ = GlobalExperimentManager()
-SAVE_CONDA = _.save_conda
-REQUEUE = _.requeue
-TXT = not _.redirect_stdout
-HOST = _.host
-PORT = _.port
+CONFIG = Config()
 
 import textwrap
 for k in helps:
@@ -65,22 +61,45 @@ class NullRoot(str):
 
 experiment_parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 experiment_parser.add_argument('--update', '-u', type=str, default=None, nargs='+', help=helps['update'])
+experiment_parser.add_argument('--purpose', '-p', type=str, default=None, nargs='+', help=helps['purpose'])
 experiment_parser.add_argument('--execute', '-x', type=str, default=None, help=helps['execute'],
                                nargs='?', const=NullRoot())
 experiment_parser.add_argument('--to_root', '-r', type=str, default=None, help=helps['root'])
 # optional extras
 experiment_parser.add_argument('--debug', '-d', default=None, action='store_true', help=helps['debug'])
-experiment_parser.add_argument('--txt', '-t', default=not TXT, action='store_true', help=helps['txt'])
+experiment_parser.add_argument('--txt', '-t', default=not CONFIG.redirect_stdout, action='store_true', help=helps['txt'])
 experiment_parser.add_argument('--restart', '-f', default=None, action='store_true', help=helps['restart'])
-_SPECIALS = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta']
-
-
-class IncompatibleYmlException(Exception):
-    pass
+_SPECIALS = ['_root', '_status', '_purpose', '_messages', '_version', '_meta']
+_SPECIALS += ['_user', '_host', '_notes', '_timestamps']
+_DEPRECIATED = ['_name', '_created']
 
 
 class TimeoutException(Exception):
     pass
+
+
+def get_time():
+    return datetime.datetime.now().strftime(DATE_FORMAT)
+
+
+DEFAULT = 'default'
+REGISTERED = 'registered'
+RUNNING = 'running'
+ERROR = 'error'
+STOPPED = 'stopped'
+TIMEOUT = 'timeout'
+FINISHED = 'finished'
+DETACHED = 'detached'
+REQUEUE = 'requeue'
+
+
+def get_timestamps(created=None, start=None, stopped=None, last=None, registered=None):
+    return {
+        'created': created,
+        'start': start,
+        'stopped': stopped,
+        'last': last,
+        'registered': registered}
 
 
 class Experiment(object, metaclass=TypedMeta):
@@ -103,7 +122,7 @@ class Experiment(object, metaclass=TypedMeta):
     """
     _params = {}  # Used to store parameters registered by the MetaClass
 
-    def __init__(self, root=None, name=None, purpose='', copy=True, **kwargs, ):
+    def __init__(self, root=None, purpose='', copy=True, **kwargs):
         """Create a new experiment object.
 
         Args:
@@ -113,30 +132,41 @@ class Experiment(object, metaclass=TypedMeta):
                 Mutable attributes will no longer be shared.
             **kwargs: Override parameter defaults.
         """
+        import copy
         if copy:
-            import copy
+
             for k in [k for k in dir(self) if k in self._params]:
                 setattr(self, k, copy.deepcopy(getattr(self, k)))
 
-        if (name is None) == (root is None):
-            now_time = datetime.datetime.now().strftime(DATE_FORMAT)
+        if root is None:
             self._root: Optional[str] = None     # @p The root directory of the experiment
-            self._name: Optional[str] = None     # @p The name of the experiment (under root)
-            self._status: str = 'default'        # @p One of ['default' | 'created' | 'running' | 'error' | 'finished']
-            self._created: str = now_time        # @p The date the experiment was created
+            self._status: str = DEFAULT  # @p One of ['default' | 'created' | 'running' | 'error' | 'finished']
+            # self._created: Optional[float] = None  # @p Initial time the experiment was created
+            self._notes: Optional[List[str]] = None  # @p Notes attached to the experiment
             self._purpose: Optional[str] = None  # @p A description of the experiment purpose
+            # new attributes
+            self._user: Optional[str] = CONFIG.user  # @p The user of the experiment
+            self._host: Optional[str] = CONFIG.host  # @p The name of the default host
+            self._timestamps: Dict[str, Optional[str]] = get_timestamps()   # @p timestamps attached to the experiment
+            # These can all be varied
             self._messages: Dict[Any, Any] = {}  # @p Messages left by the experiment
-            self._version: Optional[Dict[Any, Any]] = None   # @p Experiment version information. See `get_version`
-            self._meta: Optional[Dict] = None    # @p The global configuration for the experiment manager
+            self._version: Optional[Dict[Any, Any]] = None  # @p Experiment version information. See `get_version`
+            self._meta: Optional[Dict] = None  # @p The global configuration for the experiment manager
+
+            # depreciated
             self._specials: List[str] = _SPECIALS
             self._helps: Optional[Dict] = None
+
+            # queues
+            self._queues = []
+
         else:
             raise ValueError("Either both or neither of name and root can be set")
 
         # Update kwargs
         self.update(kwargs)
-        if name is not None:
-            self.register(name, root, purpose)
+        if root is not None:
+            self.register(root, purpose=purpose)
 
     @property
     def root(self):
@@ -144,17 +174,8 @@ class Experiment(object, metaclass=TypedMeta):
         return self._root
 
     @property
-    def name(self):
-        """The name of the current experiment"""
-        return self._name
-
-    @property
     def directory(self):
-        """The directory assigned to the experiment"""
-        if self._status == 'default':
-            return None
-        else:
-            return os.path.join(self._root, self._name)
+        return self._root
 
     @property
     def status(self):
@@ -165,7 +186,7 @@ class Experiment(object, metaclass=TypedMeta):
     @property
     def created(self):
         """The date the experiment parameters were last updated."""
-        return self._created
+        return self._timestamps['created']
 
     @property
     def purpose(self):
@@ -182,18 +203,24 @@ class Experiment(object, metaclass=TypedMeta):
         """A dictionary giving the version information for the experiment"""
         return self._version
 
-    # @property
-    # def notes(self):
-    #     """A dictionary containing the notes attached to the experiment"""
-    #     return self._notes
+    @property
+    def notes(self):
+        """A dictionary containing the notes attached to the experiment"""
+        return self._notes
+
+    @property
+    def user(self):
+        """The current user of the experiment"""
+        return self._user
+
+    @property
+    def host(self):
+        """The host of the experiment"""
+        return self._host
 
     @root.setter
     def root(self, value):
         raise AttributeError('Property root cannot be set.')
-
-    @name.setter
-    def name(self, value):
-        raise AttributeError('Property name cannot be set.')
 
     @status.setter
     def status(self, value):
@@ -215,6 +242,26 @@ class Experiment(object, metaclass=TypedMeta):
     def version(self, value):
         raise AttributeError('Property version cannot be set.')
 
+    @user.setter
+    def user(self, value):
+        raise AttributeError('Property user cannot be set.')
+
+    @host.setter
+    def host(self, value):
+        """The host of the experiment"""
+        raise AttributeError('Property host cannot be set.')
+
+    def note(self, string, remove=False):
+        """Leave a note with the experiment. Will be removed if ``remove`` is ``False``"""
+        if self._notes is None:
+            self._notes = []
+        if remove:
+            self._notes.remove(string)
+        else:
+            self._notes.append(string)
+        if not self._notes:
+            self._notes = None
+
     def get_param_helps(self):
         """Get help for all attributes in class (including inherited and private)."""
         return {k: v[3].strip() for k, v in self._params.items()}
@@ -227,11 +274,8 @@ class Experiment(object, metaclass=TypedMeta):
 
     def update_meta(self, get_platform=False, get_cpu=False, get_memory=False, save=False, **kwargs):
         self._meta = get_meta(get_platform, get_cpu, get_memory, **kwargs)
-        id = os.environ.get('SLURM_JOB_ID', None)
-        if id is not None:
-            self._meta.update({'slurm_job': f'{id}'})
         if save:
-            self._to_yaml()
+            self._save()
 
     def to_defaults(self, defaults_dir):
         """Create a ``defaults.yml`` file from experiment object.
@@ -239,75 +283,57 @@ class Experiment(object, metaclass=TypedMeta):
 
             MyExperiment().to_yaml('/dir/to/defaults/root')
         """
+        assert self._status == DEFAULT, 'An experiment can only be converted to default if it has not been registered'
         self.update_version()
         self.update_meta()
+        self._timestamps['created'] = get_time()
         if not os.path.exists(defaults_dir):
             os.makedirs(defaults_dir)
+        self._save(defaults_dir)
 
-        if self._status != 'default':
-            raise ValueError('An experiment can only be converted to default if it has not been registered')
-        else:
-            # self.defaults_created = datetime.datetime.now().strftime("%I:%M%p %B %d, %Y"
-            self._to_yaml(defaults_dir)
-
-    def _to_yaml(self, defaults_dir=None):
-        """Save experiment to either a defaults.yml file or a params.yml file depending on its status"""
-        import ruamel.yaml
-        from ruamel.yaml import StringIO
+    def as_yaml(self, as_string=True):
+        from xmen.utils import dic_to_yaml
         from ruamel.yaml.comments import CommentedMap
-
-        self.update_version()
         params = {k: getattr(self, k) for k in dir(self) if k in self.param_keys() or k in self._specials}
         params = {k: v for k, v in params.items() if '_' + k not in self.__dict__}
         helps = self.get_param_helps()
 
         # Add definition module to experiment object
-        defaults = CommentedMap()
+        map = CommentedMap()
         for i, (k, v) in enumerate(params.items()):
-            if self._status == 'default':
-                if k in ['_root', '_name', '_status', '_purpose', '_messages', '_origin']:
+            if self._status == DEFAULT:
+                if k in ['_root', '_status', '_purpose',
+                         '_messages', '_origin', '_timestamps', '_notes', '_type']:
                     continue
-            # comment = helps[k].split(k)[1] if helps[k] is not None else None
             comment = helps[k]
             if comment == '':
                 comment = None
-            defaults.insert(i, k, v, comment=comment)
+            map.insert(i, k, v, comment=comment)
+
+        if as_string:
+            return dic_to_yaml(map)
+        else:
+            return map
+
+    def _save(self, defaults_dir=None):
+        """Save experiment to either a defaults.yml file or a params.yml file depending on its status"""
+        import time
 
         if self._status == 'default':
             path = os.path.join(os.path.join(defaults_dir, 'defaults.yml'))
         else:
-            path = os.path.join(self._root, self._name, 'params.yml')
+            path = os.path.join(self.directory, 'params.yml')
 
-        # Convert to yaml
-        yaml = ruamel.yaml.YAML()
-        yaml.register_class(NullRoot)
-        try:
-            if self.status == 'detached':
-                pass
-            yaml.dump(defaults, io.StringIO())
-        except yaml.representer.RepresenterError as m:
-            raise RuntimeError(f'Invalid yaml encountered with error {m}')
+        if self.status == 'running':
+            self._timestamps['last'] = get_time()
 
+        # save parameters
+        string = self.as_yaml()
         with open(path, 'w') as file:
-            yaml.dump(defaults, file)
-        # stream = StringIO()
-        # yaml.dump(defaults, stream)
-        # buffer = stream.getvalue().encode()
-        # buffer = stream.getvalue().encode()
-        self.send_to_server(defaults)
+            file.write(string)
 
-    def send_to_server(self, dic):
-        import socket, ssl
-        from xmen.app._server import send
-        # context = ssl.create_default_context()
-        # context.load_verify_locations(os.path.join('/home/kebl4674/.ssl', 'cert.pem'))
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                # with context.wrap_socket(ss, server_hostname=HOST) as s:
-                s.connect((HOST, PORT))
-                send(dic, s)
-        except socket.error:
-            pass
+        for q in self._queues:
+            q.put(string)
 
     def debug(self):
         """Inherited classes may overload debug. Used to define a set of setup for minimum example"""
@@ -317,22 +343,26 @@ class Experiment(object, metaclass=TypedMeta):
         """Load state from either a ``params.yml`` or ``defaults.yml`` file (inferred from the filename).
         The status of the experiment will be updated to ``'default'`` if ``'defaults.yml'``
         file else ``'registered'`` if ``params.yml`` file."""
-        import ruamel.yaml
-        yaml = ruamel.yaml.YAML()
-        try:
-            with open(path, 'r') as file:
-                params = yaml.load(file)
-        except:
-            raise IncompatibleYmlException
+        from xmen.utils import dic_from_yml
+        params = dic_from_yml(path=path)
+
+        # backward compatibility
+        if '_name' in params:
+            params['_root'] = os.path.join(params['_root'], params.pop('_name'))
+        if '_created' in params:
+            params['_timestamps'] = get_timestamps()
+            params['_timestamps']['created'] = params.pop('_created')
         params = {k: commented_to_py(v) for k, v in params.items() if k in self.__dict__}
+
         if copy:
             # Copy only parameter values themselves (and not specials)
             params = {k: v for k, v in params.items() if not k.startswith('_')}
-        # Update created date
-        self.__dict__.update(params)
-        self._created = datetime.datetime.now().strftime(DATE_FORMAT)
 
-    def register(self, root, name, purpose='', force=True, same_names=100, generate_script=False, restart=False):
+        # update created date
+        self.__dict__.update(params)
+
+
+    def register(self, root, purpose='', force=True, same_names=100, generate_script=False, restart=False):
         """Register an experiment to an experiment directory. Its status will be updated to ``registered``. If an
         experiment called ``name`` exists in ``root`` and ``force==True`` then name will be appended with an int
         (eg. ``{name}_0``) until a unique name is found in ``root``. If ``force==False`` a ``ValueError`` will be raised.
@@ -343,43 +373,39 @@ class Experiment(object, metaclass=TypedMeta):
         Raises:
             ValueError: if ``{root}/{name}`` already contains a ``params.yml`` file
         """
-        folder = os.path.join(root, name)
-        exists = os.path.exists(os.path.join(folder, 'params.yml'))
+        exists = os.path.exists(os.path.join(root, 'params.yml'))
         if not restart or (restart and not exists):
             if exists:
                 i = 0
                 if force:
                     while i < same_names:
-                        if not os.path.exists(os.path.join(folder + '_' + str(i), 'params.yml')):
-                            folder += '_' + str(i)
-                            name += '_' + str(i)
+                        if not os.path.exists(os.path.join(root + '_' + str(i), 'params.yml')):
+                            root += '_' + str(i)
+                            # name += '_' + str(i)
                             break
                         i += 1
                 elif i == same_names or not force:
-                    raise ValueError(f'Experiment folder {os.path.join(root, name)} already contains a params.yml file. '
+                    raise ValueError(f'Experiment folder {root} already contains a params.yml file. '
                                      f'An Experiment cannot be created in an already existing experiment folder')
-            # Make the folder if it does not exist
-            if not os.path.isdir(folder):
-                os.makedirs(folder)
 
-            # Generate a script.sh in each folder that can be used to run the experiment
-            if generate_script:
-                script = self.get_run_script(type='individual')
-                with open(os.path.join(self.root, self.name, 'run.sh'), 'w') as f:
-                    f.write(script)
+            # Make the folder if it does not exist
+            if not os.path.isdir(root):
+                os.makedirs(root)
 
             self.update_version()  # Get new version information
             self.update_meta()   # Get the newest meta information
             self._root = root
-            self._name = name
             self._purpose = purpose
-            self._status = 'registered'
-            self._to_yaml()
+            if self._timestamps['created'] is None:
+                self._timestamps['created'] = get_time()
+            self._timestamps['registered'] = get_time()
+            self._status = REGISTERED
+            self._save()
         else:
-            self.from_yml(os.path.join(folder, 'params.yml'))
-            if self.status != 'registered':
-                self._status = 'registered'
-                self._to_yaml()
+            self.from_yml(os.path.join(root, 'params.yml'))
+            if self.status != REGISTERED:
+                self._status = REGISTERED
+                self._save()
 
     def get_run_script(self, type='set', shell='/usr/bin/env python3', comment='#'):
         assert type in ['set', 'indiviual'], 'Only types "set" and "individual" are currently supported.'
@@ -452,22 +478,19 @@ class Experiment(object, metaclass=TypedMeta):
     def _update_status(self, status):
         """Update the status of the experiment"""
         self._status = status
-        self._to_yaml()
+        self._save()
 
     def detach(self):
         self._root = NullRoot()
-        self._name = ''
-        self._status = 'detached'
+        self._status = DETACHED
 
     def update(self, kwargs):
         """Update the parameters with a given dictionary"""
-        if self._status in ['default', 'detached']:
+        if self._status in [DEFAULT, DETACHED]:
             if any([k not in self.param_keys() and k in self._specials for k in kwargs]):
                 raise ValueError('Key not recognised!')
             else:
                 self.__dict__.update(kwargs)
-            # Update the created date
-            self._created = datetime.datetime.now().strftime("%m-%d-%y-%H:%M:%S")
         else:
             raise ValueError('Parameters of a created experiment cannot be updated.')
 
@@ -476,63 +499,62 @@ class Experiment(object, metaclass=TypedMeta):
 
     def __setattr__(self, key, value):
         """Attributes can only be changed when the status of the experiment is default"""
-        # specials = ['name', 'root', 'status', 'created', 'purpose', 'messages', 'version']
         if '_status' in self.__dict__:
-            if key in self.param_keys() and self._status not in ['default', 'detached'] and key not in self._specials:
+            if key in self.param_keys() and self._status not in [DEFAULT, DETACHED] and key not in self._specials:
                 raise AttributeError('Parameters can only be changed when status = "default" or "detached"')
         self.__dict__.update({key: value})
 
     def __enter__(self):
         def _sigusr1_handler(signum, handler):
             raise TimeoutException
+        # set up the signal usr1 signal handler
         signal.signal(signal.SIGUSR1, _sigusr1_handler)
+        # get all the meta information for the current system
         meta = get_meta(get_platform=True, get_cpu=True, get_memory=True, get_disk=True,
-                        get_slurm=True, get_conda=SAVE_CONDA, get_network=True, get_gpu=True,
+                        get_slurm=True, get_conda=CONFIG.save_conda, get_network=True, get_gpu=True,
                         get_environ=True)
-        id = os.environ.get('SLURM_JOB_ID', None)
-        if id is not None:
-            meta.update({'slurm_job': f'{id}'})
+        # save conda environment information
+        # saved seperately from the params.yml file for clarity
         conda = meta.pop('conda', None)
-        self._meta = meta
-        # save the output in the params.yml file
-        self._to_yaml()
         from ruamel.yaml import YAML
         yaml = YAML()
         yaml.default_flow_style = False
         if conda is not None:
             with open(os.path.join(self.directory, 'environment.yml'), 'w') as f:
-                print(os.path.join(self.directory, 'environment.yml'))
                 yaml.dump(conda, f)
-        with open(os.path.join(self.directory, 'meta.yml'), 'w') as f:
-            yaml.dump(meta, f)
 
-        self._update_status('running')
+        # update internal state
+        self._meta = meta
+        self._update_status(RUNNING)
+        self._timestamps['start'] = get_time()
+        self._save()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self._timestamps['stopped'] = get_time()
         if exc_type is None:
-            self._update_status('finished')
+            self._update_status(FINISHED)
         elif exc_type is KeyboardInterrupt:
             print('########################')
             print('Stopping experiment')
             print('########################')
-            self._update_status('stopped')
+            self._update_status(STOPPED)
         elif exc_type is TimeoutException:
             print('########################')
             print('Timeout encountered')
             print('########################')
-            self._update_status('timeout')
+            self._update_status(TIMEOUT)
             slurm_job = os.environ.get('SLURM_JOBID', None)
-            if slurm_job is not None and REQUEUE:
+            if slurm_job is not None and CONFIG.reque:
                 import subprocess
-                self._update_status('requeue')
+                self._update_status(REQUEUE)
                 subprocess.call(['scontrol', 'requeue', f'{slurm_job}'])
         else:
             print('########################')
             print('An error occurred encountered')
             print('########################')
-            if self.status not in ['timeout', 'stopped']:
-                self._update_status('error')
+            if self.status not in [TIMEOUT, STOPPED]:
+                self._update_status(ERROR)
 
     def __call__(self, *args, **kwargs):
         """Used to run experiment. Upon entering the experiment status is updated to ``'running`` before ``args`` and
@@ -564,7 +586,6 @@ class Experiment(object, metaclass=TypedMeta):
             (if possible) then string thereafter.
 
         """
-
         if self._root is not None:
             # Add leader to messages group
             if leader is not None:
@@ -575,7 +596,7 @@ class Experiment(object, metaclass=TypedMeta):
                 for k, v in messages.items():
                     if self.compare(k, v, keep)[0]:
                         self._messages.update({k: self.convert_type(v)})
-            self._to_yaml()
+            self._save()
 
     @staticmethod
     def convert_type(v):
@@ -599,6 +620,7 @@ class Experiment(object, metaclass=TypedMeta):
     def parse_args(self):
         """Configure the experiment instance from the command line arguments.
         """
+        from xmen.utils import IncompatibleYmlException
         experiment_parser.prog = f'xmen {self.__class__.__name__}'
 
         # Configure help information from the class
@@ -647,9 +669,10 @@ class Experiment(object, metaclass=TypedMeta):
                         print(f'ERROR: File {args.execute} is not a valid params.yml file')
                 # (2) register experiment to a repository
                 else:
-                    name = os.path.basename(os.path.normpath(args.execute))
-                    root = os.path.dirname(os.path.normpath(args.execute))
-                    self.register(root, name, restart=args.restart)
+                    purpose = ''
+                    if args.purpose is None and CONFIG.prompt_for_message:
+                        purpose = input('Enter the purpose of the experiment: ')
+                    self.register(args.execute, restart=args.restart, purpose=purpose)
             else:
                 self.detach()
         return args
@@ -683,15 +706,14 @@ class Experiment(object, metaclass=TypedMeta):
 
         # Run the experiment
         if args.execute is not None:
-            assert self.status in ['registered', 'detached', 'timeout', 'requeue'],\
-                'Experiment must be registered before execution'
+            assert self.status in [REGISTERED, DETACHED, TIMEOUT, REQUEUE],\
+                f'Experiment must be registered before execution but got {self.status}'
             # Configure standard out to print to the registered directory as well as
             # the original standard out
             if args.txt:
                 self.stdout_to_txt()
             # Execute experiment
             try:
-                # print(self)
                 self.__call__()
             except NotImplementedError:
                 print(f'WARNING: The --execute flag was passed but run is not implemented for {self.__class__}')
