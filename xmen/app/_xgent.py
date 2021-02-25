@@ -117,9 +117,9 @@ config_parser.add_argument('--disable_prompt', action='store_false',
 config_parser.add_argument('--clean', action='store_false',
                            help='Remove experiments that have been corrupted from the global configuration.',
                            default=None)
+config_parser.add_argument('--register_user')
 config_parser.add_argument('--enable_prompt', action='store_false',
                            help='Turn purpose prompting on', default=None)
-
 config_parser.add_argument('--disable_save_conda', action='store_false',
                            help='Turn conda environment saving off', default=None)
 config_parser.add_argument('--enable_save_conda', action='store_false',
@@ -558,6 +558,13 @@ list_parser.set_defaults(func=_curses_list)
 #######################################################################################################################
 #  main
 #######################################################################################################################
+def setup():
+    print('Welcome to xmen')
+    from xmen.config import Config
+    config = Config()
+    # config.setup()
+    config.change_password('sasha', 'bungalow', 'glass')
+    # config.register_user('andrew', 'some_password')
 
 
 def invalid_experiment_root_hook(exctype, value, traceback):
@@ -576,7 +583,8 @@ def main():
     if hasattr(args, 'func'):
         args.func(args)
     else:
-        parser.print_help()
+        setup()
+        # parser.print_help()
 
 
 # Enable command line interface

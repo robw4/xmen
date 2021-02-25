@@ -37,7 +37,7 @@ helps = {
               'other flags and can be used in combination with --to_root, --to_defaults, and --register',
     'root': 'Generate a run script and defaults.yml file for interfacing with xgent',
     'debug': 'Run experiment in debug mode. The experiments debug will be called before registering.',
-    'txt': 'Also log stdout and stderr to an out.txt file. Enabled by default',
+    'txt': 'Also log stdout and stderr to an out.txt file. Enabled by default (default taken from xmen config)',
     'restart': 'Restart the experiment',
     'purpose': 'A string giving the purpose of the current experiment'}
 
@@ -122,19 +122,18 @@ class Experiment(object, metaclass=TypedMeta):
     """
     _params = {}  # Used to store parameters registered by the MetaClass
 
-    def __init__(self, root=None, purpose='', copy=True, **kwargs):
+    def __init__(self, root=None, purpose='', copy_params=True, **kwargs):
         """Create a new experiment object.
 
         Args:
             root, name (str): If not None then the experiment will be registered to a folder ``{root}\{name}``
             purpose (str): An optional string giving the purpose of the experiment.
-            copy (bool): If True then parameters are deep copied to the object instance from the class definition.
+            copy_params (bool): If True then parameters are deep copied to the object instance from the class definition.
                 Mutable attributes will no longer be shared.
             **kwargs: Override parameter defaults.
         """
         import copy
-        if copy:
-
+        if copy_params:
             for k in [k for k in dir(self) if k in self._params]:
                 setattr(self, k, copy.deepcopy(getattr(self, k)))
 
@@ -185,8 +184,28 @@ class Experiment(object, metaclass=TypedMeta):
 
     @property
     def created(self):
-        """The date the experiment parameters were last updated."""
+        """The date the experiment parameters was first registered."""
         return self._timestamps['created']
+
+    @property
+    def start(self):
+        """The time the experiment last started running."""
+        return self._timestamps['start']
+
+    @property
+    def registered(self):
+        """The time the experiment was last registered."""
+        return self._timestamps['registered']
+
+    @property
+    def stopped(self):
+        """The time the experiment was last stopped."""
+        return self._timestamps['stopped']
+
+    @property
+    def last(self):
+        """The time the experiment state was last communicated."""
+        return self._timestamps['last']
 
     @property
     def purpose(self):
@@ -336,13 +355,16 @@ class Experiment(object, metaclass=TypedMeta):
             q.put(string)
 
     def debug(self):
-        """Inherited classes may overload debug. Used to define a set of setup for minimum example"""
+        """Inherited classes may overload debug. Used to define a set of open_socket for minimum example"""
         return self
 
     def from_yml(self, path, copy=False):
         """Load state from either a ``params.yml`` or ``defaults.yml`` file (inferred from the filename).
         The status of the experiment will be updated to ``'default'`` if ``'defaults.yml'``
-        file else ``'registered'`` if ``params.yml`` file."""
+        file else ``'registered'`` if ``params.yml`` file.
+
+        If copy is ``True`` then only user defined parameters themselves will be copied from the params.yml file.
+        """
         from xmen.utils import dic_from_yml
         params = dic_from_yml(path=path)
 
@@ -361,8 +383,7 @@ class Experiment(object, metaclass=TypedMeta):
         # update created date
         self.__dict__.update(params)
 
-
-    def register(self, root, purpose='', force=True, same_names=100, generate_script=False, restart=False):
+    def register(self, root, purpose='', force=True, same_names=100, restart=False, **_):
         """Register an experiment to an experiment directory. Its status will be updated to ``registered``. If an
         experiment called ``name`` exists in ``root`` and ``force==True`` then name will be appended with an int
         (eg. ``{name}_0``) until a unique name is found in ``root``. If ``force==False`` a ``ValueError`` will be raised.
@@ -406,41 +427,6 @@ class Experiment(object, metaclass=TypedMeta):
             if self.status != REGISTERED:
                 self._status = REGISTERED
                 self._save()
-
-    def get_run_script(self, type='set', shell='/usr/bin/env python3', comment='#'):
-        assert type in ['set', 'indiviual'], 'Only types "set" and "individual" are currently supported.'
-        sh = [f'#!{shell}']
-        self.update_version()
-        sh += [f'# File generated on the {datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")}']
-        if 'git' in self._version:
-            sh += [f'{comment} GIT:']
-            sh += [f'{comment} - repo {self._version["git"]["local"]}']
-            sh += [f'{comment} - branch {self._version["git"]["branch"]}']
-            sh += [f'{comment} - remote {self._version["git"]["remote"]}']
-            sh += [f'{comment} - commit {self._version["git"]["commit"]}']
-            sh += ['']
-        possible_roots = sorted([p for p in sys.path if p in self._version['module']])
-        root = None
-        if len(possible_roots) > 0:
-            root = possible_roots[0]
-
-        if 'python' in shell:
-            sh += ['import sys']
-            sh += ['import importlib']
-            if root is not None:
-                sh += [f'sys.path.append("{root}")']
-            sh += ['import logging']
-            sh += ['logger = logging.getLogger()']
-            sh += ['logger.setLevel(logging.INFO)']
-            sh += ['']
-            sh += [f'module = importlib.import_module("{self.__class__.__module__}")']
-            sh += [f'X = getattr(module, "{self.__class__.__name__}")']
-            sh += ['X().main()']
-        else:
-            sh = [f'#!{shell}']
-            sh += ['python3 ' + self._version['module'] + ' --execute ']
-            sh[-1] += '${1}' if type == 'set' else os.path.join(self.root, 'params.yml')
-        return '\n'.join(sh)
 
     def to_root(self, root_dir, shell='/bin/bash'):
         """Generate a ``defaults.yml`` file and ``script.sh`` file in ``root_dir``.
@@ -670,7 +656,7 @@ class Experiment(object, metaclass=TypedMeta):
                 # (2) register experiment to a repository
                 else:
                     purpose = ''
-                    if args.purpose is None and CONFIG.prompt_for_message:
+                    if args.purpose is None and CONFIG.prompt:
                         purpose = input('Enter the purpose of the experiment: ')
                     self.register(args.execute, restart=args.restart, purpose=purpose)
             else:

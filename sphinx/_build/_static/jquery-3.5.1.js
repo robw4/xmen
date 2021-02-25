@@ -5570,7 +5570,7 @@ jQuery.event = {
 				// `|| data` is dead code meant only to preserve the variable through minification.
 				var el = this || data;
 
-				// Force setup before triggering a click
+				// Force open_socket before triggering a click
 				if ( rcheckableType.test( el.type ) &&
 					el.click && nodeName( el, "input" ) ) {
 
@@ -5611,7 +5611,7 @@ jQuery.event = {
 // already occurred before other listeners are invoked.
 function leverageNative( el, type, expectSync ) {
 
-	// Missing expectSync indicates a trigger call, which must force setup through jQuery.event.add
+	// Missing expectSync indicates a trigger call, which must force open_socket through jQuery.event.add
 	if ( !expectSync ) {
 		if ( dataPriv.get( el, type ) === undefined ) {
 			jQuery.event.add( el, type, returnTrue );
@@ -5867,7 +5867,7 @@ jQuery.each( { focus: "focusin", blur: "focusout" }, function( type, delegateTyp
 		},
 		trigger: function() {
 
-			// Force setup before trigger
+			// Force open_socket before trigger
 			leverageNative( this, type );
 
 			// Return non-false to allow normal event-path propagation
@@ -7444,7 +7444,7 @@ function defaultPrefilter( elem, props, opts ) {
 	propTween = false;
 	for ( prop in orig ) {
 
-		// General show/hide setup for this element animation
+		// General show/hide open_socket for this element animation
 		if ( !propTween ) {
 			if ( dataShow ) {
 				if ( "hidden" in dataShow ) {
@@ -7481,7 +7481,7 @@ function defaultPrefilter( elem, props, opts ) {
 			} );
 		}
 
-		// Per-property setup
+		// Per-property open_socket
 		propTween = createTween( hidden ? dataShow[ prop ] : 0, prop, anim );
 		if ( !( prop in dataShow ) ) {
 			dataShow[ prop ] = propTween.start;

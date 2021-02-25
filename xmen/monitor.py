@@ -410,7 +410,7 @@ class XmenMessenger(Hook):
 
 
 class Timer(Hook):
-    """A simple timing hook used to log any timers setup by the experiment monitor"""
+    """A simple timing hook used to log any timers open_socket by the experiment monitor"""
     def __call__(self, var_dict, monitor):
         s = monitor.summary(verbose=1)
         keys = [k for k in s if k not in BRIEF.values() and k != 'last']

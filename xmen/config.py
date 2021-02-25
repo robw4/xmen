@@ -22,25 +22,33 @@ import xmen.manager
 from xmen.utils import get_meta
 import socket
 
+from collections import defaultdict
+from typing import Optional, NamedTuple
+
+
+from xmen.server import AddUser, FailedException
+
 
 class Config(object):
     def __init__(self):
-        self.server_host = 'xmen.rob-otics.co.uk'
+        self.server = 'xmen.rob-otics.co.uk'
         self.server_port = 8000
-        self.user = 'robw'
+        self.user = None
+        self.password = None
         self.host = socket.gethostname()
-        self.python_experiments = {}
-        self.prompt_for_message = True
+        self.prompt = True
         self.save_conda = True  # Whether to save conda info to file
         self.redirect_stdout = True  # Whether to also log the stdout and stderr to a text file in each experiment dir
-        self.meta = get_meta()
         self.requeue = True   # Whether to requeue expeirments if SLURM is available
 
         # private attributes (not saved)
         self._dir = os.path.join(os.getenv('HOME'), '.xmen')
+        self._path = os.path.join(self._dir, 'config.yml')
+        self._meta = get_meta()
 
-        if not os.path.isdir(self._dir):
-            os.makedirs(self._dir)
+        if not os.path.exists(self._path):
+            if not os.path.exists(self._dir):
+                os.makedirs(self._dir)
             self._to_yml()
         else:
             self._from_yml()
@@ -48,26 +56,97 @@ class Config(object):
     def __enter__(self):
         return self
 
+    @property
+    def settings(self): return {k: v for k, v in self.__dict__.items() if k[0] != '_'}
+
+    def change_password(self, user, password, new_password):
+        from xmen.server import get_context, get_socket, send, receive, decode_response, ChangePassword, PasswordChanged
+        context = get_context()
+        with get_socket() as ss:
+            with context.wrap_socket(ss, server_hostname=self.server) as s:
+                s.connect((self.server, self.server_port))
+                send(ChangePassword(user, password, new_password), s)
+                msg = receive(s)
+                response = decode_response(msg)
+                if isinstance(response, PasswordChanged):
+                    self.password = password
+                    self._to_yml()
+                    print(response.msg)
+                else:
+                    print(response)
+
+    def register_user(self, user, password):
+        """Register user with with the server.
+
+        Returns:
+            msg (str): The message received from the server
+
+        Raise:
+            FailedResponse: If the request failed.
+
+        """
+        from xmen.server import get_context, get_socket, send, receive, decode_response
+        from xmen.server import PasswordNotValid, PasswordValid, UserCreated, FailedException, Failed
+        context = get_context()
+        with get_socket() as ss:
+            with context.wrap_socket(ss, server_hostname=self.server) as s:
+                print('Attempting to connect to ', (self.server, self.server_port))
+                s.connect((self.server, self.server_port))
+                send(AddUser(user, password), s)
+                dic = receive(s)
+                response = decode_response(dic)
+                if isinstance(response, UserCreated):
+                    self.user, self.password = user, password
+                    self._to_yml()
+                    print(response.msg)
+                elif isinstance(response, PasswordValid):
+                    print(response.msg)
+                elif isinstance(response, (PasswordNotValid, Failed)):
+                    raise FailedException(response.msg)
+                else:
+                    raise NotImplementedError
+
+    def setup(self):
+        print('Config Setup...')
+        import ruamel.yaml
+        for k, v in self.settings.items():
+            if k not in ['password', 'user']:
+                msg = input(f'{k} (default={v}):')
+                if msg:
+                    msg = ruamel.yaml.load(msg, Loader=ruamel.yaml.SafeLoader)
+                    self.__dict__[k] = msg
+        msg = input('Would you like to register a user account with the xmen server? [Y/N]')
+        if msg == 'Y':
+            user = input('user:')
+            from getpass import getpass
+            password = getpass()
+            try:
+                self.register_user(user, password)
+            except FailedException as m:
+                print(f'ERROR: {m.msg}')
+        self._to_yml()
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._to_yml()
 
     def _to_yml(self):
         """Save the current config to an ``config.yaml``"""
-        import ruamel.yaml
-        params = {k: v for k, v in self.__dict__.items() if k[0] != '_'}
-        with open(os.path.join(self._dir, 'config.yml'), 'w') as file:
-            ruamel.yaml.dump(params, file, Dumper=ruamel.yaml.RoundTripDumper)
+        from ruamel.yaml import YAML
+        yaml = YAML()
+        yaml.default_flow_style = False
+        with open(self._path, 'w') as file:
+            yaml.dump(self.settings, file)
 
     def _from_yml(self):
         """Load the experiment config from a ``config.yml`` file"""
-        with open(os.path.join(self._dir, 'config.yml'), 'r') as file:
+        with open(self._path, 'r') as file:
             import ruamel.yaml
-            from ruamel.yaml.comments import CommentedMap
-            params = ruamel.yaml.load(file, ruamel.yaml.RoundTripLoader)
+            params = ruamel.yaml.load(file, Loader=ruamel.yaml.SafeLoader)
             for k, v in params.items():
                 self.__dict__[k] = v
 
-        self._to_yml()
+    def interactive(self):
+        print('Configuring xmen...')
 
 
 class NoMatchException(Exception):

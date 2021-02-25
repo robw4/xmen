@@ -160,7 +160,7 @@
       " |  Methods defined here:\n",
       " |  \n",
       " |  debug(self)\n",
-      " |      Inherited classes may overload debug. Used to define a set of setup for minimum example\n",
+      " |      Inherited classes may overload debug. Used to define a set of open_socket for minimum example\n",
       " |  \n",
       " |  run(self)\n",
       " |  \n",

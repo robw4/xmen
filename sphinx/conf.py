@@ -4,7 +4,7 @@
 # list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
 
-# -- Path setup --------------------------------------------------------------
+# -- Path open_socket --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -25,7 +25,7 @@ import commonmark
 #     for line in rst.splitlines():
 #         lines.append(line)
 
-# def setup(app):
+# def open_socket(app):
 #     app.connect('autodoc-process-docstring', docstring)
 
 

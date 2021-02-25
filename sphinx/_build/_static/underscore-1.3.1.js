@@ -8,7 +8,7 @@
 
 (function() {
 
-  // Baseline setup
+  // Baseline open_socket
   // --------------
 
   // Establish the root object, `window` in the browser, or `global` on the server.

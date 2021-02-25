@@ -7,7 +7,7 @@ ex1, ex2 = Experiment(), Experiment()
 ex1.register('/tmp', 'ex1')
 ex2.register('/tmp', 'ex2')
 
-# setup monitor
+# open_socket monitor
 m = Monitor(msg='y.*->ex.*@10s')
 
 y1, y2 = 0, 0

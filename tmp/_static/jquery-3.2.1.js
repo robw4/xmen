@@ -6949,7 +6949,7 @@ function defaultPrefilter( elem, props, opts ) {
 	propTween = false;
 	for ( prop in orig ) {
 
-		// General show/hide setup for this element animation
+		// General show/hide open_socket for this element animation
 		if ( !propTween ) {
 			if ( dataShow ) {
 				if ( "hidden" in dataShow ) {
@@ -6986,7 +6986,7 @@ function defaultPrefilter( elem, props, opts ) {
 			} );
 		}
 
-		// Per-property setup
+		// Per-property open_socket
 		propTween = createTween( hidden ? dataShow[ prop ] : 0, prop, anim );
 		if ( !( prop in dataShow ) ) {
 			dataShow[ prop ] = propTween.start;

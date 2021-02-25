@@ -106,7 +106,7 @@ class Dcgan(Experiment):
         from xmen.examples.models import weights_init, set_requires_grad
         from torch.distributions import Normal
         from torch.distributions.one_hot_categorical import OneHotCategorical
-        # setup
+        # open_socket
         datasets = self.datasets()
         pz = Normal(torch.zeros([self.cz]), torch.ones([self.cz]))
         py = OneHotCategorical(probs=torch.ones([self.cy]) / self.cy)
