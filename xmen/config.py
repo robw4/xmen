@@ -20,89 +20,91 @@ import re
 
 import xmen.manager
 from xmen.utils import get_meta
-import socket
-
-from collections import defaultdict
-from typing import Optional, NamedTuple
-
-
-from xmen.server import AddUser, FailedException
+from xmen.server import *
+import getpass
 
 
 class Config(object):
     def __init__(self):
-        self.server = 'xmen.rob-otics.co.uk'
+        self.server_host = 'xmen.rob-otics.co.uk'
         self.server_port = 8000
         self.user = None
         self.password = None
-        self.host = socket.gethostname()
+        self.local_host = socket.gethostname()
+        self.local_user = getpass.getuser()
         self.prompt = True
         self.save_conda = True  # Whether to save conda info to file
         self.redirect_stdout = True  # Whether to also log the stdout and stderr to a text file in each experiment dir
-        self.requeue = True   # Whether to requeue expeirments if SLURM is available
-
-        # private attributes (not saved)
+        self.requeue = True   # Whether to requeue experiments if SLURM is available
+        self.header = ''
+        self.python_experiments = {}
+        self.registered = []
+        # private attributes (also saved)
         self._dir = os.path.join(os.getenv('HOME'), '.xmen')
         self._path = os.path.join(self._dir, 'config.yml')
-        self._meta = get_meta()
+        # self._meta = get_meta()
 
         if not os.path.exists(self._path):
             if not os.path.exists(self._dir):
                 os.makedirs(self._dir)
-            self._to_yml()
+            self.to_yml()
         else:
-            self._from_yml()
+            self.from_yml()
 
     def __enter__(self):
         return self
 
-    @property
-    def settings(self): return {k: v for k, v in self.__dict__.items() if k[0] != '_'}
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.to_yml()
 
-    def change_password(self, user, password, new_password):
-        from xmen.server import get_context, get_socket, send, receive, decode_response, ChangePassword, PasswordChanged
-        context = get_context()
-        with get_socket() as ss:
-            with context.wrap_socket(ss, server_hostname=self.server) as s:
-                s.connect((self.server, self.server_port))
-                send(ChangePassword(user, password, new_password), s)
+    @property
+    def socket(self): return get_socket()
+
+    @property
+    def context(self): return get_context()
+
+    @property
+    def settings(self): return {k: v for k, v in self.__dict__.items()
+                                if k[0] != '_' and k != 'experiments'}
+
+    def change_password(self, password, new_password):
+        assert self.user is not None, 'User must be registered in the config before changing a password'
+        with self.socket as ss:
+            with self.context.wrap_socket(ss, server_hostname=self.server_host) as s:
+                s.connect((self.server_host, self.server_port))
+                send(ChangePassword(self.user, password, new_password), s)
                 msg = receive(s)
                 response = decode_response(msg)
                 if isinstance(response, PasswordChanged):
                     self.password = password
-                    self._to_yml()
+                    self.to_yml()
                     print(response.msg)
                 else:
                     print(response)
 
     def register_user(self, user, password):
-        """Register user with with the server.
-
-        Returns:
-            msg (str): The message received from the server
-
-        Raise:
-            FailedResponse: If the request failed.
-
-        """
-        from xmen.server import get_context, get_socket, send, receive, decode_response
-        from xmen.server import PasswordNotValid, PasswordValid, UserCreated, FailedException, Failed
-        context = get_context()
-        with get_socket() as ss:
-            with context.wrap_socket(ss, server_hostname=self.server) as s:
-                print('Attempting to connect to ', (self.server, self.server_port))
-                s.connect((self.server, self.server_port))
+        """Register user with with the server."""
+        with self.socket as ss:
+            with self.context.wrap_socket(ss, server_hostname=self.server_host) as s:
+                # print('Attempting to connect to ', (self.server_host, self.server_port))
+                s.connect((self.server_host, self.server_port))
                 send(AddUser(user, password), s)
                 dic = receive(s)
                 response = decode_response(dic)
                 if isinstance(response, UserCreated):
                     self.user, self.password = user, password
-                    self._to_yml()
+                    self.to_yml()
                     print(response.msg)
                 elif isinstance(response, PasswordValid):
-                    print(response.msg)
+                    if user != self.user:
+                        self.user, self.password = user, password
+                        self.to_yml()
+                        print(response.msg)
+                        print(f'Switched user to {user}')
+                    else:
+                        print(f'Current user is {user}. No change.')
                 elif isinstance(response, (PasswordNotValid, Failed)):
-                    raise FailedException(response.msg)
+                    print('ERROR: ' + response.msg)
                 else:
                     raise NotImplementedError
 
@@ -124,29 +126,74 @@ class Config(object):
                 self.register_user(user, password)
             except FailedException as m:
                 print(f'ERROR: {m.msg}')
-        self._to_yml()
+        self.to_yml()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._to_yml()
-
-    def _to_yml(self):
+    def to_yml(self):
         """Save the current config to an ``config.yaml``"""
         from ruamel.yaml import YAML
         yaml = YAML()
         yaml.default_flow_style = False
         with open(self._path, 'w') as file:
-            yaml.dump(self.settings, file)
+            yaml.dump(self.__dict__, file)
 
-    def _from_yml(self):
+    def from_yml(self):
         """Load the experiment config from a ``config.yml`` file"""
         with open(self._path, 'r') as file:
             import ruamel.yaml
             params = ruamel.yaml.load(file, Loader=ruamel.yaml.SafeLoader)
             for k, v in params.items():
                 self.__dict__[k] = v
+    
+    def load_params(self, root):
+        """Load parameters for an experiment. If ``experiment_name`` is True then experiment_path is assumed to be a
+        path to the folder of the experiment else it is assumed to be a path to the ``params.yml`` file."""
+        import ruamel.yaml
+        with open(os.path.join(root, 'params.yml'), 'r') as params_yml:
+            params = ruamel.yaml.load(params_yml, ruamel.yaml.RoundTripLoader)
+        return params
+    
+    def register(self, root):
+        """Register an experiment root with the global configuration"""
+        import json
+        from xmen.experiment import REGISTERED
 
-    def interactive(self):
-        print('Configuring xmen...')
+        self.registered += [root]
+        dic = self.load_params(root)
+        data = json.dumps(dic)
+        request = RegisterExperiment(
+            user=self.user,
+            password=self.password,
+            root=f'{self.local_user}@{self.local_host}:{root}',
+            data=data)
+        response = send_request(request)
+        print(response)
+        # finally update self
+        self.to_yml()
+
+    def add_python(self, module, name):
+        """Add a experiments experiment ``name`` defined in ``module`` either as a class or function. """
+        import stat
+        from xmen.utils import get_run_script
+        script = get_run_script(module, name)
+
+        # Make executable run script
+        path = os.path.join(self._dir, 'experiments')
+        if not os.path.exists(path):
+            os.makedirs(path)
+        path = os.path.join(path, '.'.join([module, name]))
+        # Note old experiments will be written over
+        open(path, 'w').write(script)
+        st = os.stat(path)
+        os.chmod(path, st.st_mode | stat.S_IEXEC)
+        self.python_experiments.update({name: path})
+        self.to_yml()
+
+    def __repr__(self):
+        from xmen.utils import recursive_print_lines
+        return '\n'.join(recursive_print_lines(self.__dict__))
+    
+    
+    
 
 
 class NoMatchException(Exception):
@@ -160,8 +207,8 @@ class GlobalExperimentManager(object):
     """A helper class used to manage global configuration of the Experiment Manager"""
     def __init__(self):
         import socket
-        self.python_experiments = {}   # A dictionary of paths to python modules compatible with the experiment api
-        self.python_paths = []         # A list of python paths needed to run each module
+        self.python_experiments = {}   # A dictionary of paths to experiments modules compatible with the experiment api
+        self.python_paths = []         # A list of experiments paths needed to run each module
         self.prompt_for_message = True
         self.save_conda = True         # Whether to save conda info to file
         self.redirect_stdout = True    # Whether to also log the stdout and stderr to a text file in each experiment dir
@@ -250,10 +297,10 @@ class GlobalExperimentManager(object):
         string += f'host: {self.host}\n'
         string += f'port: {self.port}\n'
         string += f'redirect stdout: {self.redirect_stdout}\n'
-        string += f'python Path:\n'
+        string += f'experiments Path:\n'
         for p in self.python_paths:
             string += f'  - {p}\n'
-        string += 'python experiments:\n'
+        string += 'experiments experiments:\n'
         for k, v in self.python_experiments.items():
            string += f'  - {k}: {v}\n'
         string += 'header:\n'
@@ -615,7 +662,7 @@ class GlobalExperimentManager(object):
         return df, prefix
 
     def add_experiment(self, module, name):
-        """Add a python experiment ``name`` defined in ``module`` either as a class or function."""
+        """Add a experiments experiment ``name`` defined in ``module`` either as a class or function."""
         import stat
         from xmen.utils import get_run_script
         script = get_run_script(module, name)

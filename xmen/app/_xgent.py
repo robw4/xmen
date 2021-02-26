@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env experiments
 #  Copyright (C) 2019  Robert J Weston, Oxford Robotics Institute
 #
 #  xmen
@@ -21,7 +21,7 @@ import argparse
 import textwrap
 import glob
 
-from xmen.config import GlobalExperimentManager
+from xmen.config import GlobalExperimentManager, Config
 from xmen.manager import ExperimentManager, InvalidExperimentRoot
 
 DESCRIPTION = r"""
@@ -78,32 +78,31 @@ python_parser.add_argument('flags', help='Python flags (pass --help for more inf
 
 
 def _python(args):
-    import subprocess
-    global_exp_manager = GlobalExperimentManager()
+    config = Config()
     if args.list is not None:
         print(f'The following python experiments are currently linked')
-        for k, v in global_exp_manager.python_experiments.items():
+        for k, v in config.python_experiments.items():
             print(f'{k}: {v}')
     if args.add is not None:
         try:
-            with global_exp_manager as config:
-                config.add_experiment(*args.add)
+            with config as c:
+                c.add_python(*args.add)
             print(f'Added experiment {args.add[-1]} from module {args.add[-2]}')
         except:
             print(f'ERROR: failed to add experiment {args.add[-1]} from module {args.add[-2]}')
     if args.remove is not None:
-        with global_exp_manager as config:
-            if args.remove in config.python_experiments:
-                path = config.python_experiments.pop(args.remove)
+        with config as c:
+            if args.remove in c.python_experiments:
+                path = c.python_experiments.pop(args.remove)
                 if '.xmen' in path:
                     os.remove(path)
                 print(f'Successfully removed {args.remove}!')
     if args.name:
         import subprocess
-        if args.name[0] not in global_exp_manager.python_experiments:
+        if args.name[0] not in config.python_experiments:
             print(f'No experiments found matching {args.name[0]}')
             exit()
-        args = [global_exp_manager.python_experiments[args.name[0]]] + args.flags
+        args = [config.python_experiments[args.name[0]]] + args.flags
         subprocess.call(args)
 
 
@@ -112,19 +111,21 @@ python_parser.set_defaults(func=_python)
 #  config
 #######################################################################################################################
 config_parser = subparsers.add_parser('config', help='View / edit the global configuration')
+config_parser.add_argument('--interactive', help='Interactively configure the configuration', default=None,
+                           action='store_false')
 config_parser.add_argument('--disable_prompt', action='store_false',
                            help='Turn purpose prompting off', default=None)
 config_parser.add_argument('--clean', action='store_false',
                            help='Remove experiments that have been corrupted from the global configuration.',
                            default=None)
-config_parser.add_argument('--register_user')
+config_parser.add_argument('--register_user', default=None, action='store_false',
+                           help='Register the user with the remote server')
 config_parser.add_argument('--enable_prompt', action='store_false',
                            help='Turn purpose prompting on', default=None)
 config_parser.add_argument('--disable_save_conda', action='store_false',
                            help='Turn conda environment saving off', default=None)
 config_parser.add_argument('--enable_save_conda', action='store_false',
                            help='Turn conda environment saving on', default=None)
-
 config_parser.add_argument('--disable_stdout_to_txt', action='store_false',
                            help='Disable logging to text file in each experiment folder', default=None)
 config_parser.add_argument('--enable_stdout_to_txt', action='store_false',
@@ -135,28 +136,49 @@ config_parser.add_argument('--disable_requeue', action='store_false',
 config_parser.add_argument('--enable_requeue', action='store_false',
                            help='Enable automatic requeue of experiments on timeout', default=None)
 
+config_parser.add_argument('--change_password',  help='Change the password for the current user', default=None,
+                           action='store_false')
+
 config_parser.add_argument('--update_meta', default=None, action='store_true',
                            help='Update meta information in each experiment (both defaults.yml and params.yml). '
                                 'WARNING: Overwrites information in the params.yml or defaults.yml')
 config_parser.add_argument('-H', '--header', type=str, help='Update the default header used when generating experiments'
                                                             ' to HEADER (a .txt file)')
 config_parser.add_argument('--list', default=None, help='Display the current configuration', action='store_false')
-config_parser.add_argument('--host',  type=str, help='Update the default host used by xmen', nargs='?')
-config_parser.add_argument('--port', type=int, help='Update the default port used by xmen', nargs='?')
+config_parser.add_argument('--server_host',  type=str, help='Update the default host used by xmen', nargs='?')
+config_parser.add_argument('--server_port', type=int, help='Update the default port used by xmen', nargs='?')
 
 
 def _config(args):
-    with GlobalExperimentManager() as config:
+    with Config() as config:
+        if args.interactive is not None:
+            config.setup()
         if args.disable_prompt is not None:
-            config.prompt_for_message = False
+            config.prompt = False
         elif args.enable_prompt is not None:
-            config.prompt_for_message = True
-
+            config.prompt = True
         if args.disable_save_conda is not None:
             config.save_conda = False
         elif args.enable_save_conda is not None:
             config.save_conda = True
-
+        if args.register_user is not None:
+            from getpass import getpass
+            user = input('username: ')
+            password = getpass(prompt='password: ')
+            check = getpass(prompt='confirm password: ')
+            if check != password:
+                print('ERROR: Passwords do not match')
+            else:
+                config.register_user(user, password)
+        if args.change_password is not None:
+            from getpass import getpass
+            password = getpass(prompt='Current Password: ')
+            new_password = getpass(prompt='New Password: ')
+            check = getpass(prompt='Confirm new Password: ')
+            if new_password != check:
+                print('ERROR: Passwords do not match')
+            else:
+                config.change_password(password, new_password)
         if args.disable_stdout_to_txt is not None:
             config.redirect_stdout = False
         elif args.enable_stdout_to_txt is not None:
@@ -166,26 +188,19 @@ def _config(args):
             config.requeue = False
         elif args.enable_requeue is not None:
             config.requeue = True
-
-        if args.update_meta is not None:
-            config.update_meta()
         if args.header is not None:
             if os.path.exists(args.header):
                 config.header = open(args.header, 'r').read()
             else:
                 config.header = args.header
-        if args.host:
-            print(f'Updating host to {args.host}')
-            config.host = args.host
-        if args.port:
-            print(f'Updating port to {args.port}')
-            config.port = args.port
-
+        if args.server_host:
+            print(f'Updating server host to {args.server_host}')
+            config.server_host = args.server_host
+        if args.server_port:
+            print(f'Updating server port to {args.server_port}')
+            config.server_port = args.server_port
         if args.list is not None:
             print(config)
-        if args.clean is not None:
-            print('Cleaning config. If you have a lot of experiment roots registered then this might take a second...')
-            config.clean()
 
 
 config_parser.set_defaults(func=_config)
@@ -205,7 +220,7 @@ init_parser.add_argument('-r', '--root', metavar='DIR', default='',
                          help='Path to the root experiment folder. If None then the current work directory will be '
                               'used')
 init_parser.add_argument('-n', '--name', metavar='NAME', default=None,
-                         help='A name of a python experiment registered with the global configuration.')
+                         help='A name of a experiments experiment registered with the global configuration.')
 init_parser.add_argument('--purpose', metavar='PURPOSE', default='',
                          help='A string giving the purpose of the experiment set (only used if message prompting is '
                               'disabled).')
@@ -562,8 +577,8 @@ def setup():
     print('Welcome to xmen')
     from xmen.config import Config
     config = Config()
-    # config.setup()
-    config.change_password('sasha', 'bungalow', 'glass')
+    config.setup()
+    # config.change_password('sasha', 'bungalow', 'glass')
     # config.register_user('andrew', 'some_password')
 
 

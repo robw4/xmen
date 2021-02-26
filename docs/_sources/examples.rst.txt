@@ -17,12 +17,12 @@ A little more detail
 
 The Monitor Class
 ###################
-The ``Monitor`` class is designed to facilitate easy logging of experiements. All the examples in this section can be found in ``xmen.examples.monitor`` and can in python as::
+The ``Monitor`` class is designed to facilitate easy logging of experiements. All the examples in this section can be found in ``xmen.examples.monitor`` and can in experiments as::
 	
-	python -m xmen.examples.monitor.logger
-	python -m xmen.examples.monitor.messenger.basic
-	python -m xmen.examples.monitor.messenger.leader
-	python -m xmen.examples.monitor.full
+	experiments -m xmen.examples.monitor.logger
+	experiments -m xmen.examples.monitor.messenger.basic
+	experiments -m xmen.examples.monitor.messenger.leader
+	experiments -m xmen.examples.monitor.full
 
 
 Logging
@@ -57,8 +57,8 @@ The TorchMonitor Class
 The ``TorchMonitor`` class adds to the functionality of ``Monitor`` also allowing torch modules to be automatically saved and variables to be logged to tensorboard.
 
 
-python -m xmen.examples.monitor.torch_monitor
-	python -m xmen.examples.monitor.checkpoint
+experiments -m xmen.examples.monitor.torch_monitor
+	experiments -m xmen.examples.monitor.checkpoint
 
 Automatic Checkpointing
 ------------------------

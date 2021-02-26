@@ -22,7 +22,7 @@ import os
 try:
     import torch
 except ImportError:
-    print('In order to run this script first add pytorch to the python path')
+    print('In order to run this script first add pytorch to the experiments path')
 
 
 def get_datasets(cy, cz, b, ngpus, ncpus, ns, data_root, hw, **kwargs):
@@ -60,7 +60,7 @@ def get_datasets(cy, cz, b, ngpus, ncpus, ns, data_root, hw, **kwargs):
 def dcgan(
     root: xmen.Root,  #
         # first argument is always an experiment instance.
-        # can be unused (specify with _) in python
+        # can be unused (specify with _) in experiments
         # syntax practice. can be named whatever depending
         # on use case. Eg. logger, root, experiment ...
     b: int = 128,  # the batch size per gpu

@@ -4,7 +4,7 @@ import queue
 from xmen.utils import dic_to_yaml
 
 import struct
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Optional, Dict
 
 
 class FailedException(Exception):
@@ -18,32 +18,63 @@ class FailedException(Exception):
 ADD_USER = 'register_user'
 VALIDATE_PASSWORD = 'validate_password_request'
 CHANGE_PASSWORD = 'change_password'
+UPDATE_EXPERIMENT = 'update_experiment'
+REGISTER_EXPERIMENT = 'register_experiment'
 
 
-def decode_request(dic):
-    return {ADD_USER: AddUser,
-            VALIDATE_PASSWORD: ValidatePassword,
-            CHANGE_PASSWORD: ChangePassword
-            }[dic['request']](**dic)
+class Request(object):
+    pass
 
 
-class ValidatePassword(NamedTuple):
+class RegisterExperiment(NamedTuple, Request):
+    user: str
+    password: str
+    root: str
+    data: str
+    request: str = REGISTER_EXPERIMENT
+
+
+class UpdateExperiment(NamedTuple, Request):
+    user: str
+    password: str
+    root: str
+    status: str
+    data: str
+    request: str = UPDATE_EXPERIMENT
+
+
+class ValidatePassword(NamedTuple, Request):
     user: str
     password: str
     request: str = VALIDATE_PASSWORD
 
 
-class ChangePassword(NamedTuple):
+class ChangePassword(NamedTuple, Request):
     user: str
     password: str
     new_password: str
     request: str = CHANGE_PASSWORD
 
 
-class AddUser(NamedTuple):
+class AddUser(NamedTuple, Request):
     user: str
     password: Optional[str]
     request: str = ADD_USER
+
+
+REQUESTS = {
+    ADD_USER: AddUser,
+    VALIDATE_PASSWORD: ValidatePassword,
+    CHANGE_PASSWORD: ChangePassword,
+    REGISTER_EXPERIMENT: RegisterExperiment,
+    UPDATE_EXPERIMENT: UpdateExperiment,
+}
+
+
+def decode_request(dic: Dict): return REQUESTS[dic['request']](**dic)
+
+
+def generate_request(dic: Dict, typ: Request): return REQUESTS[dic[typ]](**dic)
 
 
 # -------------------------------------
@@ -55,6 +86,8 @@ USER_DOES_NOT_EXIST = 'user_does_not_exist'
 USER_CREATED = 'user_created'
 FAILED = 'failed'
 PASSWORD_CHANGED = 'password_changed'
+EXPERIMENT_REGISTERED = 'experiment_registered'
+EXPERIMENT_UPDATED = 'experiment_updated'
 
 
 def decode_response(dic):
@@ -64,7 +97,27 @@ def decode_response(dic):
             USER_CREATED: UserCreated,
             PASSWORD_CHANGED: PasswordChanged,
             FAILED: Failed,
+            EXPERIMENT_REGISTERED: ExperimentRegistered,
+            EXPERIMENT_UPDATED: ExperimentUpdated,
     }[dic['response']](**dic)
+
+
+class ExperimentUpdated(NamedTuple):
+    user: str
+    root: str
+    response: str = EXPERIMENT_REGISTERED
+
+    @property
+    def msg(self): return f'Experiment {self.root} registered {self.user}'
+
+
+class ExperimentRegistered(NamedTuple):
+    user: str
+    root: str
+    response: str = EXPERIMENT_REGISTERED
+
+    @property
+    def msg(self): return f'Experiment {self.root} registered {self.user}'
 
 
 class Failed(NamedTuple):
@@ -150,24 +203,65 @@ def receive(conn, timeout=None):
 import ssl
 
 
+def setup_socket():
+    context = ssl.create_default_context()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    return sock, context
+
+
 def get_context(): return ssl.create_default_context()
 
 
 def get_socket(): return socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
-def sender_client(host, port, q: queue.Queue):
-    """Send messages from queue to host on port using SSL"""
-    import ssl
-    import socket
+def send_request(request):
+    from xmen.config import Config
+    config = Config()
     context = ssl.create_default_context()
-
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as ss:
-        with context.wrap_socket(ss, server_hostname=host) as s:
-            s.connect((host, port))
+        with context.wrap_socket(ss, server_hostname=config.server_host) as s:
+            s.connect((config.server_host, config.server_port))
+            send(request, s)
+            response = receive(s)
+    return decode_response(response)
+
+
+def send_request_task(q):
+    from xmen.config import Config
+    print('In send reqest task')
+    config = Config()
+    context = ssl.create_default_context()
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as ss:
+        with context.wrap_socket(ss, server_hostname=config.server_host) as s:
+            s.connect((config.server_host, config.server_port))
+            print('Connected')
             while True:
                 try:
-                    dic = q.get()
-                    send(dic, s)
-                except q.empty():
+                    print(f'Getting request')
+                    request = q.get()
+                    print(f'In got request')
+                    send(request, s)
+                    print(f'Sent request')
+                    response = receive(s)
+                    print('Response is ', response)
+                except queue.Empty:
+                    print('Empty queue')
                     pass
+
+
+# def sender_client(host, port, q: queue.Queue):
+#     """Send messages from queue to host on port using SSL"""
+#     import ssl
+#     import socket
+#     context = ssl.create_default_context()
+#
+#     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as ss:
+#         with context.wrap_socket(ss, server_hostname=host) as s:
+#             s.connect((host, port))
+#             while True:
+#                 try:
+#                     dic = q.get()
+#                     send(dic, s)
+#                 except q.empty():
+#                     pass

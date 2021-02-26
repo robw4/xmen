@@ -423,7 +423,7 @@ class TypedMeta(type):
             # To avoid this parameters are deep copied down the hierarchy
             # ensuring each class has a unique set of parameters.
             cls._params = copy.deepcopy(cls._params)
-            # Parameters are inherited following the python inheritance
+            # Parameters are inherited following the experiments inheritance
             # order. In order to make this work the inheritance of
             # _params no longer is the same as the first _params in
             # the method resolution order but will be a merge of

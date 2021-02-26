@@ -1,5 +1,5 @@
 """Depreciated"""
-#!/usr/bin/env python
+#!/usr/bin/env experiments
 #  Copyright (C) 2019  Robert J Weston, Oxford Robotics Institute
 #
 #  xmen
@@ -43,10 +43,10 @@ py_parser = argparse.ArgumentParser(
 )
 
 py_parser.add_argument('name', help='The name of the experiment to run', nargs='*', default=None)
-py_parser.add_argument('--list', '-l', action='store_true', default=None, help='List available python experiments')
+py_parser.add_argument('--list', '-l', action='store_true', default=None, help='List available experiments experiments')
 py_parser.add_argument('--add', default=None, metavar='MODULE NAME',
-                       help='Add a python Experiment class or run script (it must already be on PYTHONPATH)', nargs=2)
-py_parser.add_argument('--remove', '-r',  help='Remove a python experiment (passed by Name)')
+                       help='Add a experiments Experiment class or run script (it must already be on PYTHONPATH)', nargs=2)
+py_parser.add_argument('--remove', '-r',  help='Remove a experiments experiment (passed by Name)')
 py_parser.add_argument('flags', help='Python flags (pass --help for more info)', nargs=argparse.REMAINDER, default=[])
 
 

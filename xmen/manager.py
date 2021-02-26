@@ -103,7 +103,7 @@ class ExperimentManager(object):
                         # - commit 51ad1eae73a2082e7636056fcd06e112d3fbca9c
 
                         export PYTHONPATH="${PYTHONPATH}:path/to/project"
-                        python /path/to/project/module/experiment.py --execute ${1}
+                        experiments /path/to/project/module/experiment.py --execute ${1}
 
               Generic experiments are compatible with the ``ExperimentManager`` provided they can be executed with a
               shell script. For example a bash only experiment might have a ``script.sh`` script that looks like::
@@ -220,7 +220,7 @@ class ExperimentManager(object):
         self.type = None
         self._specials = ['_root', '_name', '_status', '_created', '_purpose', '_messages', '_version', '_meta']
         if not headless:
-            self._config = xmen.config.GlobalExperimentManager()
+            self._config = xmen.config.Config()
         else:
             self._config = None
 
@@ -365,10 +365,10 @@ class ExperimentManager(object):
                 print(f'Python Experiment {name} has not been registered with the global configuration. Aborting!')
                 return
 
-            for p in self._config.python_paths:
-                if self._config.python_experiments[name].startswith(p):
-                    # Inserted right at the start (will be the first one searched in)
-                    sys.path.insert(0, p)
+            # for p in self._config.python_paths:
+            #     if self._config.python_experiments[name].startswith(p):
+            #         # Inserted right at the start (will be the first one searched in)
+            #         sys.path.insert(0, p)
 
             import subprocess
             subprocess.call([self._config.python_experiments[name], '--to_root', self.root])
@@ -388,17 +388,11 @@ class ExperimentManager(object):
         print(f'Experiment root created at {self.root}')
 
         # Add purpose message
-        if self._config.prompt_for_message:
+        if self._config.prompt:
             purpose = input('\nPlease enter the purpose of the experiments: ')
         self.purpose = purpose
 
         # Add experiment to global config
-        with self._config:
-            self._config.experiments[self.root] = {
-                'created': self.created,
-                'type': self.type,
-                'purpose': self.purpose,
-                'notes': self.notes}
         self._to_yml()
 
     def _generate_params_from_string_params(self, x):
@@ -668,6 +662,7 @@ class ExperimentManager(object):
                 self.save_params(params, experiment_name)
                 self.experiments.append(experiment_path)
                 self.overides.append(overides)
+                self._config.register(experiment_path)
 
             self._to_yml()
 

@@ -194,8 +194,8 @@
 <div class="viewcode-block" id="GlobalExperimentManager"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager">[docs]</a><span class="k">class</span> <span class="nc">GlobalExperimentManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A helper class used to manage global configuration of the Experiment Manager&quot;&quot;&quot;</span>
 <div class="viewcode-block" id="GlobalExperimentManager.__init__"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">python_experiments</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># A dictionary of paths to python modules compatible with the experiment api</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">python_paths</span> <span class="o">=</span> <span class="p">[]</span>         <span class="c1"># A list of python paths needed to run each module</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">python_experiments</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># A dictionary of paths to experiments modules compatible with the experiment api</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">python_paths</span> <span class="o">=</span> <span class="p">[]</span>         <span class="c1"># A list of experiments paths needed to run each module</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prompt_for_message</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_conda</span> <span class="o">=</span> <span class="kc">True</span>         <span class="c1"># Whether to save conda info to file</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span> <span class="o">=</span> <span class="p">{}</span>          <span class="c1"># A list of all experiments registered with an Experiment Manager</span>
@@ -205,24 +205,24 @@
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_from_yml</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">from_yml</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_to_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">to_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save the current config to an ``config.yaml``&quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;_&#39;</span><span class="p">}</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">,</span> <span class="s1">&#39;config.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">Dumper</span><span class="o">=</span><span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">RoundTripDumper</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_from_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">from_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Load the experiment config from a ``config.yml`` file&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">,</span> <span class="s1">&#39;config.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
@@ -243,7 +243,7 @@
             <span class="k">if</span> <span class="s1">&#39;meta&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
                 <span class="n">to_yml</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="n">to_yml</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">update_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
@@ -275,10 +275,10 @@
         <span class="sd">&quot;&quot;&quot;The current configuration as a string&quot;&quot;&quot;</span>
         <span class="n">string</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;prompt for message: </span><span class="si">{self.prompt_for_message}</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;save conda: </span><span class="si">{self.save_conda}</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;python Path:</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;experiments Path:</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">python_paths</span><span class="p">:</span>
             <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;  - </span><span class="si">{p}</span><span class="se">\n</span><span class="s1">&#39;</span>
-        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;python experiments:</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;experiments experiments:</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">python_experiments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
            <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;  - </span><span class="si">{k}</span><span class="s1">: </span><span class="si">{v}</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="n">string</span> <span class="o">+=</span> <span class="s1">&#39;header:</span><span class="se">\n</span><span class="s1">&#39;</span>
@@ -593,8 +593,8 @@
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">items</span><span class="o">=</span><span class="n">display_keys</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">prefix</span></div>
 
-<div class="viewcode-block" id="GlobalExperimentManager.add_experiment"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.add_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">add_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Add a python experiment ``name`` defined in ``module`` either as a class or function.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="GlobalExperimentManager.add_experiment"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.add_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">add_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a experiments experiment ``name`` defined in ``module`` either as a class or function.&quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">stat</span>
         <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">get_run_script</span>
         <span class="n">script</span> <span class="o">=</span> <span class="n">get_run_script</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
@@ -609,7 +609,7 @@
         <span class="n">st</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">st</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">|</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IEXEC</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">python_experiments</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">path</span><span class="p">})</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span></div></div>
 </pre></div>
 
            </div>

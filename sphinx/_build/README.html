@@ -194,7 +194,7 @@
 <div class="section" id="id1">
 <h2>xmen<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <ol>
-<li><p>Define experiments in python</p>
+<li><p>Define experiments in experiments</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">xmen</span> <span class="kn">import</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">Root</span>
 
 <span class="c1"># as classes... </span>
@@ -219,9 +219,9 @@
 </li>
 <li><p>Configure and run from the command line</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># add an experiment</span>
-&gt;&gt;&gt; xmen python --add xmen.examples.hello_world HelloWorld
+&gt;&gt;&gt; xmen experiments --add xmen.examples.hello_world HelloWorld
 <span class="c1"># get documentation</span>
-&gt;&gt;&gt; xmen python HelloWorld  
+&gt;&gt;&gt; xmen experiments HelloWorld
   A class experiment
 
   Parameters:
@@ -256,12 +256,12 @@
 </div>
 <p>Alternatively, clone the repo and then run pip if you also want access to the example scripts.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; git clone https://github.com/robw4/xmen.git ~/xmen
-&gt;&gt;&gt; pip install ~/xmen/python
+&gt;&gt;&gt; pip install ~/xmen/experiments
 &gt;&gt;&gt; xmen
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">xmen</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span>
-            <span class="p">{</span><span class="n">python</span><span class="p">,</span><span class="n">config</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">register</span><span class="p">,</span><span class="n">run</span><span class="p">,</span><span class="n">note</span><span class="p">,</span><span class="n">reset</span><span class="p">,</span><span class="n">unlink</span><span class="p">,</span><span class="n">clean</span><span class="p">,</span><span class="n">rm</span><span class="p">,</span><span class="n">relink</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span>
+            <span class="p">{</span><span class="n">experiments</span><span class="p">,</span><span class="n">config</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">register</span><span class="p">,</span><span class="n">run</span><span class="p">,</span><span class="n">note</span><span class="p">,</span><span class="n">reset</span><span class="p">,</span><span class="n">unlink</span><span class="p">,</span><span class="n">clean</span><span class="p">,</span><span class="n">rm</span><span class="p">,</span><span class="n">relink</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span>
             <span class="o">...</span>
 
 <span class="o">|||||||||||||||||||||||||||</span> <span class="n">WELCOME</span> <span class="n">TO</span> <span class="o">|||||||||||||||||||||||||||</span>
@@ -297,8 +297,8 @@
 <span class="o">||||||||||||||</span> <span class="n">FAST</span> <span class="o">-</span> <span class="n">REPRODUCIBLE</span> <span class="o">-</span> <span class="n">EXPERIMENTATION</span> <span class="o">|||||||||||||</span>
 
 <span class="n">positional</span> <span class="n">arguments</span><span class="p">:</span>
-  <span class="p">{</span><span class="n">python</span><span class="p">,</span><span class="n">config</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">register</span><span class="p">,</span><span class="n">run</span><span class="p">,</span><span class="n">note</span><span class="p">,</span><span class="n">reset</span><span class="p">,</span><span class="n">unlink</span><span class="p">,</span><span class="n">clean</span><span class="p">,</span><span class="n">rm</span><span class="p">,</span><span class="n">relink</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span>
-    <span class="n">python</span>              <span class="n">Python</span> <span class="n">interface</span>
+  <span class="p">{</span><span class="n">experiments</span><span class="p">,</span><span class="n">config</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">register</span><span class="p">,</span><span class="n">run</span><span class="p">,</span><span class="n">note</span><span class="p">,</span><span class="n">reset</span><span class="p">,</span><span class="n">unlink</span><span class="p">,</span><span class="n">clean</span><span class="p">,</span><span class="n">rm</span><span class="p">,</span><span class="n">relink</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span>
+    <span class="n">experiments</span>              <span class="n">Python</span> <span class="n">interface</span>
     <span class="n">config</span>              <span class="n">View</span> <span class="o">/</span> <span class="n">edit</span> <span class="n">the</span> <span class="k">global</span> <span class="n">configuration</span>
     <span class="n">init</span>                <span class="n">Initialise</span> <span class="n">an</span> <span class="n">experiment</span> <span class="nb">set</span>
     <span class="n">register</span>            <span class="n">Register</span> <span class="n">a</span> <span class="nb">set</span> <span class="n">of</span> <span class="n">experiments</span>
@@ -319,7 +319,7 @@
 <div class="section" id="tutorials-examples-documentation">
 <h2>Tutorials, Examples, Documentation<a class="headerlink" href="#tutorials-examples-documentation" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li><p>Full documentation (including the python API) can be found <a class="reference external" href="https://robw4.github.io/xmen/">here</a></p></li>
+<li><p>Full documentation (including the experiments API) can be found <a class="reference external" href="https://robw4.github.io/xmen/">here</a></p></li>
 <li><p>Several example experiment definitions can be found in <code class="docutils literal notranslate"><span class="pre">xmen.examples</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>xmen.examples
 ├── hello_world.py
@@ -363,7 +363,7 @@ Dcgan: /home/robw/.xmen/experiments/xmen.examples.Dcgan
 <li><p>Jupyter notebook tutorials can be found at</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">xmen/examples/tutorial.ipynb</span></code> contains a quickstart guide to using xmen</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">xmen/examples/class-api.ipynb</span></code> contains further details about the python class api</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">xmen/examples/class-api.ipynb</span></code> contains further details about the experiments class api</p></li>
 </ul>
 </li>
 <li><p>For command line help run</p>
@@ -378,9 +378,9 @@ Dcgan: /home/robw/.xmen/experiments/xmen.examples.Dcgan
 <ul class="simple">
 <li><p>Core Xmen dependencies:</p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">python&gt;=3.6</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">experiments&gt;=3.6</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ruamel.yaml</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">git-python</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">git-experiments</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">pandas</span></code></p></li>
 </ul>
 </li>

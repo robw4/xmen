@@ -26,7 +26,7 @@ import io
 
 from argparse import RawTextHelpFormatter
 from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recursive_print_lines, TypedMeta, MultiOut
-
+from xmen.server import *
 import os
 
 helps = {
@@ -91,6 +91,7 @@ TIMEOUT = 'timeout'
 FINISHED = 'finished'
 DETACHED = 'detached'
 REQUEUE = 'requeue'
+DELETED = 'deleted'
 
 
 def get_timestamps(created=None, start=None, stopped=None, last=None, registered=None):
@@ -145,7 +146,7 @@ class Experiment(object, metaclass=TypedMeta):
             self._purpose: Optional[str] = None  # @p A description of the experiment purpose
             # new attributes
             self._user: Optional[str] = CONFIG.user  # @p The user of the experiment
-            self._host: Optional[str] = CONFIG.host  # @p The name of the default host
+            self._host: Optional[str] = CONFIG.local_host  # @p The name of the default host
             self._timestamps: Dict[str, Optional[str]] = get_timestamps()   # @p timestamps attached to the experiment
             # These can all be varied
             self._messages: Dict[Any, Any] = {}  # @p Messages left by the experiment
@@ -157,7 +158,9 @@ class Experiment(object, metaclass=TypedMeta):
             self._helps: Optional[Dict] = None
 
             # queues
-            self._queues = []
+            self._queue = None
+            # self._queues = []
+            self._processes = []
 
         else:
             raise ValueError("Either both or neither of name and root can be set")
@@ -334,25 +337,45 @@ class Experiment(object, metaclass=TypedMeta):
         else:
             return map
 
+    def to_update_request(self):
+        from xmen.utils import dic_from_yml
+        from xmen.config import Config
+        import json
+        config = Config()
+        string = self.as_yaml()
+        dic = dic_from_yml(string=string)
+        data = json.dumps(dic)
+        root = f'{config.local_user}@{config.local_host}:{self.root}'
+        return UpdateExperiment(
+            user=config.user, password=config.password,
+            root=root, data=data, status=self.status)
+
     def _save(self, defaults_dir=None):
         """Save experiment to either a defaults.yml file or a params.yml file depending on its status"""
-        import time
-
-        if self._status == 'default':
+        if self._status == DEFAULT:
             path = os.path.join(os.path.join(defaults_dir, 'defaults.yml'))
         else:
             path = os.path.join(self.directory, 'params.yml')
 
-        if self.status == 'running':
+        if self.status == RUNNING:
             self._timestamps['last'] = get_time()
 
-        # save parameters
+        # save parameters (always)
         string = self.as_yaml()
         with open(path, 'w') as file:
             file.write(string)
 
-        for q in self._queues:
-            q.put(string)
+        if self.status not in [DEFAULT, REGISTERED]:
+            request = self.to_update_request()
+            # send request to queues
+            if self._queue is not None:
+                self._queue.put(request)
+            # for q in self._queues:
+            #     print('Putting on queue')
+            #     q.put(request)
+        elif self.status == REGISTERED:
+            # the global configuration will register with the server...
+            Config().register(self.root)
 
     def debug(self):
         """Inherited classes may overload debug. Used to define a set of open_socket for minimum example"""
@@ -513,10 +536,21 @@ class Experiment(object, metaclass=TypedMeta):
         self._meta = meta
         self._update_status(RUNNING)
         self._timestamps['start'] = get_time()
+
+        # start messaging threads
+        # from queue import Queue
+        from multiprocessing import Process, Queue
+        self._queue = Queue(maxsize=1)
+        p = Process(target=send_request_task, args=(self._queue, ))
+        p.start()
+        # self._queues += [q]
+        self._processes += [p]
+        # finally save the experiment
         self._save()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        import time
         self._timestamps['stopped'] = get_time()
         if exc_type is None:
             self._update_status(FINISHED)
@@ -541,6 +575,10 @@ class Experiment(object, metaclass=TypedMeta):
             print('########################')
             if self.status not in [TIMEOUT, STOPPED]:
                 self._update_status(ERROR)
+        # stop running processes
+        time.sleep(0.1)
+        for p in self._processes:
+            p.terminate()
 
     def __call__(self, *args, **kwargs):
         """Used to run experiment. Upon entering the experiment status is updated to ``'running`` before ``args`` and

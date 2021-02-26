@@ -533,7 +533,7 @@
             <span class="c1"># To avoid this parameters are deep copied down the hierarchy</span>
             <span class="c1"># ensuring each class has a unique set of parameters.</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_params</span><span class="p">)</span>
-            <span class="c1"># Parameters are inherited following the python inheritance</span>
+            <span class="c1"># Parameters are inherited following the experiments inheritance</span>
             <span class="c1"># order. In order to make this work the inheritance of</span>
             <span class="c1"># _params no longer is the same as the first _params in</span>
             <span class="c1"># the method resolution order but will be a merge of</span>

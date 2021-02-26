@@ -11,8 +11,8 @@
 |||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION ||||||||||||
 ```
 ## xmen
-1. Define experiments in python
-    ```python
+1. Define experiments in experiments
+    ```experiments
     from xmen import Experiment, Root
 
     # as classes... 
@@ -36,9 +36,9 @@
 2. Configure and run from the command line
     ```bash
     # add an experiment
-    >>> xmen python --add xmen.examples.hello_world HelloWorld
+    >>> xmen experiments --add xmen.examples.hello_world HelloWorld
     # get documentation
-    >>> xmen python HelloWorld  
+    >>> xmen experiments HelloWorld
       A class experiment
 
       Parameters:
@@ -70,13 +70,13 @@ pip install git+https://github.com/robw4/xmen.git
 Alternatively, clone the repo and then run pip if you also want access to the example scripts.
 ```bash
 >>> git clone https://github.com/robw4/xmen.git ~/xmen
->>> pip install ~/xmen/python
+>>> pip install ~/xmen/experiments
 >>> xmen
 ```
 
 ```
 usage: xmen [-h]
-            {python,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
+            {experiments,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
             ...
 
 ||||||||||||||||||||||||||| WELCOME TO |||||||||||||||||||||||||||
@@ -112,8 +112,8 @@ usage: xmen [-h]
 |||||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION |||||||||||||
 
 positional arguments:
-  {python,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
-    python              Python interface
+  {experiments,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
+    experiments              Python interface
     config              View / edit the global configuration
     init                Initialise an experiment set
     register            Register a set of experiments
@@ -131,7 +131,7 @@ optional arguments:
 ```
 
 ## Tutorials, Examples, Documentation
-- Full documentation (including the python API) can be found [here](https://robw4.github.io/xmen/)
+- Full documentation (including the experiments API) can be found [here](https://robw4.github.io/xmen/)
 - Several example experiment definitions can be found in ``xmen.examples``:
     ```
     xmen.examples
@@ -155,7 +155,7 @@ optional arguments:
         └── object.py
   ```
   The following experiments are defined
-  ```python
+  ```experiments
   from xmen.examples import hello_world, HelloWorld  # simple examples
   from xmen.examples import AnotherExperiment, MultiParentsExperiment  # with inheritance
   from xmen.examples import dcgan # functional dcgan in pytorch
@@ -173,7 +173,7 @@ optional arguments:
   ```
 - Jupyter notebook tutorials can be found at
   - ``xmen/examples/tutorial.ipynb`` contains a quickstart guide to using xmen
-  - ``xmen/examples/class-api.ipynb`` contains further details about the python class api
+  - ``xmen/examples/class-api.ipynb`` contains further details about the experiments class api
 - For command line help run
   ```
   >> xmen --help
@@ -181,9 +181,9 @@ optional arguments:
 
 ## Dependencies
 - Core Xmen dependencies:
-  - `python>=3.6`
+  - `experiments>=3.6`
   - `ruamel.yaml`
-  - `git-python`
+  - `git-experiments`
   - `pandas`
 - Monitor Dependencies:
   - ``pytorch``

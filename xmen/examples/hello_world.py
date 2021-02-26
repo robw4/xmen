@@ -52,7 +52,7 @@ class HelloWorld(xmen.Experiment):
 
 if __name__ == '__main__':
     # optionally expose the command line interface if you
-    # would like to run the experiment as a python script
+    # would like to run the experiment as a experiments script
     from xmen.functional import functional_experiment
     # generate experiment from function definition if defined
     # using the functional experiment (this step is not needed if
@@ -62,4 +62,4 @@ if __name__ == '__main__':
     # to be configured and run from the command line.
     Exp().main()
     # try...
-    # >> python -m xmen.examples.hello_world --help
+    # >> experiments -m xmen.examples.hello_world --help

@@ -8,17 +8,17 @@ xgent config --clean  # remove experiments from config that no longer exist
 xgent config -H /path/to/header.txt  # update header prepended to each run script
 xgent config --list  # list the current configuration
 
-# python - python interface
-xgent python -a MODULE NAME # add a python experiment to xmen
-xgent python -l # list available python experiments
-xgent python -r NAME # remove a python experiment
-xgent python HelloWorld # display experiemnt docs
-xgent python HelloWorld --help # get help with running the experiment
-xgent python HelloWorld [--debug] [-u "{lr: 0.01}"] -x "/tmp/my_exp"  # execute an experiment at "/tmp/my_exp"
-xgent python HelloWorld [-u "/path/to/params.yml"] -x "/tmp/my_exp"  # execute an experiment using parameters in a params.uml file
+# experiments - experiments interface
+xgent experiments -a MODULE NAME # add a experiments experiment to xmen
+xgent experiments -l # list available experiments experiments
+xgent experiments -r NAME # remove a experiments experiment
+xgent experiments HelloWorld # display experiemnt docs
+xgent experiments HelloWorld --help # get help with running the experiment
+xgent experiments HelloWorld [--debug] [-u "{lr: 0.01}"] -x "/tmp/my_exp"  # execute an experiment at "/tmp/my_exp"
+xgent experiments HelloWorld [-u "/path/to/params.yml"] -x "/tmp/my_exp"  # execute an experiment using parameters in a params.uml file
 
 # init - initialise an experiment set
-xgent init -n HelloWorld  # from a python experiment in the current dirctory
+xgent init -n HelloWorld  # from a experiments experiment in the current dirctory
 xgent init -n HelloWorld -r mnist_gann # at folder relative to cwd
 xgent init -s /path/to/script.sh -d /path/to/defaults.yml  # from a script and defaults
 

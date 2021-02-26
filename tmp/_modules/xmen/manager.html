@@ -265,7 +265,7 @@
 <span class="sd">                        # - commit 51ad1eae73a2082e7636056fcd06e112d3fbca9c</span>
 
 <span class="sd">                        export PYTHONPATH=&quot;${PYTHONPATH}:path/to/project&quot;</span>
-<span class="sd">                        python /path/to/project/module/experiment.py --execute ${1}</span>
+<span class="sd">                        experiments /path/to/project/module/experiment.py --execute ${1}</span>
 
 <span class="sd">              Generic experiments are compatible with the ``ExperimentManager`` provided they can be executed with a</span>
 <span class="sd">              shell script. For example a bash only experiment might have a ``script.sh`` script that looks like::</span>
@@ -388,7 +388,7 @@
 
         <span class="c1"># Load dir from yaml</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;experiment.yml&#39;</span><span class="p">)):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_from_yml</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">from_yml</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="ExperimentManager.check_initialised"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.check_initialised">[docs]</a>    <span class="k">def</span> <span class="nf">check_initialised</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make sure that ``&#39;experiment.yml&#39;``, ``&#39;script.sh&#39;``, ``&#39;defaults.yml&#39;`` all exist in the directory&quot;&quot;&quot;</span>
@@ -462,14 +462,14 @@
             <span class="n">params</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">params_yml</span><span class="p">,</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">RoundTripLoader</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">params</span></div>
 
-    <span class="k">def</span> <span class="nf">_to_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">to_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save the current experiment manager to an ``experiment.yaml``&quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;_&#39;</span> <span class="ow">or</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specials</span><span class="p">}</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;experiment.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">Dumper</span><span class="o">=</span><span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">RoundTripDumper</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_from_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">from_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Load an experiment manager from an ``experiment.yml`` file&quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;experiment.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
@@ -585,7 +585,7 @@
                 <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
                 <span class="s1">&#39;purpose&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">purpose</span><span class="p">,</span>
                 <span class="s1">&#39;notes&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">notes</span><span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">_generate_params_from_string_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Take as input a dictionary and convert the dictionary to a list of keys and a list of list of values</span>
@@ -626,7 +626,7 @@
         <span class="c1"># Add experiment to global config</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">][</span><span class="s1">&#39;notes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">notes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">replant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
         <span class="c1"># Relink experiments under root</span>
@@ -664,7 +664,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">save_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
 
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
 
 <div class="viewcode-block" id="ExperimentManager.move"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Move the current experiment set from one location to another.&quot;&quot;&quot;</span>
@@ -699,7 +699,7 @@
         <span class="c1"># # Do the move</span>
         <span class="c1"># os.renames(self.root, dest)</span>
         <span class="c1"># self.root = dest</span>
-        <span class="c1"># self._to_yml()</span>
+        <span class="c1"># self.to_yml()</span>
 
 <div class="viewcode-block" id="ExperimentManager.register"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">string_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="s1">&#39;/bin/bash&#39;</span><span class="p">,</span> <span class="n">repeats</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Register a set of experiments with the experiment manager.</span>
@@ -865,7 +865,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">experiment_path</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">overides</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">overides</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="ExperimentManager.reset"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;registered&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update the status of the experiment. This is useful if you need to re-run an experiment</span>
@@ -1000,7 +1000,7 @@
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">remove_paths</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Note models are removed from the experiment list only. To remove the model directories run&quot;</span>
                   <span class="s2">&quot;experiment clean&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1025,7 +1025,7 @@
                 <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Relinking </span><span class="si">{d}</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span> <span class="o">+=</span> <span class="p">[</span><span class="n">d</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">overides</span> <span class="o">+=</span> <span class="p">[{</span><span class="n">pk</span><span class="p">:</span> <span class="n">pv</span> <span class="k">for</span> <span class="n">pk</span><span class="p">,</span> <span class="n">pv</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">pk</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">defaults</span><span class="p">[</span><span class="n">pk</span><span class="p">]</span> <span class="o">!=</span> <span class="n">pv</span><span class="p">}]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span></div></div>
 
 
 </pre></div>

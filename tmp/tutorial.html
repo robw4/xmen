@@ -398,7 +398,7 @@ div.rendered_html tbody tr:hover {
 <p>Note, this tutorial corresponds to the jupyter notebook found at <code class="docutils literal notranslate"><span class="pre">xmen/examples/tutorial.ipynb</span></code>. After installing xmen you should be able to run this notebook on your local machine.</p>
 <div class="section" id="Defining-Experiments">
 <h2>Defining Experiments<a class="headerlink" href="#Defining-Experiments" title="Permalink to this headline">¶</a></h2>
-<p>Experiments can be defined in one of two ways: 1. As python functions 2. As python classes</p>
+<p>Experiments can be defined in one of two ways: 1. As experiments functions 2. As experiments classes</p>
 <div class="section" id="Functional-Experiments">
 <h3>Functional Experiments<a class="headerlink" href="#Functional-Experiments" title="Permalink to this headline">¶</a></h3>
 <p>In the functional API experiments are defined as functions:</p>
@@ -426,7 +426,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="section" id="Class-Experiments">
 <h3>Class Experiments<a class="headerlink" href="#Class-Experiments" title="Permalink to this headline">¶</a></h3>
-<p>Alternatively experiments can be specified as python classes:</p>
+<p>Alternatively experiments can be specified as experiments classes:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">xmen</span> <span class="kn">import</span> <span class="n">Experiment</span>
 
 <span class="k">class</span> <span class="nc">HelloWorld</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
@@ -445,7 +445,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <p>In this case, all experiments must inherit from <code class="docutils literal notranslate"><span class="pre">Experiment</span></code>. Parameters are defined as class attributes marked with a <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">&#64;p</span></code> comment - any method not marked with <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">&#64;p</span></code> will not be regarded as a parameter. The directory and messaging method are directly available to the experiment as class attributes.</p>
-<p>Defining experiment as python classes allows experiments to benefit from all the features of an object orientated programming approach including encapsulation and inheritance. Further examples showing the benefits of defining experiments as classes can be found in: - <code class="docutils literal notranslate"><span class="pre">/xmen/examples/inheritance.py</span></code> - <code class="docutils literal notranslate"><span class="pre">/xmen/examples/torch/inheritance.py</span></code></p>
+<p>Defining experiment as experiments classes allows experiments to benefit from all the features of an object orientated programming approach including encapsulation and inheritance. Further examples showing the benefits of defining experiments as classes can be found in: - <code class="docutils literal notranslate"><span class="pre">/xmen/examples/inheritance.py</span></code> - <code class="docutils literal notranslate"><span class="pre">/xmen/examples/torch/inheritance.py</span></code></p>
 <p>and is documented further in the <code class="docutils literal notranslate"><span class="pre">class-api.ipynb</span></code>.</p>
 </div>
 </div>
@@ -486,11 +486,11 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  --list, -l            List available python experiments
+  --list, -l            List available experiments experiments
   --add MODULE NAME MODULE NAME
-                        Add a python Experiment class or run script (it must already be on PYTHONPATH)
+                        Add a experiments Experiment class or run script (it must already be on PYTHONPATH)
   --remove REMOVE, -r REMOVE
-                        Remove a python experiment (passed by Name)
+                        Remove a experiments experiment (passed by Name)
 </pre></div></div>
 </div>
 <div class="section" id="Adding-an-Experiment-to-Xmen">
@@ -699,7 +699,7 @@ optional arguments:
 </div>
 <div class="section" id="Initialising-a-set-of-experiments">
 <h3>Initialising a set of experiments<a class="headerlink" href="#Initialising-a-set-of-experiments" title="Permalink to this headline">¶</a></h3>
-<p>A set of experiments is initialised from a python experiment definition using the <code class="docutils literal notranslate"><span class="pre">xgent</span> <span class="pre">init</span></code> command. For example,</p>
+<p>A set of experiments is initialised from a experiments experiment definition using the <code class="docutils literal notranslate"><span class="pre">xgent</span> <span class="pre">init</span></code> command. For example,</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>

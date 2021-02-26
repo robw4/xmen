@@ -263,7 +263,7 @@
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="c1"># optionally expose the command line interface if you</span>
-    <span class="c1"># would like to run the experiment as a python script</span>
+    <span class="c1"># would like to run the experiment as a experiments script</span>
     <span class="kn">from</span> <span class="nn">xmen.functional</span> <span class="k">import</span> <span class="n">functional_experiment</span>
     <span class="c1"># generate experiment from function definition if defined</span>
     <span class="c1"># using the functional experiment (this step is not needed if</span>
@@ -273,7 +273,7 @@
     <span class="c1"># to be configured and run from the command line.</span>
     <span class="n">Exp</span><span class="p">()</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
     <span class="c1"># try...</span>
-    <span class="c1"># &gt;&gt; python -m xmen.examples.hello_world --help</span>
+    <span class="c1"># &gt;&gt; experiments -m xmen.examples.hello_world --help</span>
 </pre></div>
 </div>
 </div>
@@ -288,7 +288,7 @@
 
 
 <span class="k">class</span> <span class="nc">BaseExperiment</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A basic python experiment demonstrating the features of the xmen api.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;A basic experiments experiment demonstrating the features of the xmen api.&quot;&quot;&quot;</span>
 
     <span class="c1"># Parameters are defined as attributes in the class body with the</span>
     <span class="c1"># @p identifier</span>
@@ -392,7 +392,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----------------------&#39;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">MultiParentsExperiment</span><span class="p">())</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> Parameters defaults, helps and values are &#39;</span>
-          <span class="s1">&#39;inherited according to python method resolution order &#39;</span>
+          <span class="s1">&#39;inherited according to experiments method resolution order &#39;</span>
           <span class="s1">&#39;(i.e left to right). Note that m has the value &#39;</span>
           <span class="s1">&#39;defined in Another Experiment&#39;</span><span class="p">)</span>
 
@@ -454,7 +454,7 @@
     <span class="c1"># the experiment can be _configured_, _registered_</span>
     <span class="c1"># and _run_ by including a single line of code:</span>
     <span class="n">AnExperiment</span><span class="p">()</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
-    <span class="c1"># See ``python xmen.tests.experiment --help`` for</span>
+    <span class="c1"># See ``experiments xmen.tests.experiment --help`` for</span>
     <span class="c1"># more information</span>
 </pre></div>
 </div>
@@ -462,11 +462,11 @@
 </div>
 <div class="section" id="the-monitor-class">
 <h2>The Monitor Class<a class="headerlink" href="#the-monitor-class" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">Monitor</span></code> class is designed to facilitate easy logging of experiements. All the examples in this section can be found in <code class="docutils literal notranslate"><span class="pre">xmen.examples.monitor</span></code> and can in python as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">xmen</span><span class="o">.</span><span class="n">examples</span><span class="o">.</span><span class="n">monitor</span><span class="o">.</span><span class="n">logger</span>
-<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">xmen</span><span class="o">.</span><span class="n">examples</span><span class="o">.</span><span class="n">monitor</span><span class="o">.</span><span class="n">messenger</span><span class="o">.</span><span class="n">basic</span>
-<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">xmen</span><span class="o">.</span><span class="n">examples</span><span class="o">.</span><span class="n">monitor</span><span class="o">.</span><span class="n">messenger</span><span class="o">.</span><span class="n">leader</span>
-<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">xmen</span><span class="o">.</span><span class="n">examples</span><span class="o">.</span><span class="n">monitor</span><span class="o">.</span><span class="n">full</span>
+<p>The <code class="docutils literal notranslate"><span class="pre">Monitor</span></code> class is designed to facilitate easy logging of experiements. All the examples in this section can be found in <code class="docutils literal notranslate"><span class="pre">xmen.examples.monitor</span></code> and can in experiments as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">experiments</span> <span class="o">-</span><span class="n">m</span> <span class="n">xmen</span><span class="o">.</span><span class="n">examples</span><span class="o">.</span><span class="n">monitor</span><span class="o">.</span><span class="n">logger</span>
+<span class="n">experiments</span> <span class="o">-</span><span class="n">m</span> <span class="n">xmen</span><span class="o">.</span><span class="n">examples</span><span class="o">.</span><span class="n">monitor</span><span class="o">.</span><span class="n">messenger</span><span class="o">.</span><span class="n">basic</span>
+<span class="n">experiments</span> <span class="o">-</span><span class="n">m</span> <span class="n">xmen</span><span class="o">.</span><span class="n">examples</span><span class="o">.</span><span class="n">monitor</span><span class="o">.</span><span class="n">messenger</span><span class="o">.</span><span class="n">leader</span>
+<span class="n">experiments</span> <span class="o">-</span><span class="n">m</span> <span class="n">xmen</span><span class="o">.</span><span class="n">examples</span><span class="o">.</span><span class="n">monitor</span><span class="o">.</span><span class="n">full</span>
 </pre></div>
 </div>
 <div class="section" id="logging">
@@ -716,7 +716,7 @@
 <h2>The TorchMonitor Class<a class="headerlink" href="#the-torchmonitor-class" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">TorchMonitor</span></code> class adds to the functionality of <code class="docutils literal notranslate"><span class="pre">Monitor</span></code> also allowing torch modules to be automatically saved and variables to be logged to tensorboard.</p>
 <dl class="simple">
-<dt>python -m xmen.examples.monitor.torch_monitor</dt><dd><p>python -m xmen.examples.monitor.checkpoint</p>
+<dt>experiments -m xmen.examples.monitor.torch_monitor</dt><dd><p>experiments -m xmen.examples.monitor.checkpoint</p>
 </dd>
 </dl>
 <div class="section" id="automatic-checkpointing">
@@ -848,7 +848,7 @@ tree /tmp/checkpoint
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">torch</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;In order to run this script first add pytorch to the python path&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;In order to run this script first add pytorch to the experiments path&#39;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">get_datasets</span><span class="p">(</span><span class="n">cy</span><span class="p">,</span> <span class="n">cz</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">ngpus</span><span class="p">,</span> <span class="n">ncpus</span><span class="p">,</span> <span class="n">ns</span><span class="p">,</span> <span class="n">data_root</span><span class="p">,</span> <span class="n">hw</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -886,7 +886,7 @@ tree /tmp/checkpoint
 <span class="k">def</span> <span class="nf">dcgan</span><span class="p">(</span>
     <span class="n">root</span><span class="p">:</span> <span class="n">xmen</span><span class="o">.</span><span class="n">Root</span><span class="p">,</span>  <span class="c1">#</span>
         <span class="c1"># first argument is always an experiment instance.</span>
-        <span class="c1"># can be unused (specify with _) in python</span>
+        <span class="c1"># can be unused (specify with _) in experiments</span>
         <span class="c1"># syntax practice. can be named whatever depending</span>
         <span class="c1"># on use case. Eg. logger, root, experiment ...</span>
     <span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>  <span class="c1"># the batch size per gpu</span>

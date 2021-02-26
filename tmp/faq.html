@@ -179,10 +179,10 @@
 <h1>FAQ<a class="headerlink" href="#faq" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="create-a-frozen-package">
 <h2>Create a frozen package<a class="headerlink" href="#create-a-frozen-package" title="Permalink to this headline">¶</a></h2>
-<p>This will allow the code to be distributed as a single complete repo (including the python interpreter).</p>
+<p>This will allow the code to be distributed as a single complete repo (including the experiments interpreter).</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install pyinstaller
 <span class="nb">cd</span> ~/xmen
-pyinstaller python/xmen/main.py --hidden-import<span class="o">=</span><span class="s1">&#39;pkg_resources.py2_warn&#39;</span> --name xmen
+pyinstaller experiments/xmen/main.py --hidden-import<span class="o">=</span><span class="s1">&#39;pkg_resources.py2_warn&#39;</span> --name xmen
 
 <span class="c1"># Note that pkg_resources.py2_warn is not found automatically as a dependency</span>
 <span class="c1"># To add to your bashrc / zshrc run</span>
@@ -209,7 +209,7 @@ as having global imports when it comes to running the
 experiment. The import time is instead distributed
 throughout the execution of the program instead of
 all at start up avoiding unnessercary wait times.</p></li>
-<li><p><em>Use minimal environemnts</em>: Make sure your python
+<li><p><em>Use minimal environemnts</em>: Make sure your experiments
 environement is as slim as possible containing only
 the packages that are neccessary to run your code.</p></li>
 <li><p><em>Freeze</em>: Freezing xmen in a stand alone distribution

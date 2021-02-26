@@ -185,17 +185,17 @@ xgent config --clean  <span class="c1"># remove experiments from config that no 
 xgent config -H /path/to/header.txt  <span class="c1"># update header prepended to each run script</span>
 xgent config --list  <span class="c1"># list the current configuration</span>
 
-<span class="c1"># python - python interface</span>
-xgent python -a MODULE NAME <span class="c1"># add a python experiment to xmen</span>
-xgent python -l <span class="c1"># list available python experiments</span>
-xgent python -r NAME <span class="c1"># remove a python experiment</span>
-xgent python HelloWorld <span class="c1"># display experiemnt docs</span>
-xgent python HelloWorld --help <span class="c1"># get help with running the experiment</span>
-xgent python HelloWorld <span class="o">[</span>--debug<span class="o">]</span> <span class="o">[</span>-u <span class="s2">&quot;{lr: 0.01}&quot;</span><span class="o">]</span> -x <span class="s2">&quot;/tmp/my_exp&quot;</span>  <span class="c1"># execute an experiment at &quot;/tmp/my_exp&quot;</span>
-xgent python HelloWorld <span class="o">[</span>-u <span class="s2">&quot;/path/to/params.yml&quot;</span><span class="o">]</span> -x <span class="s2">&quot;/tmp/my_exp&quot;</span>  <span class="c1"># execute an experiment using parameters in a params.uml file</span>
+<span class="c1"># experiments - experiments interface</span>
+xgent experiments -a MODULE NAME <span class="c1"># add a experiments experiment to xmen</span>
+xgent experiments -l <span class="c1"># list available experiments experiments</span>
+xgent experiments -r NAME <span class="c1"># remove a experiments experiment</span>
+xgent experiments HelloWorld <span class="c1"># display experiemnt docs</span>
+xgent experiments HelloWorld --help <span class="c1"># get help with running the experiment</span>
+xgent experiments HelloWorld <span class="o">[</span>--debug<span class="o">]</span> <span class="o">[</span>-u <span class="s2">&quot;{lr: 0.01}&quot;</span><span class="o">]</span> -x <span class="s2">&quot;/tmp/my_exp&quot;</span>  <span class="c1"># execute an experiment at &quot;/tmp/my_exp&quot;</span>
+xgent experiments HelloWorld <span class="o">[</span>-u <span class="s2">&quot;/path/to/params.yml&quot;</span><span class="o">]</span> -x <span class="s2">&quot;/tmp/my_exp&quot;</span>  <span class="c1"># execute an experiment using parameters in a params.uml file</span>
 
 <span class="c1"># init - initialise an experiment set</span>
-xgent init -n HelloWorld  <span class="c1"># from a python experiment in the current dirctory</span>
+xgent init -n HelloWorld  <span class="c1"># from a experiments experiment in the current dirctory</span>
 xgent init -n HelloWorld -r mnist_gann <span class="c1"># at folder relative to cwd</span>
 xgent init -s /path/to/script.sh -d /path/to/defaults.yml  <span class="c1"># from a script and defaults</span>
 

@@ -404,7 +404,7 @@ div.rendered_html tbody tr:hover {
 <p>Note, this tutorial corresponds to the jupyter notebook found at <code class="docutils literal notranslate"><span class="pre">xmen/examples/tutorial.ipynb</span></code>. After installing xmen you should be able to run this notebook on your local machine.</p>
 <div class="section" id="Defining-Experiments">
 <h2>Defining Experiments<a class="headerlink" href="#Defining-Experiments" title="Permalink to this headline">¶</a></h2>
-<p>Experiments can be defined in one of two ways: 1. As python functions 2. As python classes</p>
+<p>Experiments can be defined in one of two ways: 1. As experiments functions 2. As experiments classes</p>
 <div class="section" id="Functional-Experiments">
 <h3>Functional Experiments<a class="headerlink" href="#Functional-Experiments" title="Permalink to this headline">¶</a></h3>
 <p>In the functional API experiments are defined as functions:</p>
@@ -432,7 +432,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="section" id="Class-Experiments">
 <h3>Class Experiments<a class="headerlink" href="#Class-Experiments" title="Permalink to this headline">¶</a></h3>
-<p>Alternatively experiments can be specified as python classes:</p>
+<p>Alternatively experiments can be specified as experiments classes:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">xmen</span> <span class="kn">import</span> <span class="n">Experiment</span>
 
 <span class="k">class</span> <span class="nc">HelloWorld</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
@@ -451,7 +451,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <p>In this case, all experiments must inherit from <code class="docutils literal notranslate"><span class="pre">Experiment</span></code>. Parameters are defined as class attributes marked with a <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">&#64;p</span></code> comment - any method not marked with <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">&#64;p</span></code> will not be regarded as a parameter. The directory and messaging method are directly available to the experiment as class attributes.</p>
-<p>Defining experiment as python classes allows experiments to benefit from all the features of an object orientated programming approach including encapsulation and inheritance. Further examples showing the benefits of defining experiments as classes can be found in: - <code class="docutils literal notranslate"><span class="pre">/xmen/examples/inheritance.py</span></code> - <code class="docutils literal notranslate"><span class="pre">/xmen/examples/torch/inheritance.py</span></code></p>
+<p>Defining experiment as experiments classes allows experiments to benefit from all the features of an object orientated programming approach including encapsulation and inheritance. Further examples showing the benefits of defining experiments as classes can be found in: - <code class="docutils literal notranslate"><span class="pre">/xmen/examples/inheritance.py</span></code> - <code class="docutils literal notranslate"><span class="pre">/xmen/examples/torch/inheritance.py</span></code></p>
 <p>and is documented further in the <code class="docutils literal notranslate"><span class="pre">class-api.ipynb</span></code>.</p>
 </div>
 </div>
@@ -476,7 +476,7 @@ xmen
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 usage: xmen [-h]
-            {python,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
+            {experiments,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
             ...
 
 ||||||||||||||||||||||||||| WELCOME TO |||||||||||||||||||||||||||
@@ -512,8 +512,8 @@ usage: xmen [-h]
 |||||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION |||||||||||||
 
 positional arguments:
-  {python,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
-    python              Python interface
+  {experiments,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
+    experiments              Python interface
     config              View / edit the global configuration
     init                Initialise an experiment set
     register            Register a set of experiments
@@ -540,8 +540,8 @@ optional arguments:
 </div>
 <div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
 <span></span>%%bash
-xmen python --add xmen.examples.hello_world hello_world
-xmen python -a xmen.examples.hello_world HelloWorld
+xmen experiments --add xmen.examples.hello_world hello_world
+xmen experiments -a xmen.examples.hello_world HelloWorld
 </pre></div>
 </div>
 </div>
@@ -561,7 +561,7 @@ Added experiment HelloWorld from module xmen.examples.hello_world
 </div>
 <div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
 <span></span>%%bash
-xmen python --list
+xmen experiments --list
 </pre></div>
 </div>
 </div>
@@ -570,11 +570,11 @@ xmen python --list
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-The following python experiments are currently linked
-CycleGan: /Users/robweston/projects/rad2sim2rad/python/rad2sim2rad/experiments/cycle_gan/cycle_gan.py
-ThereAndBackCycleGan: /Users/robweston/projects/rad2sim2rad/python/rad2sim2rad/experiments/cycle_gan/there_and_back.py
-MaskingByMoving: /Users/robweston/projects/rad2sim2rad/python/rad2sim2rad/experiments/masking_by_moving/experiment.py
-ThereAndBack: /Users/robweston/projects/rad2sim2rad/python/rad2sim2rad/experiments/there_and_back/there_and_back.py
+The following experiments experiments are currently linked
+CycleGan: /Users/robweston/projects/rad2sim2rad/experiments/rad2sim2rad/experiments/cycle_gan/cycle_gan.py
+ThereAndBackCycleGan: /Users/robweston/projects/rad2sim2rad/experiments/rad2sim2rad/experiments/cycle_gan/there_and_back.py
+MaskingByMoving: /Users/robweston/projects/rad2sim2rad/experiments/rad2sim2rad/experiments/masking_by_moving/experiment.py
+ThereAndBack: /Users/robweston/projects/rad2sim2rad/experiments/rad2sim2rad/experiments/there_and_back/there_and_back.py
 AnExperiment: /Users/robweston/xmen/examples/experiment.py
 HelloWorld: /Users/robweston/.xmen/experiments/xmen.examples.hello_world.HelloWorld
 MnistCGan: /Users/robweston/.xmen/experiments/xmen.examples.object.MnistCGan
@@ -589,7 +589,7 @@ dcgan: /Users/robweston/.xmen/experiments/xmen.examples.torch.functional.dcgan
 </div>
 <div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
 <span></span>%%bash
-xmen python hello_world
+xmen experiments hello_world
 </pre></div>
 </div>
 </div>
@@ -612,7 +612,7 @@ For more help use --help.
 </div>
 <div class="section" id="3.-Initialising-an-experiment-folder">
 <h3>3. Initialising an experiment folder<a class="headerlink" href="#3.-Initialising-an-experiment-folder" title="Permalink to this headline">¶</a></h3>
-<p>A set of experiments is initialised from a python experiment definition using the <code class="docutils literal notranslate"><span class="pre">xmen</span> <span class="pre">init</span></code> command. For example,</p>
+<p>A set of experiments is initialised from a experiments experiment definition using the <code class="docutils literal notranslate"><span class="pre">xmen</span> <span class="pre">init</span></code> command. For example,</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
@@ -945,7 +945,7 @@ optional arguments:
                         conditions of the form reg, reg==val or
                         val1==reg==val2. Here reg is a regex matching a set of
                         parameters. ==, &lt;, &gt;, !=, &gt;=, &lt;= are all supported
-                        with meaning defined as in python. Eg. a.*==cat and
+                        with meaning defined as in experiments. Eg. a.*==cat and
                         1.0&lt;a.*&lt;=2.0 will return any experiment that has
                         parameters that match a.* provided that each match
                         satisfies the condition.
@@ -1214,8 +1214,8 @@ environ:
   HOME: /Users/robweston
   COLORFGBG: 12;8
   ITERM_SESSION_ID: w0t4p0:7B70FECE-A287-43A3-A009-150E7FF3AA01
-  CONDA_PYTHON_EXE: /Users/robweston/miniconda3/bin/python
-  PYTHONPATH: :/Users/robweston/code/python-mrg-viewer/build-conda-build-conda-py36/python:/Users/robweston/code/python-moos/build/lib:/Users/robweston/xmen/python:/Users/robweston/projects/rad2sim2rad/python
+  CONDA_PYTHON_EXE: /Users/robweston/miniconda3/bin/experiments
+  PYTHONPATH: :/Users/robweston/code/experiments-mrg-viewer/build-conda-build-conda-py36/experiments:/Users/robweston/code/experiments-moos/build/lib:/Users/robweston/xmen/experiments:/Users/robweston/projects/rad2sim2rad/experiments
   LESS: -R
   LOGNAME: robweston
   WINDOW: &#39;0&#39;
@@ -1448,7 +1448,7 @@ xmen config -H ~/xmen/examples/header.txt
 </div>
 <div class="section" id="Language-agnostic-experiment-configuration">
 <h3>Language agnostic experiment configuration<a class="headerlink" href="#Language-agnostic-experiment-configuration" title="Permalink to this headline">¶</a></h3>
-<p>Whilst so far we have considered defining and running experiments in python <code class="docutils literal notranslate"><span class="pre">xmen</span></code> is designed to work with other types of experiments. A general experiment can be defined through a <code class="docutils literal notranslate"><span class="pre">script.sh</span></code> which takes a yaml file of parameters as its first argment. For example, a trivial bash experiment <code class="docutils literal notranslate"><span class="pre">script.sh</span></code> which takes a yaml file and prints to screen might look something like:</p>
+<p>Whilst so far we have considered defining and running experiments in experiments <code class="docutils literal notranslate"><span class="pre">xmen</span></code> is designed to work with other types of experiments. A general experiment can be defined through a <code class="docutils literal notranslate"><span class="pre">script.sh</span></code> which takes a yaml file of parameters as its first argment. For example, a trivial bash experiment <code class="docutils literal notranslate"><span class="pre">script.sh</span></code> which takes a yaml file and prints to screen might look something like:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /bin/bash</span>
 <span class="nb">echo</span> <span class="s2">&quot;contents of params.yml file </span><span class="si">${</span><span class="nv">1</span><span class="si">}</span><span class="s2">&quot;</span>
 cat <span class="si">${</span><span class="nv">1</span><span class="si">}</span>
@@ -1461,7 +1461,7 @@ cat <span class="si">${</span><span class="nv">1</span><span class="si">}</span>
 </div>
 <div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
 <span></span>%%bash
-python -m xmen.examples.bash.generate ~/tmp/xmen/bash
+experiments -m xmen.examples.bash.generate ~/tmp/xmen/bash
 </pre></div>
 </div>
 </div>

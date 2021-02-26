@@ -1,12 +1,12 @@
 # FAQ
 
 ## Create a frozen package
-This will allow the code to be distributed as a single complete repo (including the python interpreter).
+This will allow the code to be distributed as a single complete repo (including the experiments interpreter).
 
 ```bash
 pip install pyinstaller
 cd ~/xmen
-pyinstaller python/xmen/main.py --hidden-import='pkg_resources.py2_warn' --name xmen
+pyinstaller experiments/xmen/main.py --hidden-import='pkg_resources.py2_warn' --name xmen
 
 # Note that pkg_resources.py2_warn is not found automatically as a dependency
 # To add to your bashrc / zshrc run
@@ -32,7 +32,7 @@ To avoid slow imports adopt these good practices:
   experiment. The import time is instead distributed
   throughout the execution of the program instead of 
   all at start up avoiding unnessercary wait times.
-2. *Use minimal environemnts*: Make sure your python
+2. *Use minimal environemnts*: Make sure your experiments
   environement is as slim as possible containing only 
   the packages that are neccessary to run your code.
 3. *Freeze*: Freezing xmen in a stand alone distribution

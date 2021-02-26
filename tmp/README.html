@@ -194,7 +194,7 @@
 <div class="section" id="id1">
 <h2>xmen<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <ol>
-<li><p>Define experiments in python</p>
+<li><p>Define experiments in experiments</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">xmen</span> <span class="kn">import</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">Root</span>
 
 <span class="c1"># as classes... </span>
@@ -241,7 +241,7 @@ _status: registered
 _created: <span class="m">2020</span>-09-05-12-22-20
 _messages:
 _version:
-  module: /Users/robweston/xmen/python/xmen/examples/hello_world.py
+  module: /Users/robweston/xmen/experiments/xmen/examples/hello_world.py
   class: HelloWorld
   git:
     local: /Users/robweston/xmen
@@ -288,7 +288,7 @@ b: Planet
 </div>
 <p>Alternatively, clone the repo and then run pip if you also want access to the example scripts.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; git clone https://github.com/robw4/xmen.git ~/xmen
-&gt;&gt;&gt; pip install ~/xmen/python
+&gt;&gt;&gt; pip install ~/xmen/experiments
 &gt;&gt;&gt; xmen
 </pre></div>
 </div>
@@ -310,18 +310,18 @@ b: Planet
 
 <span class="n">optional</span> <span class="n">arguments</span><span class="p">:</span>
   <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>            <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
-  <span class="o">--</span><span class="nb">list</span><span class="p">,</span> <span class="o">-</span><span class="n">l</span>            <span class="n">List</span> <span class="n">available</span> <span class="n">python</span> <span class="n">experiments</span>
+  <span class="o">--</span><span class="nb">list</span><span class="p">,</span> <span class="o">-</span><span class="n">l</span>            <span class="n">List</span> <span class="n">available</span> <span class="n">experiments</span> <span class="n">experiments</span>
   <span class="o">--</span><span class="n">add</span> <span class="n">MODULE</span> <span class="n">NAME</span> <span class="n">MODULE</span> <span class="n">NAME</span>
-                        <span class="n">Add</span> <span class="n">a</span> <span class="n">python</span> <span class="n">Experiment</span> <span class="k">class</span> <span class="nc">or</span> <span class="n">run</span> <span class="n">script</span> <span class="p">(</span><span class="n">it</span> <span class="n">must</span> <span class="n">already</span> <span class="n">be</span> <span class="n">on</span> <span class="n">PYTHONPATH</span><span class="p">)</span>
+                        <span class="n">Add</span> <span class="n">a</span> <span class="n">experiments</span> <span class="n">Experiment</span> <span class="k">class</span> <span class="nc">or</span> <span class="n">run</span> <span class="n">script</span> <span class="p">(</span><span class="n">it</span> <span class="n">must</span> <span class="n">already</span> <span class="n">be</span> <span class="n">on</span> <span class="n">PYTHONPATH</span><span class="p">)</span>
   <span class="o">--</span><span class="n">remove</span> <span class="n">REMOVE</span><span class="p">,</span> <span class="o">-</span><span class="n">r</span> <span class="n">REMOVE</span>
-                        <span class="n">Remove</span> <span class="n">a</span> <span class="n">python</span> <span class="n">experiment</span> <span class="p">(</span><span class="n">passed</span> <span class="n">by</span> <span class="n">Name</span><span class="p">)</span>
+                        <span class="n">Remove</span> <span class="n">a</span> <span class="n">experiments</span> <span class="n">experiment</span> <span class="p">(</span><span class="n">passed</span> <span class="n">by</span> <span class="n">Name</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="tutorials-examples-documentation">
 <h2>Tutorials, Examples, Documentation<a class="headerlink" href="#tutorials-examples-documentation" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li><p>Full documentation (including the python API) can be found <a class="reference external" href="https://robw4.github.io/xmen/">here</a></p></li>
+<li><p>Full documentation (including the experiments API) can be found <a class="reference external" href="https://robw4.github.io/xmen/">here</a></p></li>
 <li><p>Several example experiment definitions can be found in <code class="docutils literal notranslate"><span class="pre">xmen.examples</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>xmen.examples
 ├── hello_world.py
@@ -365,7 +365,7 @@ Dcgan: /home/robw/.xmen/experiments/xmen.examples.Dcgan
 <li><p>Jupyter notebook tutorials can be found at</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">xmen/examples/tutorial.ipynb</span></code> contains a quickstart guide to using xmen</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">xmen/examples/class-api.ipynb</span></code> contains further details about the python class api</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">xmen/examples/class-api.ipynb</span></code> contains further details about the experiments class api</p></li>
 </ul>
 </li>
 <li><p>For command line help run</p>
@@ -388,11 +388,11 @@ Dcgan: /home/robw/.xmen/experiments/xmen.examples.Dcgan
 
 <span class="n">optional</span> <span class="n">arguments</span><span class="p">:</span>
   <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>            <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
-  <span class="o">--</span><span class="nb">list</span><span class="p">,</span> <span class="o">-</span><span class="n">l</span>            <span class="n">List</span> <span class="n">available</span> <span class="n">python</span> <span class="n">experiments</span>
+  <span class="o">--</span><span class="nb">list</span><span class="p">,</span> <span class="o">-</span><span class="n">l</span>            <span class="n">List</span> <span class="n">available</span> <span class="n">experiments</span> <span class="n">experiments</span>
   <span class="o">--</span><span class="n">add</span> <span class="n">MODULE</span> <span class="n">NAME</span> <span class="n">MODULE</span> <span class="n">NAME</span>
-                        <span class="n">Add</span> <span class="n">a</span> <span class="n">python</span> <span class="n">Experiment</span> <span class="k">class</span> <span class="nc">or</span> <span class="n">run</span> <span class="n">script</span> <span class="p">(</span><span class="n">it</span> <span class="n">must</span> <span class="n">already</span> <span class="n">be</span> <span class="n">on</span> <span class="n">PYTHONPATH</span><span class="p">)</span>
+                        <span class="n">Add</span> <span class="n">a</span> <span class="n">experiments</span> <span class="n">Experiment</span> <span class="k">class</span> <span class="nc">or</span> <span class="n">run</span> <span class="n">script</span> <span class="p">(</span><span class="n">it</span> <span class="n">must</span> <span class="n">already</span> <span class="n">be</span> <span class="n">on</span> <span class="n">PYTHONPATH</span><span class="p">)</span>
   <span class="o">--</span><span class="n">remove</span> <span class="n">REMOVE</span><span class="p">,</span> <span class="o">-</span><span class="n">r</span> <span class="n">REMOVE</span>
-                        <span class="n">Remove</span> <span class="n">a</span> <span class="n">python</span> <span class="n">experiment</span> <span class="p">(</span><span class="n">passed</span> <span class="n">by</span> <span class="n">Name</span><span class="p">)</span>
+                        <span class="n">Remove</span> <span class="n">a</span> <span class="n">experiments</span> <span class="n">experiment</span> <span class="p">(</span><span class="n">passed</span> <span class="n">by</span> <span class="n">Name</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span> <span class="n">xgent</span> <span class="o">--</span><span class="n">help</span>
@@ -456,9 +456,9 @@ Dcgan: /home/robw/.xmen/experiments/xmen.examples.Dcgan
 <ul class="simple">
 <li><p>Core Xmen dependencies:</p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">python&gt;=3.6</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">experiments&gt;=3.6</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ruamel.yaml</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">git-python</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">git-experiments</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">pandas</span></code></p></li>
 </ul>
 </li>

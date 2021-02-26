@@ -1,81 +1,40 @@
-#! python3
-
-import socket
-import struct
 import os
-import mysql.connector
-from mysql.connector import MySQLConnection, Error
-from mysql.connector import Error
+import time
+from mysql.connector import MySQLConnection
 from configparser import ConfigParser
-import socket
-import json
-from xmen.utils import get_meta, get_version
-from xmen.experiment import get_timestamps
+from xmen.server import *
+
+HOST = ''
+PORT = 8000
+CONFIG = '/home/robw/config.ini'
+CERTFILE = '/etc/letsencrypt/live/xmen.rob-otics.co.uk/fullchain.pem'
+KEYFILE = '/etc/letsencrypt/live/xmen.rob-otics.co.uk/privkey.pem'
 
 
-import ruamel.yaml
-from ruamel.yaml import StringIO
-
-from xmen.config import GlobalExperimentManager
-from xmen.utils import commented_to_py, IncompatibleYmlException
-
-from xmen.server import receive
-
-CONFIG = GlobalExperimentManager()
-HOST = CONFIG.host
-PORT = CONFIG.port
+def server(args):
+    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    context.load_cert_chain(
+        certfile=args.certfile,
+        keyfile=args.keyfile,
+    )
+    # get the hostname
+    s = socket.socket()
+    s.bind((args.host, args.port))  # bind host address and port together
 
 
-def sender_server(q, host, port, experiments):
-    import socket, ssl
 
-    #context = ssl.create_default_context()
-    # context.load_cert_chain(
-    #     certfile=os.path.join('/home/kebl4674/.ssl', 'cert.pem'),
-    #     keyfile=os.path.join('/home/kebl4674/.ssl', 'key.pem'))
-    server_socket = socket.socket()
-    server_socket.bind(('', port))
-    server_socket.listen(10)
-
-    while True:
-        try:
-            experiments = q.get(False)
-        except queue.Empty:
-            pass
-
-        conn, address = server_socket.accept()
-        # conn = context.wrap_socket(conn, server_side=True, server_hostname='')
-        send(experiments, conn)
-        print(f'Sent experiments {list(updates.keys())} from {address}')
-        conn.shutdown(socket.SHUT_RDWR)
-        conn.close()  # close the connection
-
-
-def receiver_client(host, port):
-    import ssl
-    # context = ssl.create_default_context()
-
-    while True:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            # with context.wrap_socket(ss, server_hostname=host) as s:
-            print(f'{host} {port}')
-            s.connect((host, port))
-            dic = receive(s)
-            print(f'Received {list(dic.keys())} in client')
-
-
-class ServerTask(object):
+class Server(object):
     def __init__(
             self,
-            host='',
-            port=8000,
+            host=HOST,
+            port=PORT,
             db_host=None,
             db_port=None,
             interval=1.,
             n_clients=100,
-            config='/home/robw/config.ini',
-            certfile='/etc/letsencrypt/live/xmen.rob-otics.co.uk/fullchain.pem',
-            keyfile='/etc/letsencrypt/live/xmen.rob-otics.co.uk/privkey.pem'
+            config=CONFIG,
+            certfile=CERTFILE,
+            keyfile=KEYFILE
     ):
         self.host = host
         self.port = port
@@ -88,6 +47,7 @@ class ServerTask(object):
         self.keyfile = keyfile
 
     def open_socket(self):
+        """Open a socket and an ssl context"""
         import ssl
         context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         context.load_cert_chain(
@@ -101,9 +61,6 @@ class ServerTask(object):
         return s, context
 
     def __call__(self):
-        import socket
-        import time
-        from xmen.server import decode_request, ChangePassword, AddUser, Failed, send
         server_socket, context = self.open_socket()
         # configure how many client the server can listen simultaneously
         server_socket.listen(self.n_clients)
@@ -119,19 +76,31 @@ class ServerTask(object):
                     request = decode_request(msg)
                     response = Failed('Request not recognised')
                     if isinstance(request, ChangePassword):
+                        print('Got Change Password Request')
                         response = self.change_password(request.user, request.password, request.new_password)
                     elif isinstance(request, AddUser):
+                        print('Got Add User Request')
                         response = self.register_user(request.user, request.password)
+                    elif isinstance(request, RegisterExperiment):
+                        print('Got Register Experiment request')
+                        response = self.register_experiment(
+                            request.user, request.password, request.root, request.data)
+                    elif isinstance(request, UpdateExperiment):
+                        print('Got Update Experiment Request')
+                        response = self.update_experiment(
+                            request.user, request.password, request.root, request.data, request.status)
+                        print(response)
                     send(response, conn)
-            except socket.error as m:
-                print('An error occured')
-                print(m)
-                break
-
+            except Exception as m:
+                print(f'An error occured {m}')
+                pass
             finally:
                 if conn is not None:
-                    conn.shutdown(socket.SHUT_RDWR)
-                    conn.close()  # close the connection
+                    try:
+                        conn.shutdown(socket.SHUT_RDWR)
+                        conn.close()  # close the connection
+                    except (socket.error, OSError) as m:
+                        print(m)
 
     @property
     def config(self, section='mysql'):
@@ -170,7 +139,6 @@ class ServerTask(object):
         return response
 
     def change_password(self, user, old, new):
-        from xmen.server import PasswordValid, PasswordNotValid, PasswordChanged, Failed, FailedException
         response = self.validate_password(user, old)
         database = self.database()
         cursor = database.cursor()
@@ -207,7 +175,6 @@ class ServerTask(object):
         return check(password, hashed)
 
     def register_user(self, user, password):
-        from xmen.server import send, PasswordNotValid, PasswordValid, UserDoesNotExist, UserCreated, Failed, FailedException
         database = self.database()
         cursor = database.cursor()
         response = None
@@ -231,84 +198,62 @@ class ServerTask(object):
             database.close()
             return response
 
-
-def receiver_server(host='', port=8000, interval=1.):
-    import os
-    import socket
-    import time
-    import ssl
-    from xmen.server import REGISTER_USER
-    # context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-
-    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-    context.load_cert_chain(
-         certfile='/etc/letsencrypt/live/xmen.rob-otics.co.uk/fullchain.pem',
-         keyfile='/etc/letsencrypt/live/xmen.rob-otics.co.uk/privkey.pem'
-    )
-
-    # configure how many client the server can listen simultaneously
-    server_socket.listen(10)
-    while True:
-        print('Beginning...')
+    def update_experiment(self, user, password, root, data, status):
+        from xmen.experiment import DELETED
+        database = self.database()
+        cursor = database.cursor()
+        response = None
         try:
-            updates = {}
-            last = time.time()
-            while time.time() - last < interval:
-                conn, address = server_socket.accept()
-                conn = context.wrap_socket(conn, server_side=True)
-                msg = receive(conn)
-                if msg['request'] == REGISTER_USER:
-                    try:
-                        exists = add_user(msg['user'], msg['password'])
-                    except Exception:
-                        pass
-                # if msg['request'] == 'save':
-                #     params = msg['params']
-                #     updates[os.path.join(params['_root'], params['_name'])] = params
+            response = self.validate_password(user, password)
+            if isinstance(response, PasswordNotValid):
+                return Failed(f'{response.msg}')
+            elif isinstance(response, Failed):
+                return response
+            else:
+                # assume experiments previously at the same root have since been deleted]
+                cursor.execute(
+                    f"UPDATE experiments SET status = '{status}', data = '{data}' WHERE root = '{root}' AND status != '{DELETED}'")
+                database.commit()
+                response = ExperimentUpdated(user, root)
+        except Exception as m:
+            cursor.close()
+            database.close()
+            response = Failed(str(m))
+        finally:
+            cursor.close()
+            database.close()
+            return response
 
-                conn.shutdown(socket.SHUT_RDWR)
-                conn.close()  # close the connection
-            if updates:
-                print(f'Received updates from {list(updates.keys())} from {address}')
-                q.put((updates, last))
-
-        except socket.error as m:
-            print('An error occured')
-            print(m)
-            break
-        #     # if 'tlsv1 alert unknown ca':
-        #     #     pass
-        #     # q.put((None, m))
-        #     print('An error ', m)
-        #     with open('/data/engs-robot-learning/kebl4674/usup/tmp/xmen-error-log.txt', 'w') as f:
-        #         f.write(str(m))
-        #     break
+    def register_experiment(self, user, password, root, data):
+        from xmen.experiment import REGISTERED, DELETED
+        database = self.database()
+        cursor = database.cursor()
+        response = None
+        try:
+            response = self.validate_password(user, password)
+            if isinstance(response, PasswordNotValid):
+                return Failed(f'{response.msg}')
+            elif isinstance(response, Failed):
+                return response
+            else:
+                # assume experiments previously at the same root have since been deleted
+                cursor.execute(
+                    f"UPDATE experiments SET status = '{DELETED}' WHERE root = '{root}'")
+                cursor.execute(
+                    f"INSERT INTO experiments(root, status, user, data) VALUES('{root}','{REGISTERED}','{user}','{data}')"
+                )
+                database.commit()
+                response = ExperimentRegistered(user, root)
+        except Exception as m:
+            cursor.close()
+            database.close()
+            response = Failed(str(m))
+        finally:
+            cursor.close()
+            database.close()
+            return response
 
 
 if __name__ == '__main__':
-    import threading
-    import queue
-    server_task = ServerTask()
+    server_task = Server()
     server_task()
-    # server_task.register_user(None, 'oli', 'sssword')
-
-
-    # gem = GlobalExperimentManager()
-    #
-    # # with gem:
-    # get_q = queue.Queue()
-    # send_q = queue.Queue(maxsize=1)
-    #
-    # thread_receive = threading.Thread(target=receiver_server, args=(get_q, 1., gem.host, 8000))
-    # thread_send = threading.Thread(target=sender_server, args=(send_q, gem.host, gem.port + 1, gem.experiments))
-    # thread_receive.start()
-    # thread_send.start()
-    #
-    # while True:
-    #     try:
-    #         updates, last = get_q.get(True)
-    #         #gem.experiments.update(updates)
-    #         send_q.put(gem.experiments)
-    #
-    #     except queue.Empty:
-    #         pass

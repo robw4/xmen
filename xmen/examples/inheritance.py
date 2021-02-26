@@ -7,7 +7,7 @@ from typing import List
 
 
 class BaseExperiment(Experiment):
-    """A basic python experiment demonstrating the features of the xmen api."""
+    """A basic experiments experiment demonstrating the features of the xmen api."""
 
     # Parameters are defined as attributes in the class body with the
     # @p identifier
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     print('----------------------')
     print(MultiParentsExperiment())
     print('\n Parameters defaults, helps and values are '
-          'inherited according to python method resolution order '
+          'inherited according to experiments method resolution order '
           '(i.e left to right). Note that m has the value '
           'defined in Another Experiment')
 
@@ -173,5 +173,5 @@ if __name__ == '__main__':
     # the experiment can be _configured_, _registered_
     # and _run_ by including a single line of code:
     AnExperiment().main()
-    # See ``python xmen.tests.experiment --help`` for
+    # See ``experiments xmen.tests.experiment --help`` for
     # more information

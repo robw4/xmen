@@ -9,8 +9,8 @@
     "\n",
     "## Defining Experiments\n",
     "Experiments can be defined in one of two ways:\n",
-    "1. As python functions\n",
-    "2. As python classes"
+    "1. As experiments functions\n",
+    "2. As experiments classes"
    ]
   },
   {
@@ -19,7 +19,7 @@
    "source": [
     "### Functional Experiments\n",
     "In the functional API experiments are defined as functions:\n",
-    "```python\n",
+    "```experiments\n",
     "from xmen import Root\n",
     "\n",
     "def hello_world(\n",
@@ -46,9 +46,9 @@
     "\n",
     "\n",
     "### Class Experiments\n",
-    "Alternatively experiments can be specified as python classes:\n",
+    "Alternatively experiments can be specified as experiments classes:\n",
     "\n",
-    "```python\n",
+    "```experiments\n",
     "from xmen import Experiment\n",
     "\n",
     "class HelloWorld(Experiment):\n",
@@ -67,7 +67,7 @@
     "```\n",
     "In this case, all experiments must inherit from ``Experiment``. Parameters are defined as class attributes marked with a `# @p` comment - any method not marked with ``# @p`` will not be regarded as a parameter. The directory and messaging method are directly available to the experiment as class attributes.\n",
     "\n",
-    "Defining experiment as python classes allows experiments to benefit from all the features of an object orientated programming approach including encapsulation and inheritance. Further examples showing the benefits of defining experiments as classes can be found in:\n",
+    "Defining experiment as experiments classes allows experiments to benefit from all the features of an object orientated programming approach including encapsulation and inheritance. Further examples showing the benefits of defining experiments as classes can be found in:\n",
     "- ``/xmen/examples/inheritance.py``\n",
     "- ``/xmen/examples/torch/inheritance.py``\n",
     "\n",
@@ -93,7 +93,7 @@
      "output_type": "stream",
      "text": [
       "usage: xmen [-h]\n",
-      "            {python,config,init,register,run,note,reset,unlink,clean,rm,relink,list}\n",
+      "            {experiments,config,init,register,run,note,reset,unlink,clean,rm,relink,list}\n",
       "            ...\n",
       "\n",
       "||||||||||||||||||||||||||| WELCOME TO |||||||||||||||||||||||||||\n",
@@ -129,8 +129,8 @@
       "|||||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION |||||||||||||\n",
       "\n",
       "positional arguments:\n",
-      "  {python,config,init,register,run,note,reset,unlink,clean,rm,relink,list}\n",
-      "    python              Python interface\n",
+      "  {experiments,config,init,register,run,note,reset,unlink,clean,rm,relink,list}\n",
+      "    experiments              Python interface\n",
       "    config              View / edit the global configuration\n",
       "    init                Initialise an experiment set\n",
       "    register            Register a set of experiments\n",
@@ -183,8 +183,8 @@
    ],
    "source": [
     "%%bash\n",
-    "xmen python --add xmen.examples.hello_world hello_world\n",
-    "xmen python -a xmen.examples.hello_world HelloWorld"
+    "xmen experiments --add xmen.examples.hello_world hello_world\n",
+    "xmen experiments -a xmen.examples.hello_world HelloWorld"
    ]
   },
   {
@@ -203,11 +203,11 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "The following python experiments are currently linked\n",
-      "CycleGan: /Users/robweston/projects/rad2sim2rad/python/rad2sim2rad/experiments/cycle_gan/cycle_gan.py\n",
-      "ThereAndBackCycleGan: /Users/robweston/projects/rad2sim2rad/python/rad2sim2rad/experiments/cycle_gan/there_and_back.py\n",
-      "MaskingByMoving: /Users/robweston/projects/rad2sim2rad/python/rad2sim2rad/experiments/masking_by_moving/experiment.py\n",
-      "ThereAndBack: /Users/robweston/projects/rad2sim2rad/python/rad2sim2rad/experiments/there_and_back/there_and_back.py\n",
+      "The following experiments experiments are currently linked\n",
+      "CycleGan: /Users/robweston/projects/rad2sim2rad/experiments/rad2sim2rad/experiments/cycle_gan/cycle_gan.py\n",
+      "ThereAndBackCycleGan: /Users/robweston/projects/rad2sim2rad/experiments/rad2sim2rad/experiments/cycle_gan/there_and_back.py\n",
+      "MaskingByMoving: /Users/robweston/projects/rad2sim2rad/experiments/rad2sim2rad/experiments/masking_by_moving/experiment.py\n",
+      "ThereAndBack: /Users/robweston/projects/rad2sim2rad/experiments/rad2sim2rad/experiments/there_and_back/there_and_back.py\n",
       "AnExperiment: /Users/robweston/xmen/examples/experiment.py\n",
       "HelloWorld: /Users/robweston/.xmen/experiments/xmen.examples.hello_world.HelloWorld\n",
       "MnistCGan: /Users/robweston/.xmen/experiments/xmen.examples.object.MnistCGan\n",
@@ -218,7 +218,7 @@
    ],
    "source": [
     "%%bash\n",
-    "xmen python --list"
+    "xmen experiments --list"
    ]
   },
   {
@@ -250,7 +250,7 @@
    ],
    "source": [
     "%%bash \n",
-    "xmen python hello_world"
+    "xmen experiments hello_world"
    ]
   },
   {
@@ -271,7 +271,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "A set of experiments is initialised from a python experiment definition using the `xmen init` command. For example,"
+    "A set of experiments is initialised from a experiments experiment definition using the `xmen init` command. For example,"
    ]
   },
   {
@@ -650,7 +650,7 @@
       "                        conditions of the form reg, reg==val or\n",
       "                        val1==reg==val2. Here reg is a regex matching a set of\n",
       "                        parameters. ==, <, >, !=, >=, <= are all supported\n",
-      "                        with meaning defined as in python. Eg. a.*==cat and\n",
+      "                        with meaning defined as in experiments. Eg. a.*==cat and\n",
       "                        1.0<a.*<=2.0 will return any experiment that has\n",
       "                        parameters that match a.* provided that each match\n",
       "                        satisfies the condition.\n",
@@ -939,8 +939,8 @@
       "  HOME: /Users/robweston\n",
       "  COLORFGBG: 12;8\n",
       "  ITERM_SESSION_ID: w0t4p0:7B70FECE-A287-43A3-A009-150E7FF3AA01\n",
-      "  CONDA_PYTHON_EXE: /Users/robweston/miniconda3/bin/python\n",
-      "  PYTHONPATH: :/Users/robweston/code/python-mrg-viewer/build-conda-build-conda-py36/python:/Users/robweston/code/python-moos/build/lib:/Users/robweston/xmen/python:/Users/robweston/projects/rad2sim2rad/python\n",
+      "  CONDA_PYTHON_EXE: /Users/robweston/miniconda3/bin/experiments\n",
+      "  PYTHONPATH: :/Users/robweston/code/experiments-mrg-viewer/build-conda-build-conda-py36/experiments:/Users/robweston/code/experiments-moos/build/lib:/Users/robweston/xmen/experiments:/Users/robweston/projects/rad2sim2rad/experiments\n",
       "  LESS: -R\n",
       "  LOGNAME: robweston\n",
       "  WINDOW: '0'\n",
@@ -1256,7 +1256,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "Whilst so far we have considered defining and running experiments in python ``xmen`` is designed to work with other types of experiments. A general experiment can be defined through a ``script.sh`` which takes a yaml file of parameters as its first argment. For example, a trivial bash experiment ``script.sh`` which takes a yaml file and prints to screen might look something like:\n",
+    "Whilst so far we have considered defining and running experiments in experiments ``xmen`` is designed to work with other types of experiments. A general experiment can be defined through a ``script.sh`` which takes a yaml file of parameters as its first argment. For example, a trivial bash experiment ``script.sh`` which takes a yaml file and prints to screen might look something like:\n",
     "\n",
     "```bash\n",
     "#! /bin/bash\n",
@@ -1274,7 +1274,7 @@
    "outputs": [],
    "source": [
     "%%bash\n",
-    "python -m xmen.examples.bash.generate ~/tmp/xmen/bash"
+    "experiments -m xmen.examples.bash.generate ~/tmp/xmen/bash"
    ]
   },
   {
@@ -1672,7 +1672,7 @@
  "metadata": {
   "kernelspec": {
    "display_name": "Python 3",
-   "language": "python",
+   "language": "experiments",
    "name": "python3"
   },
   "language_info": {
@@ -1681,9 +1681,9 @@
     "version": 3
    },
    "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
+   "mimetype": "text/x-experiments",
+   "name": "experiments",
+   "nbconvert_exporter": "experiments",
    "pygments_lexer": "ipython3",
    "version": "3.6.8"
   }
