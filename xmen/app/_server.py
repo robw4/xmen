@@ -1,46 +1,59 @@
 import os
-import time
-from mysql.connector import MySQLConnection
+import argparse
 from configparser import ConfigParser
+
+from mysql.connector import MySQLConnection
+
+from xmen.app._xgent import DESCRIPTION
 from xmen.server import *
 
-HOST = ''
-PORT = 8000
-CONFIG = '/home/robw/config.ini'
-CERTFILE = '/etc/letsencrypt/live/xmen.rob-otics.co.uk/fullchain.pem'
-KEYFILE = '/etc/letsencrypt/live/xmen.rob-otics.co.uk/privkey.pem'
+parser = argparse.ArgumentParser(prog='xmen-server', description=DESCRIPTION)
+parser.add_argument('--host', '-H', default='', help='The host to run the xmen server on')
+parser.add_argument('--port', '-P', default=8000, help='The port to run the xmen server on', type=int)
+parser.add_argument('--certfile', '-C', default='/etc/letsencrypt/live/xmen.rob-otics.co.uk/fullchain.pem',
+                    help='The path to the ssl certificate')
+parser.add_argument('--dbconfig', '-D', default='/home/robw/config.ini')
+parser.add_argument('--keyfile', '-K', default='/etc/letsencrypt/live/xmen.rob-otics.co.uk/privkey.pem')
+parser.add_argument('--n_clients', '-N', default=100, help='The maximum number of client connections')
 
 
 def server(args):
+    from threading import Thread
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     context.load_cert_chain(
         certfile=args.certfile,
-        keyfile=args.keyfile,
-    )
-    # get the hostname
+        keyfile=args.keyfile)
     s = socket.socket()
-    s.bind((args.host, args.port))  # bind host address and port together
+    s.bind((args.host, args.port))
+    s.listen(args.n_clients)
+    processes = []
+    try:
+        while True:
+            conn, address = s.accept()
+            p = Thread(
+                target=ServerTask(
+                    args.host, args.port, args.dbconfig,
+                    args.certfile, args.keyfile, args.n_clients),
+                args=(conn, address))
+            p.start()
+            processes += [p]
+    finally:
+        for p in processes:
+            p.terminate()
 
 
-
-class Server(object):
+class ServerTask(object):
     def __init__(
             self,
-            host=HOST,
-            port=PORT,
-            db_host=None,
-            db_port=None,
-            interval=1.,
+            host,
+            port,
+            config,
+            certfile,
+            keyfile,
             n_clients=100,
-            config=CONFIG,
-            certfile=CERTFILE,
-            keyfile=KEYFILE
     ):
         self.host = host
         self.port = port
-        self.db_host = db_host
-        self.db_port = db_port
-        self.interval = interval
         self.n_clients = n_clients
         self._config = config
         self.certfile = certfile
@@ -60,47 +73,47 @@ class Server(object):
         s.bind((self.host, self.port))  # bind host address and port together
         return s, context
 
-    def __call__(self):
-        server_socket, context = self.open_socket()
-        # configure how many client the server can listen simultaneously
-        server_socket.listen(self.n_clients)
-        print('Beginning...')
-        while True:
-            conn = None
-            try:
-                last = time.time()
-                while time.time() - last < self.interval:
-                    conn, address = server_socket.accept()
-                    conn = context.wrap_socket(conn, server_side=True)
-                    msg = receive(conn)
-                    request = decode_request(msg)
-                    response = Failed('Request not recognised')
-                    if isinstance(request, ChangePassword):
-                        print('Got Change Password Request')
-                        response = self.change_password(request.user, request.password, request.new_password)
-                    elif isinstance(request, AddUser):
-                        print('Got Add User Request')
-                        response = self.register_user(request.user, request.password)
-                    elif isinstance(request, RegisterExperiment):
-                        print('Got Register Experiment request')
-                        response = self.register_experiment(
-                            request.user, request.password, request.root, request.data)
-                    elif isinstance(request, UpdateExperiment):
-                        print('Got Update Experiment Request')
-                        response = self.update_experiment(
-                            request.user, request.password, request.root, request.data, request.status)
-                        print(response)
-                    send(response, conn)
-            except Exception as m:
-                print(f'An error occured {m}')
-                pass
-            finally:
-                if conn is not None:
-                    try:
-                        conn.shutdown(socket.SHUT_RDWR)
-                        conn.close()  # close the connection
-                    except (socket.error, OSError) as m:
-                        print(m)
+    def __call__(self, conn, addr):
+        try:
+            context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+            context.load_cert_chain(
+                certfile=self.certfile,
+                keyfile=self.keyfile)
+            conn = context.wrap_socket(conn, server_side=True)
+            while True:
+                # receive
+                msg = receive(conn)
+                if not msg:
+                    # connection has been closed
+                    break
+                request = decode_request(msg)
+                response = Failed('Request not recognised')
+                if isinstance(request, ChangePassword):
+                    print('Got Change Password Request')
+                    response = self.change_password(request.user, request.password, request.new_password)
+                elif isinstance(request, AddUser):
+                    print('Got Add User Request')
+                    response = self.register_user(request.user, request.password)
+                elif isinstance(request, RegisterExperiment):
+                    print('Got Register Experiment request')
+                    response = self.register_experiment(
+                        request.user, request.password, request.root, request.data)
+                elif isinstance(request, UpdateExperiment):
+                    print('Got Update Experiment Request')
+                    response = self.update_experiment(
+                        request.user, request.password, request.root, request.data, request.status)
+                    print(response)
+                send(response, conn)
+        except Exception as m:
+            print(f'An error occured: {m}')
+            pass
+        finally:
+            if conn is not None:
+                try:
+                    conn.shutdown(socket.SHUT_RDWR)
+                    conn.close()  # close the connection
+                except (socket.error, OSError) as m:
+                    print(m)
 
     @property
     def config(self, section='mysql'):
@@ -212,7 +225,7 @@ class Server(object):
             else:
                 # assume experiments previously at the same root have since been deleted]
                 cursor.execute(
-                    f"UPDATE experiments SET status = '{status}', data = '{data}' WHERE root = '{root}' AND status != '{DELETED}'")
+                    f"UPDATE experiments SET status = '{status}', data = '{data}', updated = CURRENT_TIMESTAMP() WHERE root = '{root}' AND status != '{DELETED}'")
                 database.commit()
                 response = ExperimentUpdated(user, root)
         except Exception as m:
@@ -255,5 +268,5 @@ class Server(object):
 
 
 if __name__ == '__main__':
-    server_task = Server()
-    server_task()
+    args = parser.parse_args()
+    server(args)

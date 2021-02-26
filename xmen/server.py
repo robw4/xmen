@@ -240,6 +240,8 @@ def send_request_task(q):
                 try:
                     print(f'Getting request')
                     request = q.get()
+                    if not request:
+                        break
                     print(f'In got request')
                     send(request, s)
                     print(f'Sent request')
@@ -248,20 +250,3 @@ def send_request_task(q):
                 except queue.Empty:
                     print('Empty queue')
                     pass
-
-
-# def sender_client(host, port, q: queue.Queue):
-#     """Send messages from queue to host on port using SSL"""
-#     import ssl
-#     import socket
-#     context = ssl.create_default_context()
-#
-#     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as ss:
-#         with context.wrap_socket(ss, server_hostname=host) as s:
-#             s.connect((host, port))
-#             while True:
-#                 try:
-#                     dic = q.get()
-#                     send(dic, s)
-#                 except q.empty():
-#                     pass

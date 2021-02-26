@@ -191,9 +191,6 @@ class Config(object):
     def __repr__(self):
         from xmen.utils import recursive_print_lines
         return '\n'.join(recursive_print_lines(self.__dict__))
-    
-    
-    
 
 
 class NoMatchException(Exception):

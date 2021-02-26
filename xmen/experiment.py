@@ -22,7 +22,6 @@ import datetime
 import argparse
 from typing import Optional, Dict, List, Any
 import signal
-import io
 
 from argparse import RawTextHelpFormatter
 from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recursive_print_lines, TypedMeta, MultiOut
@@ -158,8 +157,7 @@ class Experiment(object, metaclass=TypedMeta):
             self._helps: Optional[Dict] = None
 
             # queues
-            self._queue = None
-            # self._queues = []
+            self._queues = []
             self._processes = []
 
         else:
@@ -367,12 +365,9 @@ class Experiment(object, metaclass=TypedMeta):
 
         if self.status not in [DEFAULT, REGISTERED]:
             request = self.to_update_request()
-            # send request to queues
-            if self._queue is not None:
-                self._queue.put(request)
-            # for q in self._queues:
-            #     print('Putting on queue')
-            #     q.put(request)
+            for q in self._queues:
+                q.put(request)
+
         elif self.status == REGISTERED:
             # the global configuration will register with the server...
             Config().register(self.root)
@@ -540,8 +535,8 @@ class Experiment(object, metaclass=TypedMeta):
         # start messaging threads
         # from queue import Queue
         from multiprocessing import Process, Queue
-        self._queue = Queue(maxsize=1)
-        p = Process(target=send_request_task, args=(self._queue, ))
+        self._queues += [Queue(maxsize=10)]
+        p = Process(target=send_request_task, args=(self._queues[0], ))
         p.start()
         # self._queues += [q]
         self._processes += [p]
@@ -575,10 +570,20 @@ class Experiment(object, metaclass=TypedMeta):
             print('########################')
             if self.status not in [TIMEOUT, STOPPED]:
                 self._update_status(ERROR)
+
         # stop running processes
-        time.sleep(0.1)
-        for p in self._processes:
-            p.terminate()
+        [q.put(None) for q in self._queues]
+        start = time.time()
+        while time.time() - start <= 5.:
+            if not any(p.is_alive() for p in self._processes):
+                # All the processes are done, break now.
+                break
+            time.sleep(.1)  # just to avoid hogging the CPU
+        else:
+            # We only enter this if we didn't 'break' above.
+            for p in self._processes:
+                p.terminate()
+                p.join()
 
     def __call__(self, *args, **kwargs):
         """Used to run experiment. Upon entering the experiment status is updated to ``'running`` before ``args`` and
