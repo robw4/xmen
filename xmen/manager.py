@@ -162,7 +162,7 @@ class ExperimentManager(object):
                 Link the experiment manager with a root directory and load the experiments.yml if it exists
             * ``initialise(script, defaults)``:
                 Initialise an experiment set with a given script and default parameters
-            * ``register(string_pattern)``:
+            * ``link(string_pattern)``:
                 Register a number of experiments overriding parameters based on the particular ``string_pattern``
             * ``list()``:
                  Print all the experiments and their associated information
@@ -177,7 +177,7 @@ class ExperimentManager(object):
 
             experiment_manager = ExperimentManager(ROOT_PATH)   # Create experiment set in ROOT_PATH
             experiment_manager.initialise(PATH_TO_SCRIPT, PATH_TO_DEFAULTS)
-            experiment_manager.register('parama: 1, paramb: [x, y]')      # Register a set of experiments
+            experiment_manager.link('parama: 1, paramb: [x, y]')      # Register a set of experiments
             experiment_manger.unlink('parama_1__paramb_y')                # Remove an experiment
             experiment_manager.clean()                                    # Get rid of any experiments no longer managed
             experiment_run('parama:1__paramb:x', sh)                      # Run an experiment
@@ -424,7 +424,7 @@ class ExperimentManager(object):
         return values, keys
 
     def note(self, pattern, msg, remove=False):
-        """Add a note to the epxeriment manager. If remove is True msg is deleted instead."""
+        """Add a note to experiments matching pattern. If remove is True msg is deleted instead."""
         self.check_initialised()
         experiments = [p for p in glob.glob(os.path.join(self.root, pattern)) if p in self.experiments]
         for root in experiments:
@@ -461,22 +461,22 @@ class ExperimentManager(object):
         if not os.path.exists(self.defaults):
             raise FileNotFoundError(f'No script.sh file found in {root}')
 
-        # Update global config
-        with self._config as config:
-            entry = self._config.experiments.pop(self.root, None)
-            if entry is not None:
-                config.experiments[root] = entry
-            else:  # We will need to do a bit more work
-                # The experiment did not exist in the global configuration
-                config.experiments[root] = {
-                    "created": self.created, "type": self.type, "purpose": self.purpose, "notes": self.notes}
+        # # Update global config
+        # with self._config as config:
+        #     entry = self._config.experiments.pop(self.root, None)
+        #     if entry is not None:
+        #         config.experiments[root] = entry
+        #     else:  # We will need to do a bit more work
+        #         # The experiment did not exist in the global configuration
+        #         config.experiments[root] = {
+        #             "created": self.created, "type": self.type, "purpose": self.purpose, "notes": self.notes}
 
         # Update params.yml file of each experiment
         self.root = root
         for i, path in enumerate(self.experiments):
             params = self.load_params(path)
             params["_root"] = root
-            self.save_params(params, os.path.basename(path))
+            self.save_params(params, path)
 
         self._to_yml()
 
@@ -517,7 +517,7 @@ class ExperimentManager(object):
 
         .. note ::
 
-            This function is currently only able to register list or dictionary parameters at the first level.
+            This function is currently only able to link list or dictionary parameters at the first level.
             ``{a: {a: 1.. b: 2.} | {a: 2.. b: 2.}}`` works creating two experiments with over-ridden dicts in each case
             but ``{a: {a: 1. | 2.,  b:2.}}`` will fail.
 
@@ -526,7 +526,7 @@ class ExperimentManager(object):
             None value. If None (null yaml) is passed as a value it will not be cast. If a default.yml entry is
             given the value null the type of any overrides in this case will be inferred from the yaml string.
         """
-        # TODO: This function is currently able to register only arguments only at the first level
+        # TODO: This function is currently able to link only arguments only at the first level
         import ruamel.yaml
         import importlib.util
         self.check_initialised()
@@ -544,6 +544,7 @@ class ExperimentManager(object):
         values, keys = self._generate_params_from_string_params(p)
 
         # Add new experiments
+        paths = []
         for elem in values:
             overides = {}
             for k, v in zip(keys, elem):
@@ -623,8 +624,8 @@ class ExperimentManager(object):
                     '_status': 'registered',
                     '_purpose': self.purpose,
                     '_notes': None,
-                    '_user': CONFIG.user,
-                    '_host': CONFIG.host,
+                    '_user': CONFIG.local_user,
+                    '_host': CONFIG.local_host,
                     '_timestamps': get_timestamps(created=ts, registered=ts),
                     '_messages': {},
                     '_version': version,
@@ -662,9 +663,10 @@ class ExperimentManager(object):
                 self.save_params(params, experiment_name)
                 self.experiments.append(experiment_path)
                 self.overides.append(overides)
-                self._config.register(experiment_path)
+                paths += [experiment_path]
 
-            self._to_yml()
+        self._config.link(paths)
+        self._to_yml()
 
     def reset(self, pattern, status='registered'):
         """Update the status of the experiment. This is useful if you need to re-run an experiment
@@ -687,7 +689,7 @@ class ExperimentManager(object):
                    os.path.exists(os.path.join(p, 'params.yml')) and
                    not any(e.endswith(p) for e in self.experiments)]
         if subdirs:
-            if self._config.prompt_for_message:
+            if self._config.prompt:
                 print('The following experiments were found for deletion:')
                 for p in subdirs:
                     print(p)
@@ -702,20 +704,20 @@ class ExperimentManager(object):
                     print(d)
         else:
             print('no folders found for deletion')
+        self._config.clean()
 
     def rm(self):
         from shutil import rmtree
         self.check_initialised()
-        if self._config.prompt_for_message:
+        if self._config.prompt:
             inp = input(f'This command will remove the whole experiment folder {self.root}. '
                         f'Do you wish to continue? [y | n]: ')
             if inp != 'y':
                 print('Aborting!')
                 return
-        with self._config:
-            self._config.experiments.pop(self.root)
-            rmtree(self.root)
-            print(f'Removed {self.root}')
+        rmtree(self.root)
+        print(f'Removed {self.root}')
+        self._config.clean()
 
     def run(self, pattern, *flags):
         """Run all experiments that match the global pattern using the run command given by args."""

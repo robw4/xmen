@@ -39,7 +39,9 @@ def server(args):
             processes += [p]
     finally:
         for p in processes:
-            p.terminate()
+            p.join()
+        s.shutdown(socket.SHUT_RDWR)
+        s.close()  # close the connection
 
 
 class ServerTask(object):
@@ -88,24 +90,30 @@ class ServerTask(object):
                     break
                 request = decode_request(msg)
                 response = Failed('Request not recognised')
+
+                print(request)
                 if isinstance(request, ChangePassword):
-                    print('Got Change Password Request')
                     response = self.change_password(request.user, request.password, request.new_password)
                 elif isinstance(request, AddUser):
-                    print('Got Add User Request')
                     response = self.register_user(request.user, request.password)
-                elif isinstance(request, RegisterExperiment):
-                    print('Got Register Experiment request')
-                    response = self.register_experiment(
-                        request.user, request.password, request.root, request.data)
+                elif isinstance(request, LinkExperiment):
+                    response = self.link_experiment(
+                        request.user, request.password, request.root, request.data, request.status)
                 elif isinstance(request, UpdateExperiment):
-                    print('Got Update Experiment Request')
                     response = self.update_experiment(
                         request.user, request.password, request.root, request.data, request.status)
-                    print(response)
+                elif isinstance(request, DeleteExperiment):
+                    response = self.delete_experiment(
+                        request.user, request.password, request.root)
+                elif isinstance(request, GetExperiments):
+                    response = self.get_experiments(request.user, request.password, request.roots, request.status)
+                # manage response
+                if isinstance(response, Failed):
+                    print(response.msg)
                 send(response, conn)
         except Exception as m:
-            print(f'An error occured: {m}')
+            print(f'An error occured:')
+            print(m)
             pass
         finally:
             if conn is not None:
@@ -146,13 +154,18 @@ class ServerTask(object):
                 response = PasswordValid(user) if valid else PasswordNotValid(user)
             else:
                 response = UserDoesNotExist(user)
+            if isinstance(response, (UserDoesNotExist, PasswordNotValid)):
+                response = Failed(response.msg)
+                print(response.msg)
         finally:
             cursor.close()
             database.close()
         return response
 
-    def change_password(self, user, old, new):
-        response = self.validate_password(user, old)
+    def change_password(self, user, password, new):
+        response = self.validate_password(user, password)
+        if isinstance(response, Failed):
+            return response
         database = self.database()
         cursor = database.cursor()
         try:
@@ -213,21 +226,21 @@ class ServerTask(object):
 
     def update_experiment(self, user, password, root, data, status):
         from xmen.experiment import DELETED
+        # validate password
+        response = self.validate_password(user, password)
+        if isinstance(response, Failed):
+            return response
         database = self.database()
         cursor = database.cursor()
         response = None
         try:
-            response = self.validate_password(user, password)
-            if isinstance(response, PasswordNotValid):
-                return Failed(f'{response.msg}')
-            elif isinstance(response, Failed):
-                return response
-            else:
-                # assume experiments previously at the same root have since been deleted]
-                cursor.execute(
-                    f"UPDATE experiments SET status = '{status}', data = '{data}', updated = CURRENT_TIMESTAMP() WHERE root = '{root}' AND status != '{DELETED}'")
-                database.commit()
-                response = ExperimentUpdated(user, root)
+            # assume experiments previously at the same root have since been deleted]
+            cursor.execute(
+                f"UPDATE experiments "
+                f"SET status = '{status}', data = '{data}', updated = CURRENT_TIMESTAMP() "
+                f"WHERE root = '{root}' AND status != '{DELETED}' AND user = '{user}'")
+            database.commit()
+            response = ExperimentUpdated(user, root)
         except Exception as m:
             cursor.close()
             database.close()
@@ -237,8 +250,56 @@ class ServerTask(object):
             database.close()
             return response
 
-    def register_experiment(self, user, password, root, data):
-        from xmen.experiment import REGISTERED, DELETED
+    def delete_experiment(self, user, password, root):
+        from xmen.experiment import DELETED
+        response = self.validate_password(user, password)
+        if isinstance(response, Failed):
+            return response
+        database = self.database()
+        cursor = database.cursor()
+        response = None
+        try:
+            cursor.execute(
+                f"UPDATE experiments "
+                f"SET status = '{DELETED}', updated = CURRENT_TIMESTAMP() "
+                f"WHERE root = '{root}' AND user = '{user}'")
+            database.commit()
+            response = ExperimentDeleted(user, root)
+        except Exception as m:
+            cursor.close()
+            database.close()
+            response = Failed(str(m))
+        finally:
+            cursor.close()
+            database.close()
+            return response
+
+    def get_experiments(self, user, password, roots, status):
+        import json
+        response = self.validate_password(user, password)
+        if isinstance(response, Failed):
+            return response
+        database = self.database()
+        cursor = database.cursor()
+        response = None
+        try:
+            cursor.execute(
+                f"SELECT root, data FROM experiments WHERE root REGEXP '{roots}' "
+                f"AND status REGEXP '{status}' AND user = '{user}'")
+            matches = cursor.fetchall()
+            matches = {m[0]: json.loads(m[1]) for m in matches}
+            response = GotExperiments(user, matches, roots, status)
+        except Exception as m:
+            cursor.close()
+            database.close()
+            response = Failed(str(m))
+        finally:
+            cursor.close()
+            database.close()
+            return response
+
+    def link_experiment(self, user, password, root, data, status):
+        from xmen.experiment import DELETED
         database = self.database()
         cursor = database.cursor()
         response = None
@@ -253,7 +314,7 @@ class ServerTask(object):
                 cursor.execute(
                     f"UPDATE experiments SET status = '{DELETED}' WHERE root = '{root}'")
                 cursor.execute(
-                    f"INSERT INTO experiments(root, status, user, data) VALUES('{root}','{REGISTERED}','{user}','{data}')"
+                    f"INSERT INTO experiments(root, status, user, data) VALUES('{root}','{status}','{user}','{data}')"
                 )
                 database.commit()
                 response = ExperimentRegistered(user, root)

@@ -204,10 +204,10 @@ xgent init -n HelloWorld  <span class="c1"># from a experiments experiment in th
 xgent init -n HelloWorld -r mnist_gann <span class="c1"># at folder relative to cwd</span>
 xgent init -s /path/to/script.sh -d /path/to/defaults.yml  <span class="c1"># from a script and defaults</span>
 
-<span class="c1"># register - register experiments for running</span>
-xgent register -u <span class="s2">&quot;{lr: 1e-2 | 1e-3, epochs: 10}&quot;</span> <span class="c1"># experiments from parameter combinations</span>
-xgent register -u <span class="s2">&quot;{lr: 1e-2}&quot;</span> -x <span class="m">10</span>  <span class="c1"># register 10 experiments with the same configiration</span>
-xgent register <span class="o">[</span>-u <span class="s2">&quot;{lr: 1e-2}&quot;</span> <span class="o">]</span> -n <span class="nb">test</span> <span class="c1"># register an experiment named test</span>
+<span class="c1"># link - link experiments for running</span>
+xgent link -u <span class="s2">&quot;{lr: 1e-2 | 1e-3, epochs: 10}&quot;</span> <span class="c1"># experiments from parameter combinations</span>
+xgent link -u <span class="s2">&quot;{lr: 1e-2}&quot;</span> -x <span class="m">10</span>  <span class="c1"># link 10 experiments with the same configiration</span>
+xgent link <span class="o">[</span>-u <span class="s2">&quot;{lr: 1e-2}&quot;</span> <span class="o">]</span> -n <span class="nb">test</span> <span class="c1"># link an experiment named test</span>
 
 <span class="c1"># run</span>
 xgent run <span class="s2">&quot;*&quot;</span> bash <span class="c1"># run all experiments iteratively matching glob and with default status</span>

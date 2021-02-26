@@ -46,8 +46,8 @@
           b: str=World ~ the second argument
     # initialise experient folder
     >>> xmen init -n HelloWorld -r .
-    # register experiments
-    >>> xmen register -u "{a: Hello | Bye, b: World | Planet}"
+    # link experiments
+    >>> xmen link -u "{a: Hello | Bye, b: World | Planet}"
     # visulaise
     >>> xgent list -ds -p ".*"
        root               name      status              created      a       b
@@ -76,7 +76,7 @@ Alternatively, clone the repo and then run pip if you also want access to the ex
 
 ```
 usage: xmen [-h]
-            {experiments,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
+            {experiments,config,init,link,run,note,reset,unlink,clean,rm,relink,list}
             ...
 
 ||||||||||||||||||||||||||| WELCOME TO |||||||||||||||||||||||||||
@@ -112,11 +112,11 @@ usage: xmen [-h]
 |||||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION |||||||||||||
 
 positional arguments:
-  {experiments,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
+  {experiments,config,init,link,run,note,reset,unlink,clean,rm,relink,list}
     experiments              Python interface
     config              View / edit the global configuration
     init                Initialise an experiment set
-    register            Register a set of experiments
+    link            Register a set of experiments
     run                 Run experiments matching glob in experiment set that have not yetbeen run.
     note                add notes to an experiment
     reset               Reset an experiment to registered status

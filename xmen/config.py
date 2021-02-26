@@ -23,6 +23,20 @@ from xmen.utils import get_meta
 from xmen.server import *
 import getpass
 
+from functools import wraps
+
+
+def connected(method):
+    @wraps(method)
+    def _fn(self, *args, **kwargs):
+        if self.user is None:
+            print('Warning: no account is currently registered with the xmen server. '
+                  'To configure run xmen config --register_user')
+            return
+        else:
+            return method(self, *args, **kwargs)
+    return _fn
+
 
 class Config(object):
     def __init__(self):
@@ -38,15 +52,16 @@ class Config(object):
         self.requeue = True   # Whether to requeue experiments if SLURM is available
         self.header = ''
         self.python_experiments = {}
-        self.registered = []
+        self.linked = []
         # private attributes (also saved)
         self._dir = os.path.join(os.getenv('HOME'), '.xmen')
-        self._path = os.path.join(self._dir, 'config.yml')
-        # self._meta = get_meta()
+        self._path = os.path.join(self._dir, 'xmenrc.yml')
 
         if not os.path.exists(self._path):
+            # make the directory if it doesnt exist
             if not os.path.exists(self._dir):
                 os.makedirs(self._dir)
+            # save the config file
             self.to_yml()
         else:
             self.from_yml()
@@ -63,12 +78,33 @@ class Config(object):
     @property
     def context(self): return get_context()
 
-    @property
-    def settings(self): return {k: v for k, v in self.__dict__.items()
-                                if k[0] != '_' and k != 'experiments'}
+    def filter(self, pattern=None):
+        if pattern is not None:
+            return [f for f in self.linked if re.match(pattern, f)]
 
+    @property
+    def settings(self): return {
+        k: v for k, v in self.__dict__.items()
+        if k[0] != '_' and k not in ['linked', 'python_experiments']}
+
+    @connected
+    def send_request(self, requests):
+        if not isinstance(requests, (list, tuple)):
+            requests = [requests]
+        responses = []
+        with self.socket as ss:
+            with self.context.wrap_socket(ss, server_hostname=self.server_host) as s:
+                s.connect((self.server_host, self.server_port))
+                for r in requests:
+                    send(r, s)
+                    msg = receive(s)
+                    responses += [decode_response(msg)]
+        if len(responses) == 1:
+            responses = responses[0]
+        return responses
+
+    @connected
     def change_password(self, password, new_password):
-        assert self.user is not None, 'User must be registered in the config before changing a password'
         with self.socket as ss:
             with self.context.wrap_socket(ss, server_hostname=self.server_host) as s:
                 s.connect((self.server_host, self.server_port))
@@ -117,7 +153,7 @@ class Config(object):
                 if msg:
                     msg = ruamel.yaml.load(msg, Loader=ruamel.yaml.SafeLoader)
                     self.__dict__[k] = msg
-        msg = input('Would you like to register a user account with the xmen server? [Y/N]')
+        msg = input('Would you like to link a user account with the xmen server? [Y/N]')
         if msg == 'Y':
             user = input('user:')
             from getpass import getpass
@@ -143,7 +179,7 @@ class Config(object):
             params = ruamel.yaml.load(file, Loader=ruamel.yaml.SafeLoader)
             for k, v in params.items():
                 self.__dict__[k] = v
-    
+
     def load_params(self, root):
         """Load parameters for an experiment. If ``experiment_name`` is True then experiment_path is assumed to be a
         path to the folder of the experiment else it is assumed to be a path to the ``params.yml`` file."""
@@ -151,22 +187,26 @@ class Config(object):
         with open(os.path.join(root, 'params.yml'), 'r') as params_yml:
             params = ruamel.yaml.load(params_yml, ruamel.yaml.RoundTripLoader)
         return params
-    
-    def register(self, root):
+
+    def link(self, roots):
         """Register an experiment root with the global configuration"""
         import json
-        from xmen.experiment import REGISTERED
-
-        self.registered += [root]
-        dic = self.load_params(root)
-        data = json.dumps(dic)
-        request = RegisterExperiment(
-            user=self.user,
-            password=self.password,
-            root=f'{self.local_user}@{self.local_host}:{root}',
-            data=data)
-        response = send_request(request)
-        print(response)
+        if not isinstance(roots, (list, tuple)):
+            roots = [roots]
+        self.linked += [r for r in roots]
+        requests = []
+        for root in roots:
+            dic = self.load_params(root)
+            data = json.dumps(dic)
+            requests.append(
+                LinkExperiment(
+                    user=self.user,
+                    password=self.password,
+                    root=f'{self.local_user}@{self.local_host}:{root}',
+                    data=data,
+                    status=dic['_status'])
+            )
+        self.send_request(requests)
         # finally update self
         self.to_yml()
 
@@ -187,6 +227,34 @@ class Config(object):
         os.chmod(path, st.st_mode | stat.S_IEXEC)
         self.python_experiments.update({name: path})
         self.to_yml()
+
+    def clean(self):
+        """Iteratively search through experiment and remove any that no longer exist.
+
+        Note:
+            This is performed by checking that the experiment.yml file exists.
+        """
+        corrupted = []
+        for p in self.linked:
+            if not os.path.isfile(os.path.join(p, 'params.yml')):
+                corrupted += [p]
+        if corrupted:
+            print('The following experiments were found for removal from the global configuration... ')
+            for c in corrupted:
+                print('  - ' + c)
+            if self.prompt:
+                msg = input('Would you like to remove them from the global configuration? [y | n]')
+                if msg != 'y':
+                    return
+
+        requests = []
+        for c in corrupted:
+            self.linked.remove(c)
+            requests.append(
+                DeleteExperiment(self.user, self.password, f'{self.local_user}@{self.local_host}:{c}'))
+        self.send_request(requests)
+        self.to_yml()
+        print('Experiments were successfully removed from the global configuration')
 
     def __repr__(self):
         from xmen.utils import recursive_print_lines
@@ -210,7 +278,7 @@ class GlobalExperimentManager(object):
         self.save_conda = True         # Whether to save conda info to file
         self.redirect_stdout = True    # Whether to also log the stdout and stderr to a text file in each experiment dir
         self.requeue = True
-        self.experiments = {}             # A list of all experiments roots with an Experiment Manager
+        self.experiments = {}          # A list of all experiments roots with an Experiment Manager
         # self.experiments = {}
         self.meta = get_meta()
         self.header = ''

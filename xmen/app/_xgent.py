@@ -201,6 +201,8 @@ def _config(args):
             config.server_port = args.server_port
         if args.list is not None:
             print(config)
+        if args.clean is not None:
+            config.clean()
 
 
 config_parser.set_defaults(func=_config)
@@ -391,24 +393,41 @@ relink_parser.add_argument('-e', '--experiments', metavar='NAMES',
 
 
 def _relink(args):
-    config = GlobalExperimentManager()
+    from xmen.utils import load_param, save_param
+    config = Config()
     if args.root == '':
         args.root = os.getcwd()
     args.root = os.path.abspath(args.root)
     if args.experiments is None:
-        # Perform global link
+        # relink experiment managers
         if args.recursive:
-            roots = [os.path.dirname(p) for p in glob.glob(args.root + '/**/experiment.yml', recursive=True)]
-            if len(roots) == 0:
+            managers = [os.path.dirname(p) for p in glob.glob(args.root + '/**/experiment.yml', recursive=True)]
+            if len(managers) == 0:
                 print(f"No roots found for pattern {args.root + '/**/experiment.yml'}")
         else:
+            managers = [args.root]
+
+        for manager in managers:
+            experiment_manager = ExperimentManager(manager)
+            experiment_manager.replant(manager)
+
+        # relink experiments
+        if args.recursive:
+            roots = [os.path.dirname(p) for p in glob.glob(args.root + '/**/params.yml', recursive=True)]
+            if len(managers) == 0:
+                print(f"No roots found for pattern {args.root + '/**/params.yml'}")
+        else:
             roots = [args.root]
+
+        roots = [r for r in roots if r not in config.linked]
+        config.link(roots)
+        config.clean()
+
         for r in roots:
-            if r not in config.experiments:
-                experiment_manager = ExperimentManager(r)
-                experiment_manager.replant(r)
-            else:
-                print(f'Experiment set {args.root} is already registered.')
+            params = load_param(r)
+            if params['_root'] != r:
+                params['_root'] = r
+                save_param(params, r)
     else:
         experiment_manager = ExperimentManager(args.root)
         experiment_manager.check_initialised()
@@ -420,6 +439,7 @@ relink_parser.set_defaults(func=_relink)
 #######################################################################################################################
 #  list
 #######################################################################################################################
+config = Config()
 list_parser = subparsers.add_parser('list', help='list experiments to screen')
 list_parser.add_argument(
     '--pattern',
@@ -437,38 +457,53 @@ list_parser.add_argument(
     '-v', '--display_version',
     default=r'^$',
     const='version',
-    nargs="?",
+    action='store_const',
     help="Display version information for each experiment")
-list_parser.add_argument(
-    '-H', '--display_host',
-    default=r'^$',
-    const=r'host|user',
-    nargs="?",
-    help="Display host and user information")
+# list_parser.add_argument(
+#     '-H', '--display_host',
+#     default=r'^$',
+#     const=r'host|user',
+#     action='store_const',
+#     help="Display host and user information")
 list_parser.add_argument(
     '-P', '--display_purpose',
     default=r'^$',
     const=r'purpose$',
-    nargs="?",
+    action='store_const',
     help="Display purpose for each experiment")
 list_parser.add_argument(
     '-d', '--display_date',
     default=r'^$',
     const="timestamps|created",
-    nargs="?",
+    action='store_const',
     help="Display created date for each experiment")
 list_parser.add_argument(
     '-s', '--display_status',
     default=r'^$',
     const=r'status$',
-    nargs="?",
+    action='store_const',
     help="Display status for each experiment")
 list_parser.add_argument(
     '-m', '--display_messages',
-    nargs="?",
+    action='store_const',
     default='^$',
     const='messages_(last$|e$|s$|wall$|end$|next$|.*step$|.*load$)',
     help="Display messages for each experiment")
+list_parser.add_argument(
+    '-u', '--user_filter',
+    nargs="?",
+    default=config.local_user,
+    help="Consider only experiments matching specified user")
+list_parser.add_argument(
+    '-H', '--host_filter',
+    nargs="?",
+    default=config.local_host,
+    help="Consider only experiments matching specified host")
+list_parser.add_argument(
+    '-S', '--status_filter',
+    nargs="?",
+    default=".*",
+    help="Consider only experiments matching specified host")
 list_parser.add_argument(
     '-f', '--filters',
     nargs="*",
@@ -481,7 +516,7 @@ list_parser.add_argument(
     help='List all the experiments with parameters matching the passed filter')
 list_parser.add_argument(
     '-M', '--display_meta',
-    nargs="?",
+    action='store_const',
     default="^$",
     const='meta_(root$|name$|mac$|host$|user$|home$)',
     help="Display meta information for each experiment. The regex "
@@ -493,7 +528,7 @@ list_parser.add_argument(
     action='store_true', default=None,
     help="Display as list and not a table")
 list_parser.add_argument('--max_width', default=60, help='The maximum width of an individual collumn. '
-                                                           'If None then will print for ever', type=int)
+                                                         'If None then will print for ever', type=int)
 list_parser.add_argument('--max_rows', default=None, help='Display tables with this number of rows.', type=int)
 list_parser.add_argument('--csv', action='store_true', help='Display the table as csv.', default=None)
 list_parser.add_argument('-i', '--interval', type=float, default=None, const=1., nargs='?',
@@ -517,6 +552,7 @@ def _curses_list(args):
 
 def _list(stdscr, args):
     import pandas as pd
+    from xmen.utils import load_params
     pd.set_option('display.width', 1000)
     pd.set_option('display.max_columns', 1000)
     pd.set_option('display.max_colwidth', args.max_width)
@@ -539,32 +575,25 @@ def _list(stdscr, args):
                 print(l)
     else:
         if args.pattern[0] == '':
-            pattern += '*'
+            pattern += '.*'
             args.pattern = pattern
-        global_exp_manager = GlobalExperimentManager()
+        # global_exp_manager = GlobalExperimentManager()
+        config = Config()
+        paths = config.filter(pattern)
+        params = load_params(paths)
         if args.list:
             from xmen.list import notebook_display, args_to_filters
-            from xmen.utils import load_params
-            # results, last = global_exp_manager.find(
-            #     mode='set', pattern=args.pattern, param_match=[args.param_match], types_match=args.type_match,
-            #     load_defaults=True)
             args.filters += ['notes', 'created|timestamps', 'purpose', 'version']
-            paths = global_exp_manager.paths(pattern=args.pattern)
-            params = load_params(paths)
             notebook_display(params, *args_to_filters(args))
         elif args.interval is None:
             from xmen.utils import load_params
             from xmen.list import args_to_filters, visualise_params
-            paths = global_exp_manager.paths(pattern=args.pattern)
-            params = load_params(paths)
             data_frame, root = visualise_params(params, *args_to_filters(args))
             print(f'Roots relative to {root}')
             print(data_frame)
         else:
             from xmen.utils import load_params
             from xmen.list import interactive_display
-            paths = global_exp_manager.paths(pattern=args.pattern)
-            params = load_params(paths)
             interactive_display(stdscr, params, args)
 
 

@@ -78,7 +78,7 @@
     # Initialise Experiment Set
     >>> xgent init -n HelloWorld -r .
     # Register Experiments
-    >>> xgent register -u "{a: Hello | Bye, b: World | Planet}"
+    >>> xgent link -u "{a: Hello | Bye, b: World | Planet}"
     # Visulaise
     >>> xgent list -ds -p ".*"
        root               name      status              created      a       b
@@ -203,7 +203,7 @@ optional arguments:
   ```
   ```
   >> xgent --help
-  usage: xgent [-h] {config,init,register,run,note,reset,unlink,clean,rm,relink,list} ...
+  usage: xgent [-h] {config,init,link,run,note,reset,unlink,clean,rm,relink,list} ...
 
   ||||||||||||||||||||||||||| WELCOME TO ||||||||||||||||||||||||||||
   ||                                                              ||
@@ -238,10 +238,10 @@ optional arguments:
   |||||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION |||||||||||||
 
   positional arguments:
-    {config,init,register,run,note,reset,unlink,clean,rm,relink,list}
+    {config,init,link,run,note,reset,unlink,clean,rm,relink,list}
       config              View / edit the global configuration
       init                Initialise an experiment set
-      register            Register a set of experiments
+      link            Register a set of experiments
       run                 Run experiments matching glob in experiment set that have not yetbeen run.
       note                add notes to an experiment
       reset               Reset an experiment to registered status

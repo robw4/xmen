@@ -2,7 +2,7 @@
 from xmen import Experiment
 from xmen.monitor import Monitor
 
-# register some experiments
+# link some experiments
 ex1, ex2 = Experiment(), Experiment()
 ex1.register('/tmp', 'ex1')
 ex2.register('/tmp', 'ex2')

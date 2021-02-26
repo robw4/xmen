@@ -19,19 +19,24 @@ ADD_USER = 'register_user'
 VALIDATE_PASSWORD = 'validate_password_request'
 CHANGE_PASSWORD = 'change_password'
 UPDATE_EXPERIMENT = 'update_experiment'
-REGISTER_EXPERIMENT = 'register_experiment'
+LINK_EXPERIMENT = 'link_experiment'
+DELETE_EXPERIMENT = 'delete_experiment'
+GET_EXPERIMENTS = 'get_experiments'
 
 
 class Request(object):
     pass
 
 
-class RegisterExperiment(NamedTuple, Request):
+class LinkExperiment(NamedTuple, Request):
     user: str
     password: str
     root: str
     data: str
-    request: str = REGISTER_EXPERIMENT
+    status: str
+    request: str = LINK_EXPERIMENT
+
+    def __repr__(self): return f'{self.__class__.__name__}<user={self.user}, root={self.root}, status={self.status}>'
 
 
 class UpdateExperiment(NamedTuple, Request):
@@ -42,11 +47,25 @@ class UpdateExperiment(NamedTuple, Request):
     data: str
     request: str = UPDATE_EXPERIMENT
 
+    def __repr__(self): return f'{self.__class__.__name__}<user={self.user}, root={self.root}, status={self.status}>'
+
+
+class GetExperiments(NamedTuple, Request):
+    user: str
+    password: str
+    roots: str
+    status: str
+    request: str = GET_EXPERIMENTS
+
+    def __repr__(self): return f'{self.__class__.__name__}<user={self.user}, root={self.roots}, status={self.status}>'
+
 
 class ValidatePassword(NamedTuple, Request):
     user: str
     password: str
     request: str = VALIDATE_PASSWORD
+
+    def __repr__(self): return f'{self.__class__.__name__}<user={self.user}>'
 
 
 class ChangePassword(NamedTuple, Request):
@@ -55,19 +74,34 @@ class ChangePassword(NamedTuple, Request):
     new_password: str
     request: str = CHANGE_PASSWORD
 
+    def __repr__(self): return f'{self.__class__.__name__}<user={self.user}>'
+
 
 class AddUser(NamedTuple, Request):
     user: str
     password: Optional[str]
     request: str = ADD_USER
 
+    def __repr__(self): return f'{self.__class__.__name__}<user={self.user}>'
+
+
+class DeleteExperiment(NamedTuple, Request):
+    user: str
+    password: str
+    root: str
+    request: str = DELETE_EXPERIMENT
+
+    def __repr__(self): return f'{self.__class__.__name__}<user={self.user}, root={self.root}>'
+
 
 REQUESTS = {
     ADD_USER: AddUser,
     VALIDATE_PASSWORD: ValidatePassword,
     CHANGE_PASSWORD: ChangePassword,
-    REGISTER_EXPERIMENT: RegisterExperiment,
+    LINK_EXPERIMENT: LinkExperiment,
     UPDATE_EXPERIMENT: UpdateExperiment,
+    DELETE_EXPERIMENT: DeleteExperiment,
+    GET_EXPERIMENTS: GetExperiments,
 }
 
 
@@ -86,8 +120,10 @@ USER_DOES_NOT_EXIST = 'user_does_not_exist'
 USER_CREATED = 'user_created'
 FAILED = 'failed'
 PASSWORD_CHANGED = 'password_changed'
-EXPERIMENT_REGISTERED = 'experiment_registered'
+EXPERIMENT_LINKED = 'experiment_registered'
 EXPERIMENT_UPDATED = 'experiment_updated'
+EXPERIMENT_DELETED = 'experiment_deleted'
+GOT_EXPERIMENTS = 'got_experiments'
 
 
 def decode_response(dic):
@@ -97,27 +133,38 @@ def decode_response(dic):
             USER_CREATED: UserCreated,
             PASSWORD_CHANGED: PasswordChanged,
             FAILED: Failed,
-            EXPERIMENT_REGISTERED: ExperimentRegistered,
+            EXPERIMENT_LINKED: ExperimentRegistered,
             EXPERIMENT_UPDATED: ExperimentUpdated,
+            EXPERIMENT_DELETED: ExperimentDeleted,
+            GOT_EXPERIMENTS: GotExperiments
     }[dic['response']](**dic)
+
+
+class ExperimentDeleted(NamedTuple):
+    user: str
+    root: str
+    response: str = EXPERIMENT_DELETED
+
+    @property
+    def msg(self): return f'Experiment {self.root} deleted for {self.user}'
 
 
 class ExperimentUpdated(NamedTuple):
     user: str
     root: str
-    response: str = EXPERIMENT_REGISTERED
+    response: str = EXPERIMENT_LINKED
 
     @property
-    def msg(self): return f'Experiment {self.root} registered {self.user}'
+    def msg(self): return f'Experiment {self.root} registered for {self.user}'
 
 
 class ExperimentRegistered(NamedTuple):
     user: str
     root: str
-    response: str = EXPERIMENT_REGISTERED
+    response: str = EXPERIMENT_LINKED
 
     @property
-    def msg(self): return f'Experiment {self.root} registered {self.user}'
+    def msg(self): return f'Experiment {self.root} registered for {self.user}'
 
 
 class Failed(NamedTuple):
@@ -149,7 +196,7 @@ class UserDoesNotExist(NamedTuple):
     response: str = USER_DOES_NOT_EXIST
 
     @property
-    def msg(self): return f'User account exists for {self.user} and passwords match'
+    def msg(self): return f'User account does not exist for {self.user}'
 
 
 class PasswordValid(NamedTuple):
@@ -167,21 +214,34 @@ class PasswordNotValid(NamedTuple):
     @property
     def msg(self): return f'password incorrect for {self.user}'
 
+
+class GotExperiments(NamedTuple):
+    user: str
+    matches: list
+    roots: str
+    status: str
+    response: str = GOT_EXPERIMENTS
+
+    @property
+    def msg(self): return f'Found {len(self.matches)} experiments ' \
+                          f'matching root {self.roots} with status {self.status}'
+
+
 # -------------------------------------
 # Helper functions
 # -------------------------------------
-
-
-def send(dic, conn):
+def send(dic, conn, typ='safe'):
     """Send dictionary to connected socket"""
+    from xmen.utils import commented_to_py
     if hasattr(dic, '_asdict'):
         dic = dic._asdict()
-    string = dic_to_yaml(dic)
+    dic = {k: commented_to_py(v) for k, v in dic.items()}
+    string = dic_to_yaml(dic, typ, True)
     buffer = string.encode()
     conn.sendall(struct.pack('Q', len(buffer)) + buffer)
 
 
-def receive(conn, timeout=None):
+def receive(conn, timeout=None, typ='safe'):
     """Receive yaml dictionary over connected socket"""
     import ruamel.yaml
     from xmen.utils import IncompatibleYmlException
@@ -192,8 +252,10 @@ def receive(conn, timeout=None):
     if length:
         length, = struct.unpack('Q', length)
         buffer = conn.recv(length).decode()
-        yaml = ruamel.yaml.YAML()
+        yaml = ruamel.yaml.YAML(typ=typ)
         try:
+            with open('/home/robw/tmp/tlog.txt', 'w') as f:
+                f.write(buffer)
             dic = yaml.load(buffer)
         except:
             raise IncompatibleYmlException
@@ -227,26 +289,21 @@ def send_request(request):
     return decode_response(response)
 
 
-def send_request_task(q):
+def send_request_task(q_request, q_response=None):
     from xmen.config import Config
-    print('In send reqest task')
     config = Config()
     context = ssl.create_default_context()
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as ss:
         with context.wrap_socket(ss, server_hostname=config.server_host) as s:
             s.connect((config.server_host, config.server_port))
-            print('Connected')
             while True:
                 try:
-                    print(f'Getting request')
-                    request = q.get()
+                    request = q_request.get()
                     if not request:
                         break
-                    print(f'In got request')
                     send(request, s)
-                    print(f'Sent request')
                     response = receive(s)
-                    print('Response is ', response)
+                    if q_response is not None:
+                        q_response.put(response)
                 except queue.Empty:
-                    print('Empty queue')
                     pass

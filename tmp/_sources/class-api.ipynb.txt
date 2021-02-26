@@ -287,7 +287,7 @@
       " |  parse_args(self)\n",
       " |      Configure the experiment instance from the command line arguments.\n",
       " |  \n",
-      " |  register(self, root, name, purpose='', force=True, same_names=100, generate_script=False, header=None)\n",
+      " |  link(self, root, name, purpose='', force=True, same_names=100, generate_script=False, header=None)\n",
       " |      Register an experiment to an experiment directory. Its status will be updated to ``registered``. If an\n",
       " |      experiment called ``name`` exists in ``root`` and ``force==True`` then name will be appended with an int\n",
       " |      (eg. ``{name}_0``) until a unique name is found in ``root``. If ``force==False`` a ``ValueError`` will be raised.\n",
@@ -567,7 +567,7 @@
     "print('-------------')\n",
     "# Before being run an experiment needs to be registered\n",
     "# to a directory\n",
-    "exp.register('/tmp/an_experiment', 'first_experiment',\n",
+    "exp.link('/tmp/an_experiment', 'first_experiment',\n",
     "             purpose='A bit of a test of the xmen experiment api')\n",
     "print(exp, end='\\n')\n",
     "print('\\nGIT, and system information is automatically logged\\n')"

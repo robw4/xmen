@@ -324,7 +324,7 @@
 <span class="sd">                Link the experiment manager with a root directory and load the experiments.yml if it exists</span>
 <span class="sd">            * ``initialise(script, defaults)``:</span>
 <span class="sd">                Initialise an experiment set with a given script and default parameters</span>
-<span class="sd">            * ``register(string_pattern)``:</span>
+<span class="sd">            * ``link(string_pattern)``:</span>
 <span class="sd">                Register a number of experiments overriding parameters based on the particular ``string_pattern``</span>
 <span class="sd">            * ``list()``:</span>
 <span class="sd">                 Print all the experiments and their associated information</span>
@@ -339,7 +339,7 @@
 
 <span class="sd">            experiment_manager = ExperimentManager(ROOT_PATH)   # Create experiment set in ROOT_PATH</span>
 <span class="sd">            experiment_manager.initialise(PATH_TO_SCRIPT, PATH_TO_DEFAULTS)</span>
-<span class="sd">            experiment_manager.register(&#39;parama: 1, paramb: [x, y]&#39;)      # Register a set of experiments</span>
+<span class="sd">            experiment_manager.link(&#39;parama: 1, paramb: [x, y]&#39;)      # Register a set of experiments</span>
 <span class="sd">            experiment_manger.unlink(&#39;parama_1__paramb_y&#39;)                # Remove an experiment</span>
 <span class="sd">            experiment_manager.clean()                                    # Get rid of any experiments no longer managed</span>
 <span class="sd">            experiment_run(&#39;parama:1__paramb:x&#39;, sh)                      # Run an experiment</span>
@@ -701,7 +701,7 @@
         <span class="c1"># self.root = dest</span>
         <span class="c1"># self.to_yml()</span>
 
-<div class="viewcode-block" id="ExperimentManager.register"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">string_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="s1">&#39;/bin/bash&#39;</span><span class="p">,</span> <span class="n">repeats</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="ExperimentManager.register"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.register">[docs]</a>    <span class="k">def</span> <span class="nf">link</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">string_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="s1">&#39;/bin/bash&#39;</span><span class="p">,</span> <span class="n">repeats</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Register a set of experiments with the experiment manager.</span>
 
 <span class="sd">        Experiments are created by passing a yaml dictionary string of parameters to overload in the ``params.yml``</span>
@@ -727,7 +727,7 @@
 
 <span class="sd">        .. note ::</span>
 
-<span class="sd">            This function is currently only able to register list or dictionary parameters at the first level.</span>
+<span class="sd">            This function is currently only able to link list or dictionary parameters at the first level.</span>
 <span class="sd">            ``{a: {a: 1.. b: 2.} | {a: 2.. b: 2.}}`` works creating two experiments with over-ridden dicts in each case</span>
 <span class="sd">            but ``{a: {a: 1. | 2.,  b:2.}}`` will fail.</span>
 
@@ -736,7 +736,7 @@
 <span class="sd">            None value. If None (null yaml) is passed as a value it will not be cast. If a default.yml entry is</span>
 <span class="sd">            given the value null the type of any overrides in this case will be inferred from the yaml string.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># TODO: This function is currently able to register only arguments only at the first level</span>
+        <span class="c1"># TODO: This function is currently able to link only arguments only at the first level</span>
         <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
         <span class="kn">import</span> <span class="nn">importlib.util</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_initialised</span><span class="p">()</span>

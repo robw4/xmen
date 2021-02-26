@@ -229,8 +229,8 @@
       b: <span class="nv">str</span><span class="o">=</span>World ~ the second argument
 <span class="c1"># initialise experient folder</span>
 &gt;&gt;&gt; xmen init -n HelloWorld -r .
-<span class="c1"># register experiments</span>
-&gt;&gt;&gt; xmen register -u <span class="s2">&quot;{a: Hello | Bye, b: World | Planet}&quot;</span>
+<span class="c1"># link experiments</span>
+&gt;&gt;&gt; xmen link -u <span class="s2">&quot;{a: Hello | Bye, b: World | Planet}&quot;</span>
 <span class="c1"># visulaise</span>
 &gt;&gt;&gt; xgent list -ds -p <span class="s2">&quot;.*&quot;</span>
    root               name      status              created      a       b
@@ -261,7 +261,7 @@
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">xmen</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span>
-            <span class="p">{</span><span class="n">experiments</span><span class="p">,</span><span class="n">config</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">register</span><span class="p">,</span><span class="n">run</span><span class="p">,</span><span class="n">note</span><span class="p">,</span><span class="n">reset</span><span class="p">,</span><span class="n">unlink</span><span class="p">,</span><span class="n">clean</span><span class="p">,</span><span class="n">rm</span><span class="p">,</span><span class="n">relink</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span>
+            <span class="p">{</span><span class="n">experiments</span><span class="p">,</span><span class="n">config</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">link</span><span class="p">,</span><span class="n">run</span><span class="p">,</span><span class="n">note</span><span class="p">,</span><span class="n">reset</span><span class="p">,</span><span class="n">unlink</span><span class="p">,</span><span class="n">clean</span><span class="p">,</span><span class="n">rm</span><span class="p">,</span><span class="n">relink</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span>
             <span class="o">...</span>
 
 <span class="o">|||||||||||||||||||||||||||</span> <span class="n">WELCOME</span> <span class="n">TO</span> <span class="o">|||||||||||||||||||||||||||</span>
@@ -297,11 +297,11 @@
 <span class="o">||||||||||||||</span> <span class="n">FAST</span> <span class="o">-</span> <span class="n">REPRODUCIBLE</span> <span class="o">-</span> <span class="n">EXPERIMENTATION</span> <span class="o">|||||||||||||</span>
 
 <span class="n">positional</span> <span class="n">arguments</span><span class="p">:</span>
-  <span class="p">{</span><span class="n">experiments</span><span class="p">,</span><span class="n">config</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">register</span><span class="p">,</span><span class="n">run</span><span class="p">,</span><span class="n">note</span><span class="p">,</span><span class="n">reset</span><span class="p">,</span><span class="n">unlink</span><span class="p">,</span><span class="n">clean</span><span class="p">,</span><span class="n">rm</span><span class="p">,</span><span class="n">relink</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span>
+  <span class="p">{</span><span class="n">experiments</span><span class="p">,</span><span class="n">config</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">link</span><span class="p">,</span><span class="n">run</span><span class="p">,</span><span class="n">note</span><span class="p">,</span><span class="n">reset</span><span class="p">,</span><span class="n">unlink</span><span class="p">,</span><span class="n">clean</span><span class="p">,</span><span class="n">rm</span><span class="p">,</span><span class="n">relink</span><span class="p">,</span><span class="nb">list</span><span class="p">}</span>
     <span class="n">experiments</span>              <span class="n">Python</span> <span class="n">interface</span>
     <span class="n">config</span>              <span class="n">View</span> <span class="o">/</span> <span class="n">edit</span> <span class="n">the</span> <span class="k">global</span> <span class="n">configuration</span>
     <span class="n">init</span>                <span class="n">Initialise</span> <span class="n">an</span> <span class="n">experiment</span> <span class="nb">set</span>
-    <span class="n">register</span>            <span class="n">Register</span> <span class="n">a</span> <span class="nb">set</span> <span class="n">of</span> <span class="n">experiments</span>
+    <span class="n">link</span>            <span class="n">Register</span> <span class="n">a</span> <span class="nb">set</span> <span class="n">of</span> <span class="n">experiments</span>
     <span class="n">run</span>                 <span class="n">Run</span> <span class="n">experiments</span> <span class="n">matching</span> <span class="n">glob</span> <span class="ow">in</span> <span class="n">experiment</span> <span class="nb">set</span> <span class="n">that</span> <span class="n">have</span> <span class="ow">not</span> <span class="n">yetbeen</span> <span class="n">run</span><span class="o">.</span>
     <span class="n">note</span>                <span class="n">add</span> <span class="n">notes</span> <span class="n">to</span> <span class="n">an</span> <span class="n">experiment</span>
     <span class="n">reset</span>               <span class="n">Reset</span> <span class="n">an</span> <span class="n">experiment</span> <span class="n">to</span> <span class="n">registered</span> <span class="n">status</span>

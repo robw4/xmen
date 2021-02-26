@@ -647,7 +647,7 @@ class AnExperiment(BaseExperiment)
  |  parse_args(self)
  |      Configure the experiment instance from the command line arguments.
  |
- |  register(self, root, name, purpose=&#39;&#39;, force=True, same_names=100, generate_script=False, header=None)
+ |  link(self, root, name, purpose=&#39;&#39;, force=True, same_names=100, generate_script=False, header=None)
  |      Register an experiment to an experiment directory. Its status will be updated to ``registered``. If an
  |      experiment called ``name`` exists in ``root`` and ``force==True`` then name will be appended with an int
  |      (eg. ``{name}_0``) until a unique name is found in ``root``. If ``force==False`` a ``ValueError`` will be raised.
@@ -863,7 +863,7 @@ parameters:
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-------------&#39;</span><span class="p">)</span>
 <span class="c1"># Before being run an experiment needs to be registered</span>
 <span class="c1"># to a directory</span>
-<span class="n">exp</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;/tmp/an_experiment&#39;</span><span class="p">,</span> <span class="s1">&#39;first_experiment&#39;</span><span class="p">,</span>
+<span class="n">exp</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="s1">&#39;/tmp/an_experiment&#39;</span><span class="p">,</span> <span class="s1">&#39;first_experiment&#39;</span><span class="p">,</span>
              <span class="n">purpose</span><span class="o">=</span><span class="s1">&#39;A bit of a test of the xmen experiment api&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">GIT, and system information is automatically logged</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>

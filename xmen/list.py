@@ -1,5 +1,13 @@
 """Various helper functions for xmen list"""
 import re
+from xmen.server import *
+
+DEFAULTS = {
+    'display_date': "timestamps|created",
+    'display_status': r'status$',
+    'display_messages': 'messages_(last$|e$|s$|wall$|end$|next$|.*step$|.*load$)',
+    'display_meta': 'meta_(root$|name$|mac$|host$|user$|home$)'
+}
 
 
 def args_to_filters(args):
@@ -14,7 +22,6 @@ def args_to_filters(args):
         args.display_status,
         args.display_purpose,
         args.display_messages,
-        args.display_host,
         args.display_version,
         args.display_meta,
         *args.filters,
@@ -315,37 +322,49 @@ def interactive_display(stdscr, results, args):
         data_frame, root = generate_table(results, args)
         display_table(data_frame, root)
 
+    def update_requests(args, requests_q):
+        request = GetExperiments(
+            config.user,
+            config.password,
+            f"{args.user_filter}@{args.host_filter}:{args.pattern}",
+            args.status_filter)
+        requests_q.put(request)
+
     visualise_results(results, args)
     rows, cols = stdscr.getmaxyx()
 
+    from xmen.config import Config
+    config = Config()
+
     try:
+        from xmen.server import send_request_task
+        import time
         import multiprocessing
-        q = mp.Queue(maxsize=1)
-        p = multiprocessing.Process(target=updates_client, args=(q, args))
+        q_request = mp.Queue(maxsize=1)
+        q_response = mp.Queue(maxsize=1)
+        update_requests(args, q_request)
+        p = multiprocessing.Process(target=send_request_task, args=(q_request, q_response))
         p.start()
 
+        last_time = time.time()
         while True:
             try:
-                updates, last_time = q.get(False)
-                if updates is None:
-                    raise RunTimeError(last_time)
-                import os
-                paths = [os.path.join(results[i]['_root'], results[i]['_name'])
-                         for i in range(len(results))]
-                idx = [(i, n) for i, n in enumerate(paths) if n in updates]
-                if idx:
-                    for i, n in idx:
-                        results[i].update(updates[n])
-                    # for i, n in idx:
-                    #     for k, v in updates[n].items():
-                    #         results[k][i] = v
-                    visualise_results(results, args)
-
+                if time.time() - last_time > args.interval:
+                    # request experiment updates
+                    try:
+                        response = q_response.get(False)
+                        paths, results = zip(*[(k, v) for k, v in response['matches'].items()])
+                        visualise_results(results, args)
+                        update_requests(args, q_request)
+                    except queue.Empty:
+                        pass
+                    last_time = time.time()
             except queue.Empty:
                 pass
 
             import sys
             import time
+
 
             if stdscr is not None:
                 stdscr.timeout(1000)
@@ -443,48 +462,79 @@ def interactive_display(stdscr, results, args):
         raise KeyboardInterrupt
 
 
-def updates_client(q, args):
-    from xmen.utils import commented_to_py
-    import os
-    import socket
+def send_request_task(requests_q, q_response):
+    from xmen.config import Config
     import time
-    # get the hostname
-    import struct
-    import ruamel.yaml
-    from xmen.experiment import IncompatibleYmlException, HOST, PORT
-
-    server_socket = socket.socket()  # get instance
-    # look closely. The bind() function takes tuple as argument
-    server_socket.bind((HOST, PORT))  # bind host address and port together
-
-    # configure how many client the server can listen simultaneously
-    server_socket.listen(100)
-
-    while True:
-        try:
-            updates = {}
-            last = time.time()
-            while time.time() - last < args.interval:
-                conn, address = server_socket.accept()
-                # print("Connection from: " + str(address))
-                length = conn.recv(struct.calcsize('Q'))
-                if length:
-                    length, = struct.unpack('Q', length)
-                    # print('length = ', length)
-                    params = conn.recv(length, socket.MSG_WAITALL).decode()
-                    yaml = ruamel.yaml.YAML()
+    config = Config()
+    context = ssl.create_default_context()
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as ss:
+        with context.wrap_socket(ss, server_hostname=config.server_host) as s:
+            s.connect((config.server_host, config.server_port))
+            while True:
+                try:
                     try:
-                        params = yaml.load(params)
-                    except:
-                        raise IncompatibleYmlException
-                    params = {k: commented_to_py(v) for k, v in params.items()}
-                    # print(params)
-                    updates[os.path.join(params['_root'], params['_name'])] = params
-                conn.close()  # close the connection
-            if updates:
-                q.put((updates, last))
-        except Exception as m:
-            q.put((None, m))
-            with open('/data/engs-robot-learning/kebl4674/usup/tmp/xmen-error-log.txt', 'w') as f:
-                f.write(m)
-            break
+                        request = requests_q.get(False)
+                    except queue.Empty:
+                        pass
+
+                    if not request:
+                        break
+
+                    send(request, s)
+                    response = receive(s)
+
+                    if q_response is not None:
+                        q_response.put(response)
+
+                    time.sleep(0.1)
+                except queue.Empty:
+                    pass
+
+
+# def updates_client(q, args):
+#     from xmen.utils import commented_to_py
+#     import os
+#     import socket
+#     import time
+#     # get the hostname
+#     import struct
+#     import ruamel.yaml
+#
+#
+#     # from xmen.experiment import IncompatibleYmlException, HOST, PORT
+#
+#     server_socket = socket.socket()  # get instance
+#     # look closely. The bind() function takes tuple as argument
+#     server_socket.bind((HOST, PORT))  # bind host address and port together
+#
+#     # configure how many client the server can listen simultaneously
+#     server_socket.listen(100)
+#
+#     while True:
+#         try:
+#             updates = {}
+#             last = time.time()
+#             while time.time() - last < args.interval:
+#                 conn, address = server_socket.accept()
+#                 # print("Connection from: " + str(address))
+#                 length = conn.recv(struct.calcsize('Q'))
+#                 if length:
+#                     length, = struct.unpack('Q', length)
+#                     # print('length = ', length)
+#                     params = conn.recv(length, socket.MSG_WAITALL).decode()
+#                     yaml = ruamel.yaml.YAML()
+#                     try:
+#                         params = yaml.load(params)
+#                     except:
+#                         raise IncompatibleYmlException
+#                     params = {k: commented_to_py(v) for k, v in params.items()}
+#                     # print(params)
+#                     updates[os.path.join(params['_root'], params['_name'])] = params
+#                 conn.close()  # close the connection
+#             if updates:
+#                 q.put((updates, last))
+#         except Exception as m:
+#             q.put((None, m))
+#             with open('/data/engs-robot-learning/kebl4674/usup/tmp/xmen-error-log.txt', 'w') as f:
+#                 f.write(m)
+#             break

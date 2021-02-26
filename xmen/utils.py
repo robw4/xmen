@@ -24,6 +24,40 @@ import logging
 DATE_FORMAT = "%y-%m-%d-%H-%M-%S-%f"
 
 
+def load_param(root, file='params.yml'):
+    """Load parameters from a params.yml file."""
+    import ruamel.yaml
+    with open(os.path.join(root, file), 'r') as params_yml:
+        params = ruamel.yaml.load(params_yml, ruamel.yaml.RoundTripLoader)
+    return params
+
+
+def save_param(params, root, file='params.yml'):
+    """Save a dictionary of parameters at ``{root}/params.yml``
+
+    Args:
+        params (dict): A dictionary of parameters to be saved. Can also be a CommentedMap from ruamel.yaml
+        root (str): The root of the experiment
+    """
+    import ruamel.yaml
+    with open(os.path.join(root, file), 'w') as out:
+        yaml = ruamel.yaml.YAML()
+        yaml.dump(params, out)
+
+
+def load_params(roots):
+    """Load params.yml files into a list of dictionaries from a list of paths"""
+    import ruamel.yaml
+    from xmen.utils import commented_to_py
+    out = []
+    for path in roots:
+        with open(os.path.join(path, 'params.yml'), 'r') as params_yml:
+            params = ruamel.yaml.load(params_yml, ruamel.yaml.RoundTripLoader)
+        params = {k: commented_to_py(v) for k, v in params.items()}
+        out.append(params)
+    return out
+
+
 class IncompatibleYmlException(Exception):
     pass
 
@@ -42,11 +76,12 @@ def flatten(d, parent_key='', sep='_'):
 
 
 # Convert to yaml
-def dic_to_yaml(dic):
+def dic_to_yaml(dic, typ='rt', default_flow_style=False):
     """Convert dictionary to a yaml string (``dic`` can also be a CommentedMap)"""
     import ruamel.yaml
     from ruamel.yaml import StringIO
-    yaml = ruamel.yaml.YAML()
+    yaml = ruamel.yaml.YAML(typ=typ)
+    yaml.default_flow_style = default_flow_style
     stream = StringIO()
     yaml.dump(dic, stream)
     string = stream.getvalue()
@@ -708,17 +743,7 @@ def get_run_script(module, name, shell='/usr/bin/env python3', comment='#'):
     return '\n'.join(sh)
 
 
-def load_params(paths):
-    """Load params.yml files into a list of dictionaries from a list of paths"""
-    import ruamel.yaml
-    from xmen.utils import commented_to_py
-    out = []
-    for path in paths:
-        with open(os.path.join(path, 'params.yml'), 'r') as params_yml:
-            params = ruamel.yaml.load(params_yml, ruamel.yaml.RoundTripLoader)
-        params = {k: commented_to_py(v) for k, v in params.items()}
-        out.append(params)
-    return out
+
 
 
 def dics_to_pandas(dics, reg):

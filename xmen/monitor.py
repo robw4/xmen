@@ -238,8 +238,8 @@ class XmenMessenger(Hook):
             m = Monitor(hooks=[messenger])
             y1, y2 = 0, 0
             ex1, ex2 = Experiment(), Experiment()
-            ex1.register('/tmp', 'ex1')
-            ex2.register('/tmp', 'ex2')
+            ex1.link('/tmp', 'ex1')
+            ex2.link('/tmp', 'ex2')
             for i in m(range(40)):
                 y1 += 1
                 y2 += 2
@@ -261,7 +261,7 @@ class XmenMessenger(Hook):
             from xmen.monitor import Monitor
 
             ex = Experiment()
-            ex.register('/tmp', 'ex')
+            ex.link('/tmp', 'ex')
             m = Monitor(
                 hooks=[
                     XmenMessenger('^y$|^i$->^ex$@10s', keep='min', leader='^y$')])
@@ -291,7 +291,7 @@ class XmenMessenger(Hook):
             from xmen.monitor import Monitor
 
             ex = Experiment()
-            ex.register('/tmp', 'ex')
+            ex.link('/tmp', 'ex')
             m = Monitor(
                 hooks=[
                     XmenMessenger('z->^ex$@10s', keep='min', leader='y', expand=True)])
@@ -321,7 +321,7 @@ class XmenMessenger(Hook):
             from xmen.monitor import Monitor
 
             ex = Experiment()
-            ex.register('/tmp', 'ex')
+            ex.link('/tmp', 'ex')
             m = Monitor(
                 hooks=[
                     XmenMessenger('z->^ex$@10s', keep='min', leader='z_y', expand=True, prepend=True)])

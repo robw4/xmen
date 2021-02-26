@@ -33,7 +33,7 @@ helps = {
                'passed the experiment will be run in a detached state. This is useful for debugging but is'
                'not recommended for deployment.',
     'update': 'Update the parameters given by a yaml string. Note this will be called before '
-              'other flags and can be used in combination with --to_root, --to_defaults, and --register',
+              'other flags and can be used in combination with --to_root, --to_defaults, and --link',
     'root': 'Generate a run script and defaults.yml file for interfacing with xgent',
     'debug': 'Run experiment in debug mode. The experiments debug will be called before registering.',
     'txt': 'Also log stdout and stderr to an out.txt file. Enabled by default (default taken from xmen config)',
@@ -144,7 +144,7 @@ class Experiment(object, metaclass=TypedMeta):
             self._notes: Optional[List[str]] = None  # @p Notes attached to the experiment
             self._purpose: Optional[str] = None  # @p A description of the experiment purpose
             # new attributes
-            self._user: Optional[str] = CONFIG.user  # @p The user of the experiment
+            self._user: Optional[str] = CONFIG.local_user  # @p The user of the experiment
             self._host: Optional[str] = CONFIG.local_host  # @p The name of the default host
             self._timestamps: Dict[str, Optional[str]] = get_timestamps()   # @p timestamps attached to the experiment
             # These can all be varied
@@ -369,8 +369,8 @@ class Experiment(object, metaclass=TypedMeta):
                 q.put(request)
 
         elif self.status == REGISTERED:
-            # the global configuration will register with the server...
-            Config().register(self.root)
+            # the global configuration will link with the server...
+            Config().link(self.root)
 
     def debug(self):
         """Inherited classes may overload debug. Used to define a set of open_socket for minimum example"""
@@ -687,7 +687,7 @@ class Experiment(object, metaclass=TypedMeta):
                         exit()
         # Then execute the experiment
         if args.execute is not None:
-            # (1) register experiment from pre-existing params.yml file
+            # (1) link experiment from pre-existing params.yml file
             if args.execute != os.devnull:
                 if os.path.isfile(args.execute):
                     try:
@@ -696,7 +696,7 @@ class Experiment(object, metaclass=TypedMeta):
                             raise IncompatibleYmlException
                     except IncompatibleYmlException:
                         print(f'ERROR: File {args.execute} is not a valid params.yml file')
-                # (2) register experiment to a repository
+                # (2) link experiment to a repository
                 else:
                     purpose = ''
                     if args.purpose is None and CONFIG.prompt:

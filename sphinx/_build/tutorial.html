@@ -476,7 +476,7 @@ xmen
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 usage: xmen [-h]
-            {experiments,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
+            {experiments,config,init,link,run,note,reset,unlink,clean,rm,relink,list}
             ...
 
 ||||||||||||||||||||||||||| WELCOME TO |||||||||||||||||||||||||||
@@ -512,11 +512,11 @@ usage: xmen [-h]
 |||||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION |||||||||||||
 
 positional arguments:
-  {experiments,config,init,register,run,note,reset,unlink,clean,rm,relink,list}
+  {experiments,config,init,link,run,note,reset,unlink,clean,rm,relink,list}
     experiments              Python interface
     config              View / edit the global configuration
     init                Initialise an experiment set
-    register            Register a set of experiments
+    link            Register a set of experiments
     run                 Run experiments matching glob in experiment set that have not yetbeen run.
     note                add notes to an experiment
     reset               Reset an experiment to registered status
@@ -708,14 +708,14 @@ b: World # b: str=World ~ the second argument
 </div>
 <div class="section" id="5.-Register-experiments">
 <h3>5. Register experiments<a class="headerlink" href="#5.-Register-experiments" title="Permalink to this headline">¶</a></h3>
-<p>After this experiments are registered to the experiment set using the <code class="docutils literal notranslate"><span class="pre">xment</span> <span class="pre">register</span></code> command:</p>
+<p>After this experiments are registered to the experiment set using the <code class="docutils literal notranslate"><span class="pre">xment</span> <span class="pre">link</span></code> command:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
 <span></span>%%bash
-xmen register -u <span class="s2">&quot;{a: Hello | Bye, b: World | Planet}&quot;</span>
+xmen link -u <span class="s2">&quot;{a: Hello | Bye, b: World | Planet}&quot;</span>
 </pre></div>
 </div>
 </div>
@@ -1526,7 +1526,7 @@ a: Hello
 b: Planet
 </pre></div></div>
 </div>
-<p>It is now possible to initialise, register and run experiments using the xmen command line tool in a similar way to before.</p>
+<p>It is now possible to initialise, link and run experiments using the xmen command line tool in a similar way to before.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
@@ -1554,7 +1554,7 @@ Experiment root created at /Users/robweston/tmp/xmen/bash
 </div>
 <div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
 <span></span>%%bash
-xmen register -u <span class="s2">&quot;{a: Hello | Bye, b: World| Planet}&quot;</span>
+xmen link -u <span class="s2">&quot;{a: Hello | Bye, b: World| Planet}&quot;</span>
 </pre></div>
 </div>
 </div>

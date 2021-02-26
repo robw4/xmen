@@ -387,7 +387,7 @@ file else <code class="docutils literal notranslate"><span class="pre">'register
 
 <dl class="method">
 <dt id="xmen.experiment.Experiment.register">
-<code class="sig-name descname">register</code><span class="sig-paren">(</span><em class="sig-param">root</em>, <em class="sig-param">name</em>, <em class="sig-param">purpose=''</em>, <em class="sig-param">force=True</em>, <em class="sig-param">same_names=100</em>, <em class="sig-param">generate_script=False</em>, <em class="sig-param">restart=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/xmen/experiment.html#Experiment.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmen.experiment.Experiment.register" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">link</code><span class="sig-paren">(</span><em class="sig-param">root</em>, <em class="sig-param">name</em>, <em class="sig-param">purpose=''</em>, <em class="sig-param">force=True</em>, <em class="sig-param">same_names=100</em>, <em class="sig-param">generate_script=False</em>, <em class="sig-param">restart=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/xmen/experiment.html#Experiment.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmen.experiment.Experiment.register" title="Permalink to this definition">¶</a></dt>
 <dd><p>Register an experiment to an experiment directory. Its status will be updated to <code class="docutils literal notranslate"><span class="pre">registered</span></code>. If an
 experiment called <code class="docutils literal notranslate"><span class="pre">name</span></code> exists in <code class="docutils literal notranslate"><span class="pre">root</span></code> and <code class="docutils literal notranslate"><span class="pre">force==True</span></code> then name will be appended with an int
 (eg. <code class="docutils literal notranslate"><span class="pre">{name}_0</span></code>) until a unique name is found in <code class="docutils literal notranslate"><span class="pre">root</span></code>. If <code class="docutils literal notranslate"><span class="pre">force==False</span></code> a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be raised.</p>
@@ -825,8 +825,8 @@ call signature).</p>
 <span class="n">m</span> <span class="o">=</span> <span class="n">Monitor</span><span class="p">(</span><span class="n">hooks</span><span class="o">=</span><span class="p">[</span><span class="n">messenger</span><span class="p">])</span>
 <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
 <span class="n">ex1</span><span class="p">,</span> <span class="n">ex2</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(),</span> <span class="n">Experiment</span><span class="p">()</span>
-<span class="n">ex1</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex1&#39;</span><span class="p">)</span>
-<span class="n">ex2</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex2&#39;</span><span class="p">)</span>
+<span class="n">ex1</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex1&#39;</span><span class="p">)</span>
+<span class="n">ex2</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex2&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">m</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">40</span><span class="p">)):</span>
     <span class="n">y1</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="n">y2</span> <span class="o">+=</span> <span class="mi">2</span>
@@ -847,7 +847,7 @@ call signature).</p>
 <span class="kn">from</span> <span class="nn">xmen.monitor</span> <span class="k">import</span> <span class="n">Monitor</span>
 
 <span class="n">ex</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
-<span class="n">ex</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex&#39;</span><span class="p">)</span>
+<span class="n">ex</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex&#39;</span><span class="p">)</span>
 <span class="n">m</span> <span class="o">=</span> <span class="n">Monitor</span><span class="p">(</span>
     <span class="n">hooks</span><span class="o">=</span><span class="p">[</span>
         <span class="n">XmenMessenger</span><span class="p">(</span><span class="s1">&#39;^y$|^i$-&gt;^ex$@10s&#39;</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="n">leader</span><span class="o">=</span><span class="s1">&#39;^y$&#39;</span><span class="p">)])</span>
@@ -877,7 +877,7 @@ call signature).</p>
 <span class="kn">from</span> <span class="nn">xmen.monitor</span> <span class="k">import</span> <span class="n">Monitor</span>
 
 <span class="n">ex</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
-<span class="n">ex</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex&#39;</span><span class="p">)</span>
+<span class="n">ex</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex&#39;</span><span class="p">)</span>
 <span class="n">m</span> <span class="o">=</span> <span class="n">Monitor</span><span class="p">(</span>
     <span class="n">hooks</span><span class="o">=</span><span class="p">[</span>
         <span class="n">XmenMessenger</span><span class="p">(</span><span class="s1">&#39;z-&gt;^ex$@10s&#39;</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="n">leader</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)])</span>
@@ -907,7 +907,7 @@ call signature).</p>
 <span class="kn">from</span> <span class="nn">xmen.monitor</span> <span class="k">import</span> <span class="n">Monitor</span>
 
 <span class="n">ex</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
-<span class="n">ex</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex&#39;</span><span class="p">)</span>
+<span class="n">ex</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex&#39;</span><span class="p">)</span>
 <span class="n">m</span> <span class="o">=</span> <span class="n">Monitor</span><span class="p">(</span>
     <span class="n">hooks</span><span class="o">=</span><span class="p">[</span>
         <span class="n">XmenMessenger</span><span class="p">(</span><span class="s1">&#39;z-&gt;^ex$@10s&#39;</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="n">leader</span><span class="o">=</span><span class="s1">&#39;z_y&#39;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">prepend</span><span class="o">=</span><span class="kc">True</span><span class="p">)])</span>
@@ -1400,7 +1400,7 @@ following:</p>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">register(string_pattern)</span></code>:</dt><dd><p>Register a number of experiments overriding parameters based on the particular <code class="docutils literal notranslate"><span class="pre">string_pattern</span></code></p>
+<dt><code class="docutils literal notranslate"><span class="pre">link(string_pattern)</span></code>:</dt><dd><p>Register a number of experiments overriding parameters based on the particular <code class="docutils literal notranslate"><span class="pre">string_pattern</span></code></p>
 </dd>
 </dl>
 </li>
@@ -1429,7 +1429,7 @@ following:</p>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">experiment_manager</span> <span class="o">=</span> <span class="n">ExperimentManager</span><span class="p">(</span><span class="n">ROOT_PATH</span><span class="p">)</span>   <span class="c1"># Create experiment set in ROOT_PATH</span>
 <span class="n">experiment_manager</span><span class="o">.</span><span class="n">initialise</span><span class="p">(</span><span class="n">PATH_TO_SCRIPT</span><span class="p">,</span> <span class="n">PATH_TO_DEFAULTS</span><span class="p">)</span>
-<span class="n">experiment_manager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;parama: 1, paramb: [x, y]&#39;</span><span class="p">)</span>      <span class="c1"># Register a set of experiments</span>
+<span class="n">experiment_manager</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="s1">&#39;parama: 1, paramb: [x, y]&#39;</span><span class="p">)</span>      <span class="c1"># Register a set of experiments</span>
 <span class="n">experiment_manger</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="s1">&#39;parama_1__paramb_y&#39;</span><span class="p">)</span>                <span class="c1"># Remove an experiment</span>
 <span class="n">experiment_manager</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>                                    <span class="c1"># Get rid of any experiments no longer managed</span>
 <span class="n">experiment_run</span><span class="p">(</span><span class="s1">&#39;parama:1__paramb:x&#39;</span><span class="p">,</span> <span class="n">sh</span><span class="p">)</span>                      <span class="c1"># Run an experiment</span>
@@ -1543,7 +1543,7 @@ directory.</p></li>
 
 <dl class="method">
 <dt id="xmen.manager.ExperimentManager.register">
-<code class="sig-name descname">register</code><span class="sig-paren">(</span><em class="sig-param">name=None</em>, <em class="sig-param">string_params=None</em>, <em class="sig-param">purpose=''</em>, <em class="sig-param">header=None</em>, <em class="sig-param">shell='/bin/bash'</em>, <em class="sig-param">repeats=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/xmen/manager.html#ExperimentManager.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmen.manager.ExperimentManager.register" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">link</code><span class="sig-paren">(</span><em class="sig-param">name=None</em>, <em class="sig-param">string_params=None</em>, <em class="sig-param">purpose=''</em>, <em class="sig-param">header=None</em>, <em class="sig-param">shell='/bin/bash'</em>, <em class="sig-param">repeats=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/xmen/manager.html#ExperimentManager.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmen.manager.ExperimentManager.register" title="Permalink to this definition">¶</a></dt>
 <dd><p>Register a set of experiments with the experiment manager.</p>
 <p>Experiments are created by passing a yaml dictionary string of parameters to overload in the <code class="docutils literal notranslate"><span class="pre">params.yml</span></code>
 file. The special symbol <code class="docutils literal notranslate"><span class="pre">'|'</span></code> can be thought of as an or operator. When encountered each of the parameters
@@ -1571,7 +1571,7 @@ parameters <code class="docutils literal notranslate"><span class="pre">p1</span
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This function is currently only able to register list or dictionary parameters at the first level.
+<p>This function is currently only able to link list or dictionary parameters at the first level.
 <code class="docutils literal notranslate"><span class="pre">{a:</span> <span class="pre">{a:</span> <span class="pre">1..</span> <span class="pre">b:</span> <span class="pre">2.}</span> <span class="pre">|</span> <span class="pre">{a:</span> <span class="pre">2..</span> <span class="pre">b:</span> <span class="pre">2.}}</span></code> works creating two experiments with over-ridden dicts in each case
 but <code class="docutils literal notranslate"><span class="pre">{a:</span> <span class="pre">{a:</span> <span class="pre">1.</span> <span class="pre">|</span> <span class="pre">2.,</span>&#160; <span class="pre">b:2.}}</span></code> will fail.</p>
 <p>The type of each override is inferred from the type contained in the defaults.yml file (ints will be cast
