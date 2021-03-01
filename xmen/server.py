@@ -57,6 +57,7 @@ class GetExperiments(NamedTuple, Request):
     password: str
     roots: str
     status: str
+    max_n: int = None
     request: str = GET_EXPERIMENTS
 
     def __repr__(self): return f'{self.__class__.__name__}<user={self.user}, root={self.roots}, status={self.status}>'

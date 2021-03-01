@@ -445,8 +445,8 @@ list_parser.add_argument(
     '--pattern',
     type=str,
     help='List experiments which match pattern.',
-    default=[''],
-    nargs='*')
+    default=None,
+    nargs='?')
 list_parser.add_argument(
     '-n', '--type_match',
     type=str,
@@ -502,7 +502,7 @@ list_parser.add_argument(
 list_parser.add_argument(
     '-S', '--status_filter',
     nargs="?",
-    default=".*",
+    default="[^(delteted)]",
     help="Consider only experiments matching specified host")
 list_parser.add_argument(
     '-f', '--filters',
@@ -530,6 +530,7 @@ list_parser.add_argument(
 list_parser.add_argument('--max_width', default=60, help='The maximum width of an individual collumn. '
                                                          'If None then will print for ever', type=int)
 list_parser.add_argument('--max_rows', default=None, help='Display tables with this number of rows.', type=int)
+list_parser.add_argument('--max_n', default=40, help='Display tables with this number of rows.', type=int)
 list_parser.add_argument('--csv', action='store_true', help='Display the table as csv.', default=None)
 list_parser.add_argument('-i', '--interval', type=float, default=None, const=1., nargs='?',
                          help='If set then the table will be updated every this number of seconds')
@@ -557,11 +558,12 @@ def _list(stdscr, args):
     pd.set_option('display.max_columns', 1000)
     pd.set_option('display.max_colwidth', args.max_width)
     pd.set_option('display.max_rows', args.max_rows)
-    if len(args.pattern) > 1:
-        print(f'ERROR: Only one pattern may be passed but got {args.pattern}')
-    pattern = os.path.abspath(os.path.expanduser(args.pattern[0]))
-    if pattern == '':
-        pattern = os.path.join(os.getcwd())
+
+    if args.pattern is None:
+        pattern = os.getcwd()
+    else:
+        pattern = os.path.abspath(os.path.expanduser(args.pattern[0]))
+
     params = os.path.join(pattern, 'params.yml')
     if os.path.exists(params):
         # print the params.yml file to screen
@@ -574,9 +576,10 @@ def _list(stdscr, args):
             for l in lines:
                 print(l)
     else:
-        if args.pattern[0] == '':
+        if args.pattern is None:
             pattern += '.*'
             args.pattern = pattern
+        # print(args.pattern)
         # global_exp_manager = GlobalExperimentManager()
         config = Config()
         paths = config.filter(pattern)
@@ -594,8 +597,7 @@ def _list(stdscr, args):
         else:
             from xmen.utils import load_params
             from xmen.list import interactive_display
-            interactive_display(stdscr, params, args)
-
+            interactive_display(stdscr, args)
 
 list_parser.set_defaults(func=_curses_list)
 

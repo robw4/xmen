@@ -106,7 +106,8 @@ class ServerTask(object):
                     response = self.delete_experiment(
                         request.user, request.password, request.root)
                 elif isinstance(request, GetExperiments):
-                    response = self.get_experiments(request.user, request.password, request.roots, request.status)
+                    response = self.get_experiments(request.user, request.password, request.roots,
+                                                    request.status, request.max_n)
                 # manage response
                 if isinstance(response, Failed):
                     print(response.msg)
@@ -276,7 +277,7 @@ class ServerTask(object):
             database.close()
             return response
 
-    def get_experiments(self, user, password, roots, status):
+    def get_experiments(self, user, password, roots, status, max_n):
         import json
         response = self.validate_password(user, password)
         if isinstance(response, Failed):
@@ -286,10 +287,13 @@ class ServerTask(object):
         response = None
         try:
             cursor.execute(
-                f"SELECT root, data FROM experiments WHERE root REGEXP '{roots}' "
-                f"AND status REGEXP '{status}' AND user = '{user}'")
+                f"SELECT root, data, updated FROM experiments WHERE root REGEXP '{roots}' "
+                f"AND status REGEXP '{status}' AND user = '{user}' "
+                f"ORDER BY updated")
             matches = cursor.fetchall()
-            matches = [[m[0], json.loads(m[1])] for m in matches]
+            if max_n is None:
+                max_n = -len(matches) - 1
+            matches = [[m[0], json.loads(m[1])] for m in matches[-max_n:]]
             response = GotExperiments(user, matches, roots, status)
         except Exception as m:
             cursor.close()
