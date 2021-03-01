@@ -105,7 +105,7 @@ def dic_from_yml(*, string=None, path=None):
             with open(path, 'r') as file:
                 params = yaml.load(file)
         else:
-            ruamel.yaml.round_trip_load(string, preserve_quotes=True)
+            params = ruamel.yaml.round_trip_load(string, preserve_quotes=True)
     except:
         raise IncompatibleYmlException
     return params

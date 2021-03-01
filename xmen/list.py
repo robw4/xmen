@@ -343,8 +343,8 @@ def interactive_display(stdscr, results, args):
         q_request = mp.Queue(maxsize=1)
         q_response = mp.Queue(maxsize=1)
         update_requests(args, q_request)
-        # p = multiprocessing.Process(target=send_request_task, args=(q_request, q_response))
-        # p.start()
+        p = multiprocessing.Process(target=send_request_task, args=(q_request, q_response))
+        p.start()
 
         last_time = time.time()
         while True:
@@ -352,9 +352,9 @@ def interactive_display(stdscr, results, args):
                 if time.time() - last_time > args.interval:
                     # request experiment updates
                     try:
-                        send_request_task(q_request, q_response)
+                        # raise queue.Empty
                         response = q_response.get(False)
-                        paths, results = zip(*[(k, v) for k, v in response['matches'].items()])
+                        paths, results = zip(*response['matches'])
                         visualise_results(results, args)
                         update_requests(args, q_request)
                     except queue.Empty:
@@ -462,33 +462,33 @@ def interactive_display(stdscr, results, args):
         raise KeyboardInterrupt
 
 
-def send_request_task(requests_q, q_response):
+def send_request_task(q_requests, q_response):
+    import socket
     from xmen.config import Config
     import time
     config = Config()
     context = ssl.create_default_context()
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as ss:
-        with context.wrap_socket(ss, server_hostname=config.server_host) as s:
-            s.connect((config.server_host, config.server_port))
-            while True:
-                try:
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as ss:
+            with context.wrap_socket(ss, server_hostname=config.server_host) as s:
+                s.connect((config.server_host, config.server_port))
+                while True:
                     try:
-                        request = requests_q.get(False)
+                        try:
+                            request = q_requests.get(False)
+                        except queue.Empty:
+                            pass
+
+                        if not request:
+                            break
+                        send(request, s)
+                        response = receive(s)
+                        q_response.put(response)
+                        time.sleep(0.1)
                     except queue.Empty:
                         pass
-
-                    if not request:
-                        break
-
-                    send(request, s)
-                    response = receive(s)
-
-                    if q_response is not None:
-                        q_response.put(response)
-
-                    time.sleep(0.1)
-                except queue.Empty:
-                    pass
+    except (socket.error, IOError):
+        pass
 
 
 # def updates_client(q, args):

@@ -110,6 +110,7 @@ class ServerTask(object):
                 # manage response
                 if isinstance(response, Failed):
                     print(response.msg)
+
                 send(response, conn)
         except Exception as m:
             print(f'An error occured:')
@@ -261,8 +262,9 @@ class ServerTask(object):
         try:
             cursor.execute(
                 f"UPDATE experiments "
-                f"SET status = '{DELETED}', updated = CURRENT_TIMESTAMP() "
-                f"WHERE root = '{root}' AND user = '{user}'")
+                f"SET status = '{DELETED}', updated = CURRENT_TIMESTAMP(), "
+                f"data = JSON_SET(data, '$._status', '{DELETED}')"
+                f"WHERE root = '{root}' AND user = '{user}' ")
             database.commit()
             response = ExperimentDeleted(user, root)
         except Exception as m:
@@ -287,7 +289,7 @@ class ServerTask(object):
                 f"SELECT root, data FROM experiments WHERE root REGEXP '{roots}' "
                 f"AND status REGEXP '{status}' AND user = '{user}'")
             matches = cursor.fetchall()
-            matches = {m[0]: json.loads(m[1]) for m in matches}
+            matches = [[m[0], json.loads(m[1])] for m in matches]
             response = GotExperiments(user, matches, roots, status)
         except Exception as m:
             cursor.close()
@@ -312,7 +314,9 @@ class ServerTask(object):
             else:
                 # assume experiments previously at the same root have since been deleted
                 cursor.execute(
-                    f"UPDATE experiments SET status = '{DELETED}' WHERE root = '{root}'")
+                    f"UPDATE experiments SET status = '{DELETED}', "
+                    f"data = JSON_SET(data, '$._status', '{DELETED}') "
+                    f"WHERE root = '{root}'")
                 cursor.execute(
                     f"INSERT INTO experiments(root, status, user, data) VALUES('{root}','{status}','{user}','{data}')"
                 )

@@ -38,6 +38,33 @@ def connected(method):
     return _fn
 
 
+def _send_from_queue(q, q_out):
+    config = Config()
+    sock = get_socket()
+    context = get_context()
+    with sock as ss:
+        with context.wrap_socket(ss, server_hostname=config.server_host) as s:
+            s.connect((config.server_host, config.server_port))
+            request = q.get()
+            if request is None:
+                return
+            send(request, s)
+            msg = receive(s)
+            q_out.put(decode_response(msg))
+
+
+def _send(request):
+    config = Config()
+    sock = get_socket()
+    context = get_context()
+    with sock as ss:
+        with context.wrap_socket(ss, server_hostname=config.server_host) as s:
+            s.connect((config.server_host, config.server_port))
+            send(request, s)
+            msg = receive(s)
+            return decode_response(msg)
+
+
 class Config(object):
     def __init__(self):
         self.server_host = 'xmen.rob-otics.co.uk'
@@ -55,16 +82,31 @@ class Config(object):
         self.linked = []
         # private attributes (also saved)
         self._dir = os.path.join(os.getenv('HOME'), '.xmen')
-        self._path = os.path.join(self._dir, 'xmenrc.yml')
+        self._path = os.path.join(self._dir, 'xmen.yml')
 
         if not os.path.exists(self._path):
             # make the directory if it doesnt exist
             if not os.path.exists(self._dir):
                 os.makedirs(self._dir)
+
             # save the config file
             self.to_yml()
         else:
             self.from_yml()
+
+    def _from_old(self):
+        if os.path.exists(os.path.join(self._dir, 'config.yml')):
+            config = GlobalExperimentManager()
+            self.python_experiments = config.python_experiments
+            self.prompt = config.prompt_for_message
+            self.save_conda = config.save_conda
+            self.redirect_stdout = config.redirect_stdout
+            self.requeue = config.requeue
+            self.header = config.header
+            self.link(config.paths())
+            return True
+        else:
+            return False
 
     def __enter__(self):
         return self
@@ -88,19 +130,13 @@ class Config(object):
         if k[0] != '_' and k not in ['linked', 'python_experiments']}
 
     @connected
-    def send_request(self, requests):
+    def send_request(self, requests, max_processes=8):
+        max_processes = min(len(requests), max_processes)
         if not isinstance(requests, (list, tuple)):
             requests = [requests]
-        responses = []
-        with self.socket as ss:
-            with self.context.wrap_socket(ss, server_hostname=self.server_host) as s:
-                s.connect((self.server_host, self.server_port))
-                for r in requests:
-                    send(r, s)
-                    msg = receive(s)
-                    responses += [decode_response(msg)]
-        if len(responses) == 1:
-            responses = responses[0]
+        from multiprocessing.pool import Pool
+        with Pool(processes=max_processes) as pool:
+            responses = pool.map(_send, requests)
         return responses
 
     @connected
@@ -153,7 +189,7 @@ class Config(object):
                 if msg:
                     msg = ruamel.yaml.load(msg, Loader=ruamel.yaml.SafeLoader)
                     self.__dict__[k] = msg
-        msg = input('Would you like to link a user account with the xmen server? [Y/N]')
+        msg = input('Would you like to link a user account with the xmen server? [y | n]')
         if msg == 'Y':
             user = input('user:')
             from getpass import getpass
@@ -162,6 +198,13 @@ class Config(object):
                 self.register_user(user, password)
             except FailedException as m:
                 print(f'ERROR: {m.msg}')
+
+        # Finally
+        if os.path.exists(os.path.join(self._dir, 'config.yml')):
+            msg = input('Found old config. Would you like to move experiments across to the new configuration? [y | n]')
+            if msg == 'y':
+                self._from_old()
+
         self.to_yml()
 
     def to_yml(self):
@@ -752,6 +795,10 @@ class GlobalExperimentManager(object):
         paths = []
         for root in experiments:
             em = xmen.manager.ExperimentManager(root)
+            try:
+                em.check_initialised()
+            except xmen.manager.InvalidExperimentRoot as m:
+                continue
             if types_match is not None:
                 if em.type not in types_match:
                     continue

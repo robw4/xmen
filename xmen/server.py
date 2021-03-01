@@ -4,7 +4,9 @@ import queue
 from xmen.utils import dic_to_yaml
 
 import struct
-from typing import NamedTuple, Optional, Dict
+import ssl
+
+from typing import NamedTuple, Optional, Dict, List
 
 
 class FailedException(Exception):
@@ -217,7 +219,7 @@ class PasswordNotValid(NamedTuple):
 
 class GotExperiments(NamedTuple):
     user: str
-    matches: list
+    matches: List
     roots: str
     status: str
     response: str = GOT_EXPERIMENTS
@@ -230,6 +232,21 @@ class GotExperiments(NamedTuple):
 # -------------------------------------
 # Helper functions
 # -------------------------------------
+# def send(dic, conn, typ='safe'):
+#     """Send dictionary to connected socket"""
+#     from xmen.utils import commented_to_py
+#     import json
+#     if hasattr(dic, '_asdict'):
+#         dic = dic._asdict()
+#     # data is always sent without comments
+#     dic = {k: commented_to_py(v) for k, v in dic.items()}
+#     from io import StringIO
+#     string = StringIO()
+#     json.dump(dic, string)
+#     buffer = string.getvalue().encode()
+#     conn.sendall(struct.pack('Q', len(buffer)) + buffer)
+
+
 def send(dic, conn, typ='safe'):
     """Send dictionary to connected socket"""
     from xmen.utils import commented_to_py
@@ -243,31 +260,50 @@ def send(dic, conn, typ='safe'):
     conn.sendall(struct.pack('Q', len(buffer)) + buffer)
 
 
+def receive_message(conn, length):
+    buffer = b''
+    while len(buffer) != length:
+        _ = conn.recv(length)
+        if _ == '':
+            break
+        buffer += _
+    assert len(buffer) == length
+    return buffer
+
+
 def receive(conn, timeout=None, typ='safe', default_flow_style=False):
     """Receive dictionary over connected socket"""
     import ruamel.yaml
     from xmen.utils import IncompatibleYmlException
     from xmen.utils import commented_to_py
     # conn.settimeout()
-    length = conn.recv(struct.calcsize('Q'))
+    length = receive_message(conn, struct.calcsize('Q'))
     dic = None
     if length:
         length, = struct.unpack('Q', length)
-        buffer = conn.recv(length).decode()
-        print(buffer)
+        buffer = receive_message(conn, length)
         yaml = ruamel.yaml.YAML(typ=typ)
         yaml.default_flow_style = default_flow_style
         try:
-            with open('/home/robw/tmp/tlog.txt', 'w') as f:
-                f.write(buffer)
             dic = yaml.load(buffer)
         except Exception as m:
-            print(m)
             raise IncompatibleYmlException
         dic = {k: commented_to_py(v) for k, v in dic.items()}
     return dic
 
-import ssl
+
+#
+# def receive(conn, timeout=None, typ='safe', default_flow_style=False):
+#     """Receive dictionary over connected socket"""
+#     import json
+#     length = receive_message(conn, struct.calcsize('Q'))
+#     # length =
+#     dic = None
+#     if length:
+#         length, = struct.unpack('Q', length)
+#         buffer = receive_message(conn, length)
+#         dic = json.loads(buffer)
+#     return dic
 
 
 def setup_socket():
