@@ -75,15 +75,22 @@ def flatten(d, parent_key='', sep='_'):
     return dict(items)
 
 
+def dic_to_json(dic):
+    import json
+    return json.dumps(dic)
+
+
 # Convert to yaml
 def dic_to_yaml(dic, typ='rt', default_flow_style=False):
     """Convert dictionary to a yaml string (``dic`` can also be a CommentedMap)"""
     import ruamel.yaml
     from ruamel.yaml import StringIO
-    yaml = ruamel.yaml.YAML(typ=typ)
-    yaml.default_flow_style = default_flow_style
+
     stream = StringIO()
-    yaml.dump(dic, stream)
+    ruamel.yaml.round_trip_dump(dic, stream)
+    # yaml = ruamel.yaml.YAML(typ=typ)
+    # yaml.default_flow_style = default_flow_style
+    # yaml.dump(dic, stream)
     string = stream.getvalue()
     return string
 
@@ -98,7 +105,7 @@ def dic_from_yml(*, string=None, path=None):
             with open(path, 'r') as file:
                 params = yaml.load(file)
         else:
-            params = yaml.load(string)
+            ruamel.yaml.round_trip_load(string, preserve_quotes=True)
     except:
         raise IncompatibleYmlException
     return params

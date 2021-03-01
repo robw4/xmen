@@ -343,8 +343,8 @@ def interactive_display(stdscr, results, args):
         q_request = mp.Queue(maxsize=1)
         q_response = mp.Queue(maxsize=1)
         update_requests(args, q_request)
-        p = multiprocessing.Process(target=send_request_task, args=(q_request, q_response))
-        p.start()
+        # p = multiprocessing.Process(target=send_request_task, args=(q_request, q_response))
+        # p.start()
 
         last_time = time.time()
         while True:
@@ -352,6 +352,7 @@ def interactive_display(stdscr, results, args):
                 if time.time() - last_time > args.interval:
                     # request experiment updates
                     try:
+                        send_request_task(q_request, q_response)
                         response = q_response.get(False)
                         paths, results = zip(*[(k, v) for k, v in response['matches'].items()])
                         visualise_results(results, args)
@@ -364,7 +365,6 @@ def interactive_display(stdscr, results, args):
 
             import sys
             import time
-
 
             if stdscr is not None:
                 stdscr.timeout(1000)
@@ -538,3 +538,23 @@ def send_request_task(requests_q, q_response):
 #             with open('/data/engs-robot-learning/kebl4674/usup/tmp/xmen-error-log.txt', 'w') as f:
 #                 f.write(m)
 #             break
+
+if __name__ == '__main__':
+    from xmen.config import Config
+
+    config = Config()
+
+    def update_requests(requests_q):
+        request = GetExperiments(
+            config.user,
+            config.password,
+            f"{'robw'}@{'mini-server'}:{'/home/robw/tmp/list.*'}",
+            '.*')
+        requests_q.put(request)
+
+    import multiprocessing as mp
+    q_request = mp.Queue(maxsize=1)
+    q_response = mp.Queue(maxsize=1)
+    update_requests(q_request)
+
+    send_request_task(q_request, q_response)

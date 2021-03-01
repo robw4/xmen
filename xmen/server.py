@@ -235,14 +235,16 @@ def send(dic, conn, typ='safe'):
     from xmen.utils import commented_to_py
     if hasattr(dic, '_asdict'):
         dic = dic._asdict()
+    # data is always sent without comments
     dic = {k: commented_to_py(v) for k, v in dic.items()}
     string = dic_to_yaml(dic, typ, True)
+
     buffer = string.encode()
     conn.sendall(struct.pack('Q', len(buffer)) + buffer)
 
 
-def receive(conn, timeout=None, typ='safe'):
-    """Receive yaml dictionary over connected socket"""
+def receive(conn, timeout=None, typ='safe', default_flow_style=False):
+    """Receive dictionary over connected socket"""
     import ruamel.yaml
     from xmen.utils import IncompatibleYmlException
     from xmen.utils import commented_to_py
@@ -252,12 +254,15 @@ def receive(conn, timeout=None, typ='safe'):
     if length:
         length, = struct.unpack('Q', length)
         buffer = conn.recv(length).decode()
+        print(buffer)
         yaml = ruamel.yaml.YAML(typ=typ)
+        yaml.default_flow_style = default_flow_style
         try:
             with open('/home/robw/tmp/tlog.txt', 'w') as f:
                 f.write(buffer)
             dic = yaml.load(buffer)
-        except:
+        except Exception as m:
+            print(m)
             raise IncompatibleYmlException
         dic = {k: commented_to_py(v) for k, v in dic.items()}
     return dic
