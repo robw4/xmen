@@ -38,20 +38,6 @@ def connected(method):
     return _fn
 
 
-def _send_from_queue(q, q_out):
-    config = Config()
-    sock = get_socket()
-    context = get_context()
-    with sock as ss:
-        with context.wrap_socket(ss, server_hostname=config.server_host) as s:
-            s.connect((config.server_host, config.server_port))
-            request = q.get()
-            if request is None:
-                return
-            send(request, s)
-            msg = receive(s)
-            q_out.put(decode_response(msg))
-
 
 def _send(request):
     config = Config()
@@ -190,7 +176,7 @@ class Config(object):
                     msg = ruamel.yaml.load(msg, Loader=ruamel.yaml.SafeLoader)
                     self.__dict__[k] = msg
         msg = input('Would you like to link a user account with the xmen server? [y | n]')
-        if msg == 'Y':
+        if msg == 'y':
             user = input('user:')
             from getpass import getpass
             password = getpass()
@@ -198,13 +184,11 @@ class Config(object):
                 self.register_user(user, password)
             except FailedException as m:
                 print(f'ERROR: {m.msg}')
-
-        # Finally
+        # finally
         if os.path.exists(os.path.join(self._dir, 'config.yml')):
             msg = input('Found old config. Would you like to move experiments across to the new configuration? [y | n]')
             if msg == 'y':
                 self._from_old()
-
         self.to_yml()
 
     def to_yml(self):
