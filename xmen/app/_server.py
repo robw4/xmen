@@ -144,7 +144,7 @@ class ServerTask(object):
     def database(self):
         return MySQLConnection(**self.config)
 
-    def validate_password(self, user, password):
+    def validate_password(self, user, password, hard=True):
         from xmen.server import PasswordNotValid, PasswordValid, UserDoesNotExist
         database = self.database()
         cursor = database.cursor()
@@ -156,7 +156,9 @@ class ServerTask(object):
                 response = PasswordValid(user) if valid else PasswordNotValid(user)
             else:
                 response = UserDoesNotExist(user)
-            if isinstance(response, (UserDoesNotExist, PasswordNotValid)):
+
+            failed = (PasswordNotValid, UserDoesNotExist) if hard else PasswordNotValid
+            if isinstance(response, failed):
                 response = Failed(response.msg)
                 print(response.msg)
         finally:
@@ -207,10 +209,14 @@ class ServerTask(object):
         cursor = database.cursor()
         response = None
         try:
-            response = self.validate_password(user, password)
-            if isinstance(response, (PasswordValid, PasswordNotValid)):
-                pass
-            elif isinstance(response, UserDoesNotExist):
+            if len(user) < 3:
+                response = Failed(msg='username must be at least 3 characters long')
+            elif len(password) < 6:
+                response = Failed(msg='password must be at least 7 characters long')
+            else:
+                response = self.validate_password(user, password, hard=False)
+
+            if isinstance(response, UserDoesNotExist):
                 print('user does not exist')
                 hashed, salt = self.hash_password(password)
                 cursor.execute(
@@ -239,8 +245,10 @@ class ServerTask(object):
             # assume experiments previously at the same root have since been deleted]
             cursor.execute(
                 f"UPDATE experiments "
-                f"SET status = '{status}', data = '{data}', updated = CURRENT_TIMESTAMP() "
-                f"WHERE root = '{root}' AND status != '{DELETED}' AND user = '{user}'")
+                f"SET status = %s, data = %s, updated = CURRENT_TIMESTAMP() "
+                f"WHERE root = %s AND status != '{DELETED}' AND user = %s",
+                (status, data, root, user)
+            )
             database.commit()
             response = ExperimentUpdated(user, root)
         except Exception as m:
@@ -264,7 +272,7 @@ class ServerTask(object):
             cursor.execute(
                 f"UPDATE experiments "
                 f"SET status = '{DELETED}', updated = CURRENT_TIMESTAMP(), "
-                f"data = JSON_SET(data, '$._status', '{DELETED}')"
+                # f"data = JSON_SET(data, '$._status', '{DELETED}')"
                 f"WHERE root = '{root}' AND user = '{user}' ")
             database.commit()
             response = ExperimentDeleted(user, root)
@@ -277,8 +285,17 @@ class ServerTask(object):
             database.close()
             return response
 
+    def update_data(self, experiments, **updates):
+        """Update data field in each experiment"""
+        from xmen.utils import dic_from_yml, dic_to_yaml
+        out = []
+        for e in experiments:
+            dic = dic_from_yml(string=e)
+            dic.update(updates)
+            out.append(dic_to_yaml(e))
+        return out
+
     def get_experiments(self, user, password, roots, status, max_n):
-        import json
         response = self.validate_password(user, password)
         if isinstance(response, Failed):
             return response
@@ -287,13 +304,13 @@ class ServerTask(object):
         response = None
         try:
             cursor.execute(
-                f"SELECT root, data, updated FROM experiments WHERE root REGEXP '{roots}' "
+                f"SELECT root, data, updated, status FROM experiments WHERE root REGEXP '{roots}' "
                 f"AND status REGEXP '{status}' AND user = '{user}' "
                 f"ORDER BY updated")
             matches = cursor.fetchall()
             if max_n is None:
                 max_n = -len(matches) - 1
-            matches = [[m[0], json.loads(m[1])] for m in matches[-max_n:]]
+            matches = matches[-max_n:]
             response = GotExperiments(user, matches, roots, status)
         except Exception as m:
             cursor.close()
@@ -309,6 +326,7 @@ class ServerTask(object):
         database = self.database()
         cursor = database.cursor()
         response = None
+        print(data)
         try:
             response = self.validate_password(user, password)
             if isinstance(response, PasswordNotValid):
@@ -317,12 +335,13 @@ class ServerTask(object):
                 return response
             else:
                 # assume experiments previously at the same root have since been deleted
+                # TODO: set status of deleted experiments in params.yml file
                 cursor.execute(
-                    f"UPDATE experiments SET status = '{DELETED}', "
-                    f"data = JSON_SET(data, '$._status', '{DELETED}') "
+                    f"UPDATE experiments SET status = '{DELETED}'"
                     f"WHERE root = '{root}'")
                 cursor.execute(
-                    f"INSERT INTO experiments(root, status, user, data) VALUES('{root}','{status}','{user}','{data}')"
+                    f"INSERT INTO experiments(root, status, user, data) VALUES(%s, %s,%s,%s)",
+                    (root, status, user, data)
                 )
                 database.commit()
                 response = ExperimentRegistered(user, root)

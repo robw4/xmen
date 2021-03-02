@@ -38,7 +38,6 @@ def connected(method):
     return _fn
 
 
-
 def _send(request):
     config = Config()
     sock = get_socket()
@@ -74,7 +73,6 @@ class Config(object):
             # make the directory if it doesnt exist
             if not os.path.exists(self._dir):
                 os.makedirs(self._dir)
-
             # save the config file
             self.to_yml()
         else:
@@ -171,22 +169,25 @@ class Config(object):
         import ruamel.yaml
         for k, v in self.settings.items():
             if k not in ['password', 'user']:
-                msg = input(f'{k} (default={v}):')
+                msg = input(f'{k} (default={v}): ')
                 if msg:
                     msg = ruamel.yaml.load(msg, Loader=ruamel.yaml.SafeLoader)
                     self.__dict__[k] = msg
-        msg = input('Would you like to link a user account with the xmen server? [y | n]')
+        msg = input('Would you like to link a user account with the xmen server? [y | n]: ')
         if msg == 'y':
-            user = input('user:')
+            user = input('user: ')
+            user = user.strip()
             from getpass import getpass
             password = getpass()
+            password = password.strip()
             try:
                 self.register_user(user, password)
             except FailedException as m:
                 print(f'ERROR: {m.msg}')
         # finally
         if os.path.exists(os.path.join(self._dir, 'config.yml')):
-            msg = input('Found old config. Would you like to move experiments across to the new configuration? [y | n]')
+            msg = input('Found old config. Would you like to move '
+                        'experiments across to the new configuration? [y | n]: ')
             if msg == 'y':
                 self._from_old()
         self.to_yml()
@@ -211,9 +212,8 @@ class Config(object):
         """Load parameters for an experiment. If ``experiment_name`` is True then experiment_path is assumed to be a
         path to the folder of the experiment else it is assumed to be a path to the ``params.yml`` file."""
         import ruamel.yaml
-        with open(os.path.join(root, 'params.yml'), 'r') as params_yml:
-            params = ruamel.yaml.load(params_yml, ruamel.yaml.RoundTripLoader)
-        return params
+        from xmen.utils import dic_from_yml
+        return dic_from_yml(path=os.path.join(root, 'params.yml'))
 
     def link(self, roots):
         """Register an experiment root with the global configuration"""
@@ -223,16 +223,15 @@ class Config(object):
         self.linked += [r for r in roots]
         requests = []
         for root in roots:
-            dic = self.load_params(root)
-            data = json.dumps(dic)
+            data = open(os.path.join(root, 'params.yml'), 'r').read()
+            status = self.load_params(root)['_status']
             requests.append(
                 LinkExperiment(
                     user=self.user,
                     password=self.password,
                     root=f'{self.local_user}@{self.local_host}:{root}',
                     data=data,
-                    status=dic['_status'])
-            )
+                    status=status))
         self.send_request(requests)
         # finally update self
         self.to_yml()

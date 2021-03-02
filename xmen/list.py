@@ -369,6 +369,13 @@ def interactive_display(stdscr, args):
             args.max_n)
         requests_q.put(request)
 
+    def extract_results(response):
+        roots, data, updated, status = zip(*response['matches'])
+        results = [dic_from_yml(string=d) for d in data]
+        for d, s in zip(results, status):
+            d['_status'] = s
+        return results, roots
+
     # visualise_results(results, roots, args)
     rows, cols = stdscr.getmaxyx()
 
@@ -377,6 +384,7 @@ def interactive_display(stdscr, args):
 
     try:
         from xmen.server import send_request_task
+        from xmen.utils import dic_from_yml
         import time
         import multiprocessing
         q_request = mp.Queue(maxsize=1)
@@ -387,8 +395,8 @@ def interactive_display(stdscr, args):
 
         # get inial results view
         response = q_response.get()
-        roots, results = zip(*response['matches'])
-        visualise_results(results, roots, args)
+        results, roots = extract_results(response)
+
         update_requests(args, q_request)
 
         last_time = time.time()
@@ -399,7 +407,7 @@ def interactive_display(stdscr, args):
                     try:
                         # raise queue.Empty
                         response = q_response.get(False)
-                        roots, results = zip(*response['matches'])
+                        results, roots = extract_results(response)
                         visualise_results(results, roots, args)
                         update_requests(args, q_request)
                     except queue.Empty:

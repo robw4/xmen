@@ -336,13 +336,9 @@ class Experiment(object, metaclass=TypedMeta):
             return map
 
     def to_update_request(self):
-        from xmen.utils import dic_from_yml
         from xmen.config import Config
-        import json
         config = Config()
-        string = self.as_yaml()
-        dic = dic_from_yml(string=string)
-        data = json.dumps(dic)
+        data = self.as_yaml()
         root = f'{config.local_user}@{config.local_host}:{self.root}'
         return UpdateExperiment(
             user=config.user, password=config.password,
