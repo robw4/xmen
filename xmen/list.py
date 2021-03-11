@@ -3,34 +3,33 @@ import re
 from xmen.server import *
 
 DEFAULTS = {
-    'display_date': "timestamps|created",
-    'display_purpose': "purpose",
-    "display_version": "version",
-    'display_status': r'status$',
-    'display_messages': 'messages_(last$|e$|s$|wall$|end$|next$|.*step$|.*load$)',
-    'display_meta': 'meta_(root$|name$|mac$|host$|user$|home$)'
+    'display_date': "_timestamps|_created",
+    'display_purpose': "_purpose",
+    "display_version": "_version",
+    'display_status': r'_status$',
+    'display_messages': '_messages_(last$|e$|s$|wall$|end$|next$|.*step$|.*load$)',
+    'display_meta': '_meta_(root$|name$|mac$|host$|user$|home$)'
 }
 
 
 def args_to_filters(args):
     """Convert args namespace object to filters."""
-    # set default to display all parameters if -p flag is set without an argument
-    if len(args.filter_params) == 0:
-        args.filter_params = [".*"]
+    # if len(args.filter_params) == 0:
+    #     args.filter_params = [".*"]
     filters = [
-        'root',
-        'name',
+        '_root',
+        '_name',
         args.display_date,
         args.display_status,
         args.display_purpose,
         args.display_messages,
         args.display_version,
         args.display_meta,
-        *args.filters,
-        *args.filter_params]
+        *args.filters]
+        # *args.filter_params]
     filters = [split_operators(f) for f in filters]
-    n = len(filters) - len(args.filter_params)
-    filters = [[(r'(?!_)(' if i > n - 1 else '_(') + f[0] + ')', *f[1:]] for i, f in enumerate(filters)]
+    # n = len(filters) - len(args.filter_params)
+    # filters = [[(r'(?!_)(' if i > n - 1 else '(') + f[0] + ')', *f[1:]] for i, f in enumerate(filters)]
     return filters
 
 
@@ -44,7 +43,7 @@ def split_operators(m):
         raise RuntimeError(f'invalid parameter config passed {m}')
 
 
-def visualise_params(dics, roots=None, *filters):
+def visualise_params(dics, *filters, roots=None):
     """Visualise a set of experiment parameters as a data-frame.
 
     Args:
@@ -91,13 +90,15 @@ def visualise_params(dics, roots=None, *filters):
     display_keys += [k for k in keys if k not in display_keys]
     df = df.filter(items=display_keys)
     # update the names of the table
-    names = {
-        '_root': 'root', '_name': 'name', '_status': 'status', '_purpose': 'purpose', '_host': 'host',
-        '_user': 'user',
-        '_created': 'created', '_messages_': '', '_version_': '', '_meta_': '', '_timestamps_': ''}
+    from collections import OrderedDict
+    names = [
+        ('_root', 'root'), ('_name', 'name'), ('_status', 'status'), ('_purpose', 'purpose'), ('_host', 'host'),
+        ('_user', 'user'),
+        ('_created', 'created'), ('_messages_', ''), ('_version_', ''),
+        ('_meta_', ''), ('_timestamps_', ''), ('_meta_slurm_', 's')]
     updates = {}
     for k in keys:
-        for s, n in names.items():
+        for s, n in names:
             if k.startswith(s):
                 updates[k] = k.replace(s, n)
     df = df.rename(updates, axis='columns')
@@ -115,6 +116,12 @@ def visualise_params(dics, roots=None, *filters):
         df.update({'root': roots})
     else:
         prefix = ''
+
+    get_rid = {'sid', 'sMCS_label', 'sQOS', 'sTimeMin', 'sEligibleTime', 'sAccrueTime', 'sDeadline',
+               'sSecsPreSuspend', 'sJobName', 'sSuspendTime', 'sLastSchedEval', 'sReqNodeList', 'sExcNodeList',
+               'sNice'}
+    df = df.filter(items=[k for k in df.columns if k not in get_rid])
+
     return df, prefix
 
 
@@ -195,7 +202,9 @@ def interactive_display(stdscr, args):
 
     global root
     global default_pattern
+    global expand_helps
     default_pattern = None
+    expand_helps = False
 
     stdscr.refresh()
 
@@ -228,7 +237,7 @@ def interactive_display(stdscr, args):
     window = curses.newwin(rows, cols, 0, 0)
 
     def generate_table(results, roots, args):
-        data_frame, root = visualise_params(results, roots, *args_to_filters(args))
+        data_frame, root = visualise_params(results, *args_to_filters(args), roots=roots)
         return data_frame, root
 
     def toggle(args, name, update=None):
@@ -257,16 +266,6 @@ def interactive_display(stdscr, args):
                 setattr(args, name, [args.filter_params[0]])
             else:
                 setattr(args, name, getattr(args, name) + [update])
-        elif name == 'user_filter':
-            if update == '':
-                setattr(args, name, config.local_user)
-            else:
-                setattr(args, name, update)
-        elif name == 'host_filter':
-            if update == '':
-                setattr(args, name, config.local_host)
-            else:
-                setattr(args, name, update)
         elif name == 'pattern':
             if default_pattern is None:
                 default_patten = args.pattern
@@ -317,16 +316,14 @@ def interactive_display(stdscr, args):
                 pad.addstr(i, 1, ''.join(componenents))
 
     def display_table(table, root):
-        global pad, window
+        import curses
+        global pad, window, expand_helps
         rows, cols = stdscr.getmaxyx()
         window.erase()
 
         from tabulate import tabulate
         x = tabulate(table, headers='keys', tablefmt='github').split('\n')
         x.pop(1)
-
-        # if rows is None:
-        import curses
         window.addstr(0, 0, f'Experiments matching {args.pattern}')
         window.addstr(1, 0, f'Roots relative to {root}')
         if last_time is not None:
@@ -335,11 +332,22 @@ def interactive_display(stdscr, args):
             window.addstr(2, 0, f'No running experiments', curses.A_DIM)
 
         import curses
-        window.addstr(rows - 4, 0, 'Toggles:', curses.A_BOLD)
-        window.addstr(rows - 3, 0, f'date = {args.display_date} meta = {args.display_meta}, messages={args.display_messages}, version={args.display_version}, host={args.user_filter}@{args.host_filter}')
-        window.addstr(rows - 2, 0, f'param_filters={args.filter_params}, filters={args.filters}')
-        window.addstr(rows - 1, 0,
-                      'd=date s=status v=version p=purpose m=specify-message t=monitor-message M=meta G=gpu S=slurm c=cpu n=network V=virtual w=swap o=os D=disks')
+        legend_pad = curses.newpad(5, 500)
+
+        if expand_helps:
+            legend_pad.addstr(0, 0, 'Help: (press o to minimise)', curses.A_BOLD)
+            legend_pad.addstr(1, 0, 'd=date s=status v=version p=purpose t=monitor-message M=meta ')
+            legend_pad.addstr(2, 0, 'G=gp S=slurm c=cpu n=network V=virtual w=swap O=os D=disks')
+            legend_pad.addstr(3, 0, 'H={user}@{host}{pattern} (filter by location)')
+            legend_pad.addstr(4, 0, 'f=filter experiments (press f for more info)')
+        else:
+            legend_pad.addstr(0, 0, 'Toggles:', curses.A_BOLD)
+            legend_pad.addstr(1, 0,
+                              f'date = {args.display_date} meta = {args.display_meta}, messages={args.display_messages}, version={args.display_version}')
+            legend_pad.addstr(2, 0, f'pattern = {args.pattern}')
+            legend_pad.addstr(3, 0, f'filters={args.filters}')
+            legend_pad.addstr(4, 0, f'(for more help press o)')
+
         if len(x) > rows - 6:
             filler = '|'.join([' ...'.ljust(len(xx), ' ') if xx else ''
                                  for ii, xx in enumerate(x[1].split('|'))])
@@ -354,6 +362,8 @@ def interactive_display(stdscr, args):
         #         pad.addch(y, x, ord('a') + (x * x + y * y) % 26)
         window.noutrefresh()
         pad.noutrefresh(pos_x, 0, 3, 0, rows - 5, cols - 1)
+        legend_pad.noutrefresh(0, 0, rows - 5, 0, rows - 1, cols - 1)
+
         curses.doupdate()
 
     def visualise_results(results, roots, args):
@@ -364,7 +374,7 @@ def interactive_display(stdscr, args):
         request = GetExperiments(
             config.user,
             config.password,
-            f"{args.user_filter}@{args.host_filter}:{args.pattern}",
+            args.pattern,
             args.status_filter,
             args.max_n)
         requests_q.put(request)
@@ -436,38 +446,40 @@ def interactive_display(stdscr, args):
                     toggle(args, 'display_purpose')
                     visualise_results(results, roots, args)
                 if c == ord('M'):
-                    toggle(args, 'display_meta', 'meta_(slurm_job|root$|name$|mac$|host$|user$|home$)')
+                    toggle(args, 'display_meta', '_meta_(slurm_job|root$|name$|mac$|host$|user$|home$)')
                     visualise_results(results, roots, args)
                 if c == ord('V'):
-                    toggle(args, 'display_meta', 'meta_virtual.*')
+                    toggle(args, 'display_meta', '_meta_virtual.*')
                     visualise_results(results, roots, args)
                 if c == ord('w'):
-                    toggle(args, 'display_meta', 'meta_swap.*')
+                    toggle(args, 'display_meta', '_meta_swap.*')
                     visualise_results(results, roots, args)
-                if c == ord('o'):
-                    toggle(args, 'display_meta', 'meta_system.*')
+                if c == ord('O'):
+                    toggle(args, 'display_meta', '_meta_system.*')
                     visualise_results(results, roots, args)
                 if c == ord('D'):
-                    toggle(args, 'display_meta', 'meta_disks.*')
+                    toggle(args, 'display_meta', '_meta_disks.*')
                     visualise_results(results, roots, args)
                 if c == ord('c'):
-                    toggle(args, 'display_meta', 'meta_cpu.*')
+                    toggle(args, 'display_meta', '_meta_cpu.*')
                     visualise_results(results, roots, args)
                 if c == ord('G'):
-                    toggle(args, 'display_meta', 'meta_gpu.*')
+                    toggle(args, 'display_meta', '_meta_gpu.*')
                     visualise_results(results, roots, args)
                 if c == ord('n'):
-                    toggle(args, 'display_meta', 'meta_network.*')
+                    toggle(args, 'display_meta', '_meta_network.*')
                     visualise_results(results, roots, args)
                 if c == ord('S'):
-                    args = toggle(args, 'display_meta', 'meta_slurm.*')
+                    args = toggle(args, 'display_meta', '_meta_slurm.*')
                     visualise_results(results, roots, args)
                 if c == ord('t'):
-                    args = toggle(args, 'display_messages', 'messages_(last|e$|s$|wall$|end$|next$|m_step$|m_load$)')
+                    args = toggle(args, 'display_messages', '_messages_(last|e$|s$|wall$|end$|next$|m_step$|m_load$)')
                     visualise_results(results, roots, args)
                 if c == ord('f'):
                     from curses.textpad import Textbox, rectangle
                     rows, cols = stdscr.getmaxyx()
+                    window.move(rows - 5, 0)
+                    window.clrtoeol()
                     window.move(rows - 4, 0)
                     window.clrtoeol()
                     window.move(rows - 3, 0)
@@ -477,42 +489,47 @@ def interactive_display(stdscr, args):
                     window.move(rows - 1, 0)
                     window.clrtoeol()
                     window.addstr(rows - 3, 0,
-                                  'Filter:',
+                                  'Search:',
                                   curses.A_BOLD)
+                    window.addstr(rows-2, 0, 'eg. none to reset, ".*", "_messages_.*", "_meta_.*", _version_git_branch=="xmen", a==10, loss<2.0')
                     # window.addstr(rows - 2, 0,'')
                     # window.addstr(rows - 1, 0, ' ' * (cols - 1))
                     window.refresh()
                     win = curses.newwin(1, cols, rows - 1, 0)
                     text_box = Textbox(win)
                     text = text_box.edit(validate=manage_backspace).strip()
+                    if text and not text.startswith('_'):
+                        text = '(?!_)' + text
                     args = toggle(args, 'filters', text)
                     visualise_results(results, roots, args)
-                if c == ord('P'):
-                    from curses.textpad import Textbox, rectangle
-                    rows, cols = stdscr.getmaxyx()
-                    window.move(rows - 4, 0)
-                    window.clrtoeol()
-                    window.move(rows - 3, 0)
-                    window.clrtoeol()
-                    window.move(rows - 2, 0)
-                    window.clrtoeol()
-                    window.move(rows - 1, 0)
-                    window.clrtoeol()
-                    window.addstr(rows - 3, 0,
-                                  'Filter params:',
-                                  curses.A_BOLD)
-                    # window.addstr(rows - 2, 0,
-                    #               '(ctrl-h=backspace, "" to delete filter)')
-                    # window.addstr(rows - 1, 0, ' ' * (cols - 1))
-                    window.refresh()
-                    win = curses.newwin(1, cols, rows - 1, 0)
-                    text_box = Textbox(win)
-                    text = text_box.edit(validate=manage_backspace).strip()
-                    toggle(args, 'filter_params', text)
-                    visualise_results(results, roots, args)
+                # if c == ord('P'):
+                #     from curses.textpad import Textbox, rectangle
+                #     rows, cols = stdscr.getmaxyx()
+                #     window.move(rows - 4, 0)
+                #     window.clrtoeol()
+                #     window.move(rows - 3, 0)
+                #     window.clrtoeol()
+                #     window.move(rows - 2, 0)
+                #     window.clrtoeol()
+                #     window.move(rows - 1, 0)
+                #     window.clrtoeol()
+                #     window.addstr(rows - 3, 0,
+                #                   'Filter params:',
+                #                   curses.A_BOLD)
+                #     # window.addstr(rows - 2, 0,
+                #     #               '(ctrl-h=backspace, "" to delete filter)')
+                #     # window.addstr(rows - 1, 0, ' ' * (cols - 1))
+                #     window.refresh()
+                #     win = curses.newwin(1, cols, rows - 1, 0)
+                #     text_box = Textbox(win)
+                #     text = text_box.edit(validate=manage_backspace).strip()
+                #     toggle(args, 'filter_params', text)
+                #     visualise_results(results, roots, args)
                 if c == ord('H'):
                     from curses.textpad import Textbox, rectangle
                     rows, cols = stdscr.getmaxyx()
+                    window.move(rows - 5, 0)
+                    window.clrtoeol()
                     window.move(rows - 4, 0)
                     window.clrtoeol()
                     window.move(rows - 3, 0)
@@ -531,16 +548,13 @@ def interactive_display(stdscr, args):
                     win = curses.newwin(1, cols, rows - 1, 0)
                     text_box = Textbox(win)
                     text = text_box.edit(validate=manage_backspace).strip()
-                    if text == '':
-                        pattern, host, user = '', '', ''
-                    else:
-                        user, host_pattern = text.split('@')
-                        host, pattern = host_pattern.split(':')
-                    if all([user, host, pattern]):
-                        toggle(args, 'pattern', pattern)
-                        toggle(args, 'host_filter', host)
-                        toggle(args, 'user_filter', user)
-                        visualise_results(results, roots, args)
+                    toggle(args, 'pattern', text.strip())
+                    update_requests(args, q_request)
+                    visualise_results(results, roots, args)
+                if c == ord("o"):
+                    expand_helps = not expand_helps
+                    visualise_results(results, roots, args)
+
     except KeyboardInterrupt:
         p.terminate()
         raise KeyboardInterrupt

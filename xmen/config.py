@@ -15,6 +15,8 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
+"""Helper classes and functions for managing the global configuration and setting / interfacing with the xmen server."""
+
 import os
 import re
 
@@ -30,10 +32,18 @@ def connected(method):
     @wraps(method)
     def _fn(self, *args, **kwargs):
         if self.user is None:
-            print('Warning: no account is currently registered with the xmen server. '
+            print('WARNING: no account is currently registered with the xmen server. '
                   'To configure run xmen config --register_user')
             return
         else:
+            with self.socket as ss:
+                with self.context.wrap_socket(ss, server_hostname=self.server_host) as s:
+                    try:
+                        s.connect((self.server_host, self.server_port))
+                    except (OSError, socket.error):
+                        print(f'ERROR: cannot connect to server {self.server_host}, {self.server_port}')
+                        return
+            # user registered and server is online
             return method(self, *args, **kwargs)
     return _fn
 
@@ -51,7 +61,11 @@ def _send(request):
 
 
 class Config(object):
+    """Manage global settings and server configuration alongside interfacing with the server."""
     def __init__(self):
+        """Instantiate the global configuration. If an ``xmen.yml`` config file exists in
+        ``os.path.join(os.getenv('HOME'), '.xmen')`` then it is loaded else a ``xmen.yml`` will be generated
+        from defaults."""
         self.server_host = 'xmen.rob-otics.co.uk'
         self.server_port = 8000
         self.user = None
@@ -78,7 +92,8 @@ class Config(object):
         else:
             self.from_yml()
 
-    def _from_old(self):
+    def _migrate(self):
+        """Generate a xmen.yml file from the now depreciated config.yml file."""
         if os.path.exists(os.path.join(self._dir, 'config.yml')):
             config = GlobalExperimentManager()
             self.python_experiments = config.python_experiments
@@ -105,26 +120,37 @@ class Config(object):
     def context(self): return get_context()
 
     def filter(self, pattern=None):
+        """Return a list of experiments currently linked with global configuration which match regex ``pattern``"""
         if pattern is not None:
             return [f for f in self.linked if re.match(pattern, f)]
 
     @property
-    def settings(self): return {
+    def settings(self):
+        """Return a dictionary of all the attributes considered as configurable settings/"""
+        return {
         k: v for k, v in self.__dict__.items()
         if k[0] != '_' and k not in ['linked', 'python_experiments']}
 
     @connected
-    def send_request(self, requests, max_processes=8):
-        max_processes = min(len(requests), max_processes)
-        if not isinstance(requests, (list, tuple)):
-            requests = [requests]
-        from multiprocessing.pool import Pool
-        with Pool(processes=max_processes) as pool:
-            responses = pool.map(_send, requests)
-        return responses
+    def send_request(self, requests, workers=8):
+        """Send a list of requests to the server. When ``workers`` is greater than 0 the requests will be pooled
+        between ``workers``"""
+        if requests:
+            if not isinstance(requests, (list, tuple)):
+                requests = [requests]
+            if workers:
+                workers = min(len(requests), workers)
+                from multiprocessing.pool import Pool
+                with Pool(processes=workers) as pool:
+                    responses = pool.map(_send, requests)
+                return responses
+            else:
+                for r in requests:
+                    _send(r)
 
     @connected
     def change_password(self, password, new_password):
+        """Attempt to change the password for the current user."""
         with self.socket as ss:
             with self.context.wrap_socket(ss, server_hostname=self.server_host) as s:
                 s.connect((self.server_host, self.server_port))
@@ -165,6 +191,7 @@ class Config(object):
                     raise NotImplementedError
 
     def setup(self):
+        """Run an interactive setup for user configuration."""
         print('Config Setup...')
         import ruamel.yaml
         for k, v in self.settings.items():
@@ -189,11 +216,11 @@ class Config(object):
             msg = input('Found old config. Would you like to move '
                         'experiments across to the new configuration? [y | n]: ')
             if msg == 'y':
-                self._from_old()
+                self._migrate()
         self.to_yml()
 
     def to_yml(self):
-        """Save the current config to an ``config.yaml``"""
+        """Save the current config"""
         from ruamel.yaml import YAML
         yaml = YAML()
         yaml.default_flow_style = False
@@ -201,7 +228,7 @@ class Config(object):
             yaml.dump(self.__dict__, file)
 
     def from_yml(self):
-        """Load the experiment config from a ``config.yml`` file"""
+        """Load the current config"""
         with open(self._path, 'r') as file:
             import ruamel.yaml
             params = ruamel.yaml.load(file, Loader=ruamel.yaml.SafeLoader)
@@ -209,15 +236,12 @@ class Config(object):
                 self.__dict__[k] = v
 
     def load_params(self, root):
-        """Load parameters for an experiment. If ``experiment_name`` is True then experiment_path is assumed to be a
-        path to the folder of the experiment else it is assumed to be a path to the ``params.yml`` file."""
-        import ruamel.yaml
+        """Load parameters for an experiment"""
         from xmen.utils import dic_from_yml
         return dic_from_yml(path=os.path.join(root, 'params.yml'))
 
     def link(self, roots):
-        """Register an experiment root with the global configuration"""
-        import json
+        """Link an experiment instance with the global configuration"""
         if not isinstance(roots, (list, tuple)):
             roots = [roots]
         self.linked += [r for r in roots]
@@ -233,6 +257,25 @@ class Config(object):
                     data=data,
                     status=status))
         self.send_request(requests)
+        # finally update self
+        self.to_yml()
+
+    def sync(self, roots=None, max_processes=8):
+        """Synchronise linked experiments with the server"""
+        requests = []
+        if roots is None:
+            roots = self.linked
+        for root in roots:
+            data = open(os.path.join(root, 'params.yml'), 'r').read()
+            status = self.load_params(root)['_status']
+            requests.append(
+                UpdateExperiment(
+                    user=self.user,
+                    password=self.password,
+                    root=f'{self.local_user}@{self.local_host}:{root}',
+                    data=data,
+                    status=status))
+        self.send_request(requests, max_processes)
         # finally update self
         self.to_yml()
 
@@ -283,6 +326,7 @@ class Config(object):
         print('Experiments were successfully removed from the global configuration')
 
     def __repr__(self):
+        """Pretty print the current configuration"""
         from xmen.utils import recursive_print_lines
         return '\n'.join(recursive_print_lines(self.__dict__))
 
@@ -295,7 +339,7 @@ class NoMatchException(Exception):
 
 
 class GlobalExperimentManager(object):
-    """A helper class used to manage global configuration of the Experiment Manager"""
+    """DEPRECIATED A helper class used to manage global configuration of the Experiment Manager"""
     def __init__(self):
         import socket
         self.python_experiments = {}   # A dictionary of paths to experiments modules compatible with the experiment api

@@ -272,7 +272,6 @@ class ServerTask(object):
             cursor.execute(
                 f"UPDATE experiments "
                 f"SET status = '{DELETED}', updated = CURRENT_TIMESTAMP(), "
-                # f"data = JSON_SET(data, '$._status', '{DELETED}')"
                 f"WHERE root = '{root}' AND user = '{user}' ")
             database.commit()
             response = ExperimentDeleted(user, root)
@@ -326,7 +325,6 @@ class ServerTask(object):
         database = self.database()
         cursor = database.cursor()
         response = None
-        print(data)
         try:
             response = self.validate_password(user, password)
             if isinstance(response, PasswordNotValid):
@@ -335,7 +333,6 @@ class ServerTask(object):
                 return response
             else:
                 # assume experiments previously at the same root have since been deleted
-                # TODO: set status of deleted experiments in params.yml file
                 cursor.execute(
                     f"UPDATE experiments SET status = '{DELETED}'"
                     f"WHERE root = '{root}'")

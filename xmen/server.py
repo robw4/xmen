@@ -1,4 +1,4 @@
-"""xmen server helper functions"""
+"""xmen server api"""
 import socket
 import queue
 from xmen.utils import dic_to_yaml
@@ -233,21 +233,6 @@ class GotExperiments(NamedTuple):
 # -------------------------------------
 # Helper functions
 # -------------------------------------
-# def send(dic, conn, typ='safe'):
-#     """Send dictionary to connected socket"""
-#     from xmen.utils import commented_to_py
-#     import json
-#     if hasattr(dic, '_asdict'):
-#         dic = dic._asdict()
-#     # data is always sent without comments
-#     dic = {k: commented_to_py(v) for k, v in dic.items()}
-#     from io import StringIO
-#     string = StringIO()
-#     json.dump(dic, string)
-#     buffer = string.getvalue().encode()
-#     conn.sendall(struct.pack('Q', len(buffer)) + buffer)
-
-
 def send(dic, conn, typ='safe'):
     """Send dictionary to connected socket"""
     from xmen.utils import commented_to_py
@@ -272,12 +257,11 @@ def receive_message(conn, length):
     return buffer
 
 
-def receive(conn, timeout=None, typ='safe', default_flow_style=False):
+def receive(conn, typ='safe', default_flow_style=False):
     """Receive dictionary over connected socket"""
     import ruamel.yaml
     from xmen.utils import IncompatibleYmlException
     from xmen.utils import commented_to_py
-    # conn.settimeout()
     length = receive_message(conn, struct.calcsize('Q'))
     dic = None
     if length:
@@ -291,20 +275,6 @@ def receive(conn, timeout=None, typ='safe', default_flow_style=False):
             raise IncompatibleYmlException
         dic = {k: commented_to_py(v) for k, v in dic.items()}
     return dic
-
-
-#
-# def receive(conn, timeout=None, typ='safe', default_flow_style=False):
-#     """Receive dictionary over connected socket"""
-#     import json
-#     length = receive_message(conn, struct.calcsize('Q'))
-#     # length =
-#     dic = None
-#     if length:
-#         length, = struct.unpack('Q', length)
-#         buffer = receive_message(conn, length)
-#         dic = json.loads(buffer)
-#     return dic
 
 
 def setup_socket():
@@ -333,19 +303,28 @@ def send_request(request):
 
 def send_request_task(q_request, q_response=None):
     from xmen.config import Config
+    import time
     config = Config()
     context = ssl.create_default_context()
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as ss:
         with context.wrap_socket(ss, server_hostname=config.server_host) as s:
-            s.connect((config.server_host, config.server_port))
             while True:
                 try:
-                    request = q_request.get()
-                    if not request:
-                        break
-                    send(request, s)
-                    response = receive(s)
-                    if q_response is not None:
-                        q_response.put(response)
-                except queue.Empty:
-                    pass
+                    s.connect((config.server_host, config.server_port))
+                    print('Connected to ', (config.server_host, config.server_port))
+                except (socket.error, OSError):
+                    time.sleep(1.)
+                else:
+                    while True:
+                        try:
+                            request = q_request.get()
+                            if not request:
+                                return
+                            send(request, s)
+                            response = receive(s)
+                            if q_response is not None:
+                                q_response.put(response)
+                        except queue.Empty:
+                            pass
+                        except KeyboardInterrupt:
+                            pass

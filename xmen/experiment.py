@@ -20,10 +20,9 @@
 import sys
 import datetime
 import argparse
-from typing import Optional, Dict, List, Any
+from typing import Any
 import signal
 
-from argparse import RawTextHelpFormatter
 from xmen.utils import get_meta, get_version, commented_to_py, DATE_FORMAT, recursive_print_lines, TypedMeta, MultiOut
 from xmen.server import *
 import os
@@ -159,6 +158,7 @@ class Experiment(object, metaclass=TypedMeta):
             # queues
             self._queues = []
             self._processes = []
+            self._manager = None
 
         else:
             raise ValueError("Either both or neither of name and root can be set")
@@ -362,7 +362,12 @@ class Experiment(object, metaclass=TypedMeta):
         if self.status not in [DEFAULT, REGISTERED]:
             request = self.to_update_request()
             for q in self._queues:
-                q.put(request)
+                # get one item and put one item
+                try:
+                    q.get(block=False)
+                except queue.Empty:
+                    pass
+                q.put(request, block=False)
 
         elif self.status == REGISTERED:
             # the global configuration will link with the server...
@@ -528,20 +533,19 @@ class Experiment(object, metaclass=TypedMeta):
         self._update_status(RUNNING)
         self._timestamps['start'] = get_time()
 
-        # start messaging threads
-        # from queue import Queue
-        from multiprocessing import Process, Queue
-        self._queues += [Queue(maxsize=10)]
+        # setup queues for interfacing with remote server
+        from multiprocessing import Process, Manager
+        self._manager = Manager()
+        self._queues += [self._manager.Queue(maxsize=2)]
         p = Process(target=send_request_task, args=(self._queues[0], ))
         p.start()
-        # self._queues += [q]
         self._processes += [p]
-        # finally save the experiment
+
+        # finally save the experiment (and send UpdateExperiment request to server)
         self._save()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        import time
         self._timestamps['stopped'] = get_time()
         if exc_type is None:
             self._update_status(FINISHED)
@@ -568,18 +572,11 @@ class Experiment(object, metaclass=TypedMeta):
                 self._update_status(ERROR)
 
         # stop running processes
-        [q.put(None) for q in self._queues]
-        start = time.time()
-        while time.time() - start <= 5.:
-            if not any(p.is_alive() for p in self._processes):
-                # All the processes are done, break now.
-                break
-            time.sleep(.1)  # just to avoid hogging the CPU
-        else:
-            # We only enter this if we didn't 'break' above.
-            for p in self._processes:
-                p.terminate()
-                p.join()
+        for q in self._queues:
+            q.put(None)
+        for p in self._processes:
+            p.join()
+        print('Processes terminated')
 
     def __call__(self, *args, **kwargs):
         """Used to run experiment. Upon entering the experiment status is updated to ``'running`` before ``args`` and
@@ -750,7 +747,7 @@ class Experiment(object, metaclass=TypedMeta):
         sys.stderr = MultiOut(sys.__stderr__, open(os.path.join(self.directory, 'out.txt'), 'a+'))
 
     def __repr__(self):
-        """Provides a useful help message for the experiment"""
+        """Pretty print the experiment"""
         # params = {k: v for k, v in self.__dict__.items() if k[0] != '_'}
         helps = self.get_param_helps()
         base_params = {k[1:]: v for k, v in self.__dict__.items() if k in self._specials}

@@ -680,6 +680,7 @@ class ExperimentManager(object):
             P = self.load_params(p)
             P['_status'] = status
             self.save_params(P, P['_root'])
+        self._config.sync(experiments)
 
     def clean(self):
         """Remove directories no longer linked to the experiment manager"""
@@ -721,8 +722,23 @@ class ExperimentManager(object):
 
     def run(self, pattern, *flags):
         """Run all experiments that match the global pattern using the run command given by args."""
-        import subprocess
+        from subprocess import Popen
         options = set(flags)
+
+        def call(*popenargs, timeout=None, **kwargs):
+            with Popen(*popenargs, **kwargs) as p:
+                try:
+                    return p.wait(timeout=timeout)
+                except KeyboardInterrupt:
+                    p.terminate()
+                    p.wait()
+                    time.sleep(10.)
+                    raise
+                except:
+                    p.terminate()
+                    p.wait()
+                    raise
+
         experiments = [p for p in glob.glob(os.path.join(self.root, pattern)) if p in self.experiments]
         for p in experiments:
             P = self.load_params(p)
@@ -733,8 +749,7 @@ class ExperimentManager(object):
                         f'--job-name={P["_name"]}', f'--output={os.path.join(P["_root"], P["_name"], "slurm.out")}']
                 subprocess_args = args + [os.path.join(p, 'run.sh')]
                 print('\nRunning: {}'.format(" ".join(subprocess_args)))
-                subprocess.call(subprocess_args)
-                time.sleep(0.2)
+                call(subprocess_args)
 
     def unlink(self, pattern='*'):
         """Unlink all experiments matching pattern. Does not delete experiment folders simply deletes the experiment

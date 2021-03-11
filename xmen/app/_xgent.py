@@ -138,7 +138,10 @@ config_parser.add_argument('--enable_requeue', action='store_false',
 
 config_parser.add_argument('--change_password',  help='Change the password for the current user', default=None,
                            action='store_false')
-
+config_parser.add_argument('--sync', help='Synchronise experiments in the cwd with the remote server', default=None,
+                           action='store_false')
+config_parser.add_argument('--sync_all', help='Synchronise ALL experiments with the remote server', default=None,
+                           action='store_false')
 config_parser.add_argument('--update_meta', default=None, action='store_true',
                            help='Update meta information in each experiment (both defaults.yml and params.yml). '
                                 'WARNING: Overwrites information in the params.yml or defaults.yml')
@@ -203,6 +206,17 @@ def _config(args):
             print(config)
         if args.clean is not None:
             config.clean()
+        if args.sync is not None:
+            roots = config.filter(os.getcwd() + '.*')
+            print('Synchronising...')
+            for r in roots:
+                print(r)
+            config.sync(roots)
+        if args.sync_all is not None:
+            print('Synchronising...')
+            for r in config.linked:
+                print(r)
+            config.sync()
 
 
 config_parser.set_defaults(func=_config)
@@ -318,11 +332,13 @@ status_parser.add_argument('experiments', metavar='NAME', help='A unix glob givi
 status_parser.add_argument('-r', '--root', metavar='DIR', default='',
                            help='Path to the root experiment folder. If None then the current work directory will be '
                                 'used')
-
+status_parser.add_argument('-s', '--status', metavar='DIR', default='registered',
+                           help='Path to the root experiment folder. If None then the current work directory will be '
+                                'used')
 
 def _reset(args):
     experiment_manager = ExperimentManager(args.root)
-    experiment_manager.reset(args.experiments)
+    experiment_manager.reset(args.experiments, args.status)
 
 
 status_parser.set_defaults(func=_reset)
@@ -441,105 +457,95 @@ relink_parser.set_defaults(func=_relink)
 #######################################################################################################################
 config = Config()
 list_parser = subparsers.add_parser('list', help='list experiments to screen')
+# ---- Modes
+list_parser.add_argument('-i', '--interval', type=float, default=None, const=1., nargs='?',
+                         help='Run in interactive mode. If interval is passed then the table will be updated '
+                              'every n seconds (defaults to 1.).')
+list_parser.add_argument(
+    '-N', '--list',
+    action='store_true', default=None,
+    help="Display experiments in notebook mode")
+# --- FILTERS ---
 list_parser.add_argument(
     '--pattern',
     type=str,
-    help='List experiments which match pattern.',
+    help='Display only experiments matching pattern. In normal or notebook mode will be just a simple regex. '
+         'In interactive mode it should be set as {user}@{host}:{pattern} where user, host and pattern can all '
+         'be regex.  Defaults to "{CWD}.*" where CWD is the current work directory.',
     default=None,
     nargs='?')
 list_parser.add_argument(
-    '-n', '--type_match',
-    type=str,
-    default=['^$'],
+    '-S', '--status_filter',
+    nargs="?",
+    default="[^(deleted)]",
+    help="Consider only experiments matching status_filter with the server (used only in interactive mode.)")
+
+list_parser.add_argument(
+    '-f', '--filters',
     nargs="*",
-    help="List only experiments with this type (class).")
+    default=['^$'],
+    help="Apply a filter to the experiments. Can be in the form '(?!_)a.*' or "
+         "'_version.*' to display all information matching regex. Can also be used to filter experiments eg. "
+         "a.*=='Hello', sleep<2.0 and _version_module=='xmen.*'. Predicates ==, <=, <, >, >=, != are all valid. "
+         "If mutlitple filters with predicates are passed then the results in the table will be combined as an OR "
+         "operation. An AND operation can be mimicked using De Morgans theorem. "
+         " Strict parameter regexes can be set using a negative look ahead of the form "
+         "(?!_) eg. (?!_).* for all parameters. "
+         "Special keys '_date.*', '_status.*', '_messages_.*', '_version_.*', '_meta.*', "
+         "'_purpose.*' are all available. Nested dictionaries are flattened eg. "
+         "'_version_git_commit'")
+# --- DISPLAY TOGGLES ---
 list_parser.add_argument(
     '-v', '--display_version',
     default=r'^$',
-    const='version',
+    const='_version',
     action='store_const',
     help="Display version information for each experiment")
-# list_parser.add_argument(
-#     '-H', '--display_host',
-#     default=r'^$',
-#     const=r'host|user',
-#     action='store_const',
-#     help="Display host and user information")
 list_parser.add_argument(
     '-P', '--display_purpose',
     default=r'^$',
-    const=r'purpose$',
+    const=r'_purpose$',
     action='store_const',
     help="Display purpose for each experiment")
 list_parser.add_argument(
     '-d', '--display_date',
     default=r'^$',
-    const="timestamps|created",
+    const="_timestamps|_created",
     action='store_const',
     help="Display created date for each experiment")
 list_parser.add_argument(
     '-s', '--display_status',
     default=r'^$',
-    const=r'status$',
+    const=r'_status$',
     action='store_const',
     help="Display status for each experiment")
 list_parser.add_argument(
     '-m', '--display_messages',
     action='store_const',
     default='^$',
-    const='messages_(last$|e$|s$|wall$|end$|next$|.*step$|.*load$)',
+    const='_messages_(last$|e$|s$|wall$|end$|next$|.*step$|.*load$)',
     help="Display messages for each experiment")
-list_parser.add_argument(
-    '-u', '--user_filter',
-    nargs="?",
-    default=config.local_user,
-    help="Consider only experiments matching specified user")
-list_parser.add_argument(
-    '-H', '--host_filter',
-    nargs="?",
-    default=config.local_host,
-    help="Consider only experiments matching specified host")
-list_parser.add_argument(
-    '-S', '--status_filter',
-    nargs="?",
-    default="[^(delteted)]",
-    help="Consider only experiments matching specified host")
-list_parser.add_argument(
-    '-f', '--filters',
-    nargs="*",
-    default=['^$'],
-    help="Apply a filter to the experiments")
-list_parser.add_argument(
-    '-p', '--filter_params',
-    default=['^$'],
-    nargs='*',
-    help='List all the experiments with parameters matching the passed filter')
 list_parser.add_argument(
     '-M', '--display_meta',
     action='store_const',
     default="^$",
-    const='meta_(root$|name$|mac$|host$|user$|home$)',
+    const='_meta_(root$|name$|mac$|host$|user$|home$)',
     help="Display meta information for each experiment. The regex "
          "'' gives basic meta information "
          "logged with every experiment. Other information is separated into groups including "
          "'network.*', 'gpu.*', 'cpu.*', 'system.*', 'virtual.*', 'swap.*'")
-list_parser.add_argument(
-    '-l', '--list',
-    action='store_true', default=None,
-    help="Display as list and not a table")
+# --- CONFIG ---
 list_parser.add_argument('--max_width', default=60, help='The maximum width of an individual collumn. '
                                                          'If None then will print for ever', type=int)
 list_parser.add_argument('--max_rows', default=None, help='Display tables with this number of rows.', type=int)
 list_parser.add_argument('--max_n', default=40, help='Display tables with this number of rows.', type=int)
 list_parser.add_argument('--csv', action='store_true', help='Display the table as csv.', default=None)
-list_parser.add_argument('-i', '--interval', type=float, default=None, const=1., nargs='?',
-                         help='If set then the table will be updated every this number of seconds')
 
 
 def _curses_list(args):
     from xmen.list import NotEnoughRows
-    import curses
     if args.interval is not None:
+        import curses
         try:
             args.param_match = "^$"
             curses.wrapper(_list, args)
@@ -576,25 +582,31 @@ def _list(stdscr, args):
             for l in lines:
                 print(l)
     else:
-        if args.pattern is None:
-            pattern += '.*'
-            args.pattern = pattern
         # print(args.pattern)
         # global_exp_manager = GlobalExperimentManager()
         config = Config()
         paths = config.filter(pattern)
         params = load_params(paths)
         if args.list:
+            if args.pattern is None:
+                pattern += '.*'
+                args.pattern = pattern
             from xmen.list import notebook_display, args_to_filters
-            args.filters += ['notes', 'created|timestamps', 'purpose', 'version']
+            args.filters += ['_notes', '_created|_timestamps', '_purpose', '_version']
             notebook_display(params, *args_to_filters(args))
         elif args.interval is None:
+            if args.pattern is None:
+                pattern += '.*'
+                args.pattern = pattern
             from xmen.utils import load_params
             from xmen.list import args_to_filters, visualise_params
             data_frame, root = visualise_params(params, *args_to_filters(args))
             print(f'Roots relative to {root}')
             print(data_frame)
         else:
+            if args.pattern is None:
+                pattern += '.*'
+                args.pattern = f'{config.local_user}@{config.local_host}:{pattern}'
             from xmen.utils import load_params
             from xmen.list import interactive_display
             interactive_display(stdscr, args)
