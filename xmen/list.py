@@ -106,16 +106,17 @@ def visualise_params(dics, *filters, roots=None):
     # shorten paths for visualisation
     import os
 
-    roots = [v["root"] for v in df.transpose().to_dict().values()]
-    hosts = set(v.split('@')[1] for v in roots if len(v.split('@')) > 1)
-    if len(hosts) == 1:
-        roots = [v["root"] for v in df.transpose().to_dict().values()]
-        prefix = os.path.dirname(os.path.commonprefix(roots))
-        if prefix != '/':
-            roots = [r[len(prefix) + 1:] for r in roots]
-        df.update({'root': roots})
-    else:
-        prefix = ''
+    prefix = ''
+    # roots = [v["root"] for v in df.transpose().to_dict().values()]
+    # hosts = set(v.split('@')[1] for v in roots if len(v.split('@')) > 1)
+    # if len(hosts) == 1:
+    #     roots = [v["root"] for v in df.transpose().to_dict().values()]
+    #     prefix = os.path.dirname(os.path.commonprefix(roots))
+    #     if prefix != '/':
+    #         roots = [r[len(prefix) + 1:] for r in roots]
+    #     df.update({'root': roots})
+    # else:
+    #     prefix = ''
 
     get_rid = {'sid', 'sMCS_label', 'sQOS', 'sTimeMin', 'sEligibleTime', 'sAccrueTime', 'sDeadline',
                'sSecsPreSuspend', 'sJobName', 'sSuspendTime', 'sLastSchedEval', 'sReqNodeList', 'sExcNodeList',
@@ -241,6 +242,7 @@ def interactive_display(stdscr, args):
         return data_frame, root
 
     def toggle(args, name, update=None):
+        global default_pattern
         val = getattr(args, name)
         if name == 'display_meta':
             if update in meta:
@@ -337,9 +339,9 @@ def interactive_display(stdscr, args):
         if expand_helps:
             legend_pad.addstr(0, 0, 'Help: (press o to minimise)', curses.A_BOLD)
             legend_pad.addstr(1, 0, 'd=date s=status v=version p=purpose t=monitor-message M=meta ')
-            legend_pad.addstr(2, 0, 'G=gp S=slurm c=cpu n=network V=virtual w=swap O=os D=disks')
-            legend_pad.addstr(3, 0, 'H={user}@{host}{pattern} (filter by location)')
-            legend_pad.addstr(4, 0, 'f=filter experiments (press f for more info)')
+            legend_pad.addstr(2, 0, 'G=gpu S=slurm c=cpu n=network V=virtual w=swap O=os D=disks')
+            legend_pad.addstr(3, 0, 'r=filter by root (press r for more info))')
+            legend_pad.addstr(4, 0, 'f=filter parammeters (press f for more info)')
         else:
             legend_pad.addstr(0, 0, 'Toggles:', curses.A_BOLD)
             legend_pad.addstr(1, 0,
@@ -377,7 +379,7 @@ def interactive_display(stdscr, args):
             args.pattern,
             args.status_filter,
             args.max_n)
-        requests_q.put(request)
+        requests_q.put(request, block=True)
 
     def extract_results(response):
         roots, data, updated, status = zip(*response['matches'])
@@ -397,8 +399,10 @@ def interactive_display(stdscr, args):
         from xmen.utils import dic_from_yml
         import time
         import multiprocessing
-        q_request = mp.Queue(maxsize=1)
-        q_response = mp.Queue(maxsize=1)
+
+        manager = mp.Manager()
+        q_request = manager.Queue(maxsize=1)
+        q_response = manager.Queue(maxsize=1)
         update_requests(args, q_request)
         p = multiprocessing.Process(target=send_request_task, args=(q_request, q_response))
         p.start()
@@ -502,30 +506,8 @@ def interactive_display(stdscr, args):
                         text = '(?!_)' + text
                     args = toggle(args, 'filters', text)
                     visualise_results(results, roots, args)
-                # if c == ord('P'):
-                #     from curses.textpad import Textbox, rectangle
-                #     rows, cols = stdscr.getmaxyx()
-                #     window.move(rows - 4, 0)
-                #     window.clrtoeol()
-                #     window.move(rows - 3, 0)
-                #     window.clrtoeol()
-                #     window.move(rows - 2, 0)
-                #     window.clrtoeol()
-                #     window.move(rows - 1, 0)
-                #     window.clrtoeol()
-                #     window.addstr(rows - 3, 0,
-                #                   'Filter params:',
-                #                   curses.A_BOLD)
-                #     # window.addstr(rows - 2, 0,
-                #     #               '(ctrl-h=backspace, "" to delete filter)')
-                #     # window.addstr(rows - 1, 0, ' ' * (cols - 1))
-                #     window.refresh()
-                #     win = curses.newwin(1, cols, rows - 1, 0)
-                #     text_box = Textbox(win)
-                #     text = text_box.edit(validate=manage_backspace).strip()
-                #     toggle(args, 'filter_params', text)
-                #     visualise_results(results, roots, args)
-                if c == ord('H'):
+
+                if c == ord('r'):
                     from curses.textpad import Textbox, rectangle
                     rows, cols = stdscr.getmaxyx()
                     window.move(rows - 5, 0)
@@ -539,17 +521,22 @@ def interactive_display(stdscr, args):
                     window.move(rows - 1, 0)
                     window.clrtoeol()
                     window.addstr(rows - 3, 0,
-                                  'Filter Hosts (as {user}@{host}:{pattern} - user, host, and patten can be regex):',
+                                  'Root:',
                                   curses.A_BOLD)
-                    # window.addstr(rows - 2, 0,
-                    #               '(ctrl-h=backspace, "" to delete filter)')
-                    # window.addstr(rows - 1, 0, ' ' * (cols - 1))
+                    window.addstr(rows - 2, 0,
+                                  'eg. ".*", "{user}@{host}:{pattern}" where user, host and pattern are regex')
                     window.refresh()
                     win = curses.newwin(1, cols, rows - 1, 0)
                     text_box = Textbox(win)
                     text = text_box.edit(validate=manage_backspace).strip()
                     toggle(args, 'pattern', text.strip())
                     update_requests(args, q_request)
+                    while True:
+                        try:
+                            response = q_response.get(timeout=0.5)
+                        except queue.Empty:
+                            break
+                    results, roots = extract_results(response)
                     visualise_results(results, roots, args)
                 if c == ord("o"):
                     expand_helps = not expand_helps

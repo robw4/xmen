@@ -244,13 +244,19 @@ class ServerTask(object):
         try:
             # assume experiments previously at the same root have since been deleted]
             cursor.execute(
-                f"UPDATE experiments "
-                f"SET status = %s, data = %s, updated = CURRENT_TIMESTAMP() "
-                f"WHERE root = %s AND status != '{DELETED}' AND user = %s",
-                (status, data, root, user)
-            )
-            database.commit()
-            response = ExperimentUpdated(user, root)
+                f"SELECT root, data, updated, status FROM experiments WHERE root REGEXP '{root}' AND user = '{user}' ")
+            matches = cursor.fetchall()
+            if not matches:
+                response = self.link_experiment(user, password, root, data, status)
+            else:
+                cursor.execute(
+                    f"UPDATE experiments "
+                    f"SET status = %s, data = %s, updated = CURRENT_TIMESTAMP() "
+                    f"WHERE root = %s AND status != '{DELETED}' AND user = %s",
+                    (status, data, root, user)
+                )
+                database.commit()
+                response = ExperimentUpdated(user, root)
         except Exception as m:
             cursor.close()
             database.close()
@@ -271,7 +277,7 @@ class ServerTask(object):
         try:
             cursor.execute(
                 f"UPDATE experiments "
-                f"SET status = '{DELETED}', updated = CURRENT_TIMESTAMP(), "
+                f"SET status = '{DELETED}', updated = CURRENT_TIMESTAMP() "
                 f"WHERE root = '{root}' AND user = '{user}' ")
             database.commit()
             response = ExperimentDeleted(user, root)

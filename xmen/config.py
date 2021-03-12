@@ -145,8 +145,10 @@ class Config(object):
                     responses = pool.map(_send, requests)
                 return responses
             else:
+                responses = []
                 for r in requests:
-                    _send(r)
+                    responses.append(_send(r))
+                return responses
 
     @connected
     def change_password(self, password, new_password):
@@ -261,10 +263,57 @@ class Config(object):
         self.to_yml()
 
     def sync(self, roots=None, max_processes=8):
-        """Synchronise linked experiments with the server"""
-        requests = []
+        """Synchronise linked experiments with the server. If experiments are found with the server that
+        exist on the current host but are not currently linked then they will be optionally relinked.
+        If they are found to not exist on the current host they will be deleted from the server.
+        """
+        from xmen.utils import dic_from_yml
         if roots is None:
             roots = self.linked
+        response = self.send_request([
+            GetExperiments(
+                user=self.user,
+                password=self.password,
+                roots=f'{self.local_user}@{self.local_host}:.*',
+                max_n=100000,
+                status='.*')], workers=0)[0]
+        requests = []
+        if response.matches:
+            server_roots, data, updated, status = zip(*response.matches)
+            data = [dic_from_yml(string=d) for d in data]
+            # request that folders that are not currently linked with the global config are
+            # deleted from the server
+            relink = []
+            delete = []
+            for r, d, u, s in zip(server_roots, data, updated, status):
+                if not d['_root'] in self.linked and s != xmen.experiment.DELETED:
+                    if os.path.exists(os.path.join(d['_root'], 'params.yml')):
+                        relink += [d['_root']]
+                    else:
+                        delete.append(d['_root'])
+                        requests.append(
+                            DeleteExperiment(
+                                user=self.user,
+                                password=self.password,
+                                root=r))
+            if delete:
+                print('The following experiments were found for deletion with the server:')
+                for r in delete:
+                    print(r)
+                msg = 'y'
+                if self.prompt:
+                    msg = input('Would you like to remove them from the server? [y | n] ')
+                if msg != 'y':
+                    requests = []
+            if relink:
+                print('The following experiments exist but are not currently linked with the config:')
+                for r in relink:
+                    print(r)
+                msg = 'y'
+                if self.prompt:
+                    msg = input('Would you like to relink them? [y | n] ')
+                if msg == 'y':
+                    self.link(relink)
         for root in roots:
             data = open(os.path.join(root, 'params.yml'), 'r').read()
             status = self.load_params(root)['_status']
