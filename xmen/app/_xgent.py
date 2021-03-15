@@ -617,12 +617,9 @@ list_parser.set_defaults(func=_curses_list)
 #  main
 #######################################################################################################################
 def setup():
-    print('Welcome to xmen')
     from xmen.config import Config
-    config = Config()
-    config.setup()
-    # config.change_password('sasha', 'bungalow', 'glass')
-    # config.register_user('andrew', 'some_password')
+    print(DESCRIPTION)
+    Config().setup()
 
 
 def invalid_experiment_root_hook(exctype, value, traceback):
