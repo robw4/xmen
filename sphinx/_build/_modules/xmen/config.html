@@ -177,11 +177,369 @@
 <span class="c1">#  GNU General Public License for more details.</span>
 <span class="c1">#  You should have received a copy of the GNU General Public License</span>
 <span class="c1">#   along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;Helper classes and functions for managing the global configuration and setting / interfacing with the xmen server.&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">re</span>
 
 <span class="kn">import</span> <span class="nn">xmen.manager</span>
 <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">get_meta</span>
+<span class="kn">from</span> <span class="nn">xmen.server</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">getpass</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
+
+
+<span class="k">def</span> <span class="nf">connected</span><span class="p">(</span><span class="n">method</span><span class="p">):</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">method</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;WARNING: no account is currently registered with the xmen server. &#39;</span>
+                  <span class="s1">&#39;To configure run xmen config --register_user&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span> <span class="k">as</span> <span class="n">ss</span><span class="p">:</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">wrap_socket</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span> <span class="n">server_hostname</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">server_host</span><span class="p">)</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">server_host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_port</span><span class="p">))</span>
+                    <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">):</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;ERROR: cannot connect to server </span><span class="si">{self.server_host}</span><span class="s1">, </span><span class="si">{self.server_port}</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="k">return</span>
+            <span class="c1"># user registered and server is online</span>
+            <span class="k">return</span> <span class="n">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_fn</span>
+
+
+<span class="k">def</span> <span class="nf">_send</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
+    <span class="n">sock</span> <span class="o">=</span> <span class="n">get_socket</span><span class="p">()</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">get_context</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">sock</span> <span class="k">as</span> <span class="n">ss</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">context</span><span class="o">.</span><span class="n">wrap_socket</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span> <span class="n">server_hostname</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">server_host</span><span class="p">)</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">server_host</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">server_port</span><span class="p">))</span>
+            <span class="n">send</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">receive</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">decode_response</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Config</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Manage global settings and server configuration alongside interfacing with the server.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Instantiate the global configuration. If an ``xmen.yml`` config file exists in</span>
+<span class="sd">        ``os.path.join(os.getenv(&#39;HOME&#39;), &#39;.xmen&#39;)`` then it is loaded else a ``xmen.yml`` will be generated</span>
+<span class="sd">        from defaults.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server_host</span> <span class="o">=</span> <span class="s1">&#39;xmen.rob-otics.co.uk&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server_port</span> <span class="o">=</span> <span class="mi">8000</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">local_host</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">local_user</span> <span class="o">=</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prompt</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_conda</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Whether to save conda info to file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">redirect_stdout</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Whether to also log the stdout and stderr to a text file in each experiment dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">requeue</span> <span class="o">=</span> <span class="kc">True</span>   <span class="c1"># Whether to requeue experiments if SLURM is available</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">python_experiments</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linked</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># private attributes (also saved)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;HOME&#39;</span><span class="p">),</span> <span class="s1">&#39;.xmen&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">,</span> <span class="s1">&#39;xmen.yml&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">):</span>
+            <span class="c1"># make the directory if it doesnt exist</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">)</span>
+            <span class="c1"># save the config file</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">from_yml</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_migrate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a xmen.yml file from the now depreciated config.yml file.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">,</span> <span class="s1">&#39;config.yml&#39;</span><span class="p">)):</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">GlobalExperimentManager</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">python_experiments</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">python_experiments</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prompt</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">prompt_for_message</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_conda</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">save_conda</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">redirect_stdout</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">redirect_stdout</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">requeue</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">requeue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">header</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">paths</span><span class="p">())</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">socket</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="n">get_socket</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">context</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="n">get_context</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of experiments currently linked with global configuration which match regex ``pattern``&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">pattern</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">linked</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">f</span><span class="p">)]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a dictionary of all the attributes considered as configurable settings/&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;_&#39;</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;linked&#39;</span><span class="p">,</span> <span class="s1">&#39;python_experiments&#39;</span><span class="p">]}</span>
+
+    <span class="nd">@connected</span>
+    <span class="k">def</span> <span class="nf">send_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">requests</span><span class="p">,</span> <span class="n">workers</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send a list of requests to the server. When ``workers`` is greater than 0 the requests will be pooled</span>
+<span class="sd">        between ``workers``&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">requests</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">requests</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="n">requests</span> <span class="o">=</span> <span class="p">[</span><span class="n">requests</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">workers</span><span class="p">:</span>
+                <span class="n">workers</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">requests</span><span class="p">),</span> <span class="n">workers</span><span class="p">)</span>
+                <span class="kn">from</span> <span class="nn">multiprocessing.pool</span> <span class="k">import</span> <span class="n">Pool</span>
+                <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+                    <span class="n">responses</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">_send</span><span class="p">,</span> <span class="n">requests</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">responses</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">responses</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">requests</span><span class="p">:</span>
+                    <span class="n">responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_send</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+                <span class="k">return</span> <span class="n">responses</span>
+
+    <span class="nd">@connected</span>
+    <span class="k">def</span> <span class="nf">change_password</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">new_password</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Attempt to change the password for the current user.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span> <span class="k">as</span> <span class="n">ss</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">wrap_socket</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span> <span class="n">server_hostname</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">server_host</span><span class="p">)</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">server_host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_port</span><span class="p">))</span>
+                <span class="n">send</span><span class="p">(</span><span class="n">ChangePassword</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">new_password</span><span class="p">),</span> <span class="n">s</span><span class="p">)</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">receive</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">decode_response</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">PasswordChanged</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">password</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">register_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Register user with with the server.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span> <span class="k">as</span> <span class="n">ss</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">wrap_socket</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span> <span class="n">server_hostname</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">server_host</span><span class="p">)</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+                <span class="c1"># print(&#39;Attempting to connect to &#39;, (self.server_host, self.server_port))</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">server_host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_port</span><span class="p">))</span>
+                <span class="n">send</span><span class="p">(</span><span class="n">AddUser</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">),</span> <span class="n">s</span><span class="p">)</span>
+                <span class="n">dic</span> <span class="o">=</span> <span class="n">receive</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">decode_response</span><span class="p">(</span><span class="n">dic</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">UserCreated</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">PasswordValid</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">user</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Switched user to </span><span class="si">{user}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Current user is </span><span class="si">{user}</span><span class="s1">. No change.&#39;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="p">(</span><span class="n">PasswordNotValid</span><span class="p">,</span> <span class="n">Failed</span><span class="p">)):</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: &#39;</span> <span class="o">+</span> <span class="n">response</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Run an interactive setup for user configuration.&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Config Setup...&#39;</span><span class="p">)</span>
+        <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;password&#39;</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">]:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{k}</span><span class="s1"> (default=</span><span class="si">{v}</span><span class="s1">): &#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">msg</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">SafeLoader</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Would you like to link a user account with the xmen server? [y | n]: &#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">msg</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;user: &#39;</span><span class="p">)</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="kn">from</span> <span class="nn">getpass</span> <span class="k">import</span> <span class="n">getpass</span>
+            <span class="n">password</span> <span class="o">=</span> <span class="n">getpass</span><span class="p">()</span>
+            <span class="n">password</span> <span class="o">=</span> <span class="n">password</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">register_user</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">FailedException</span> <span class="k">as</span> <span class="n">m</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;ERROR: </span><span class="si">{m.msg}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="c1"># finally</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">,</span> <span class="s1">&#39;config.yml&#39;</span><span class="p">)):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Found old config. Would you like to move &#39;</span>
+                        <span class="s1">&#39;experiments across to the new configuration? [y | n]: &#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">msg</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_migrate</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">to_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save the current config&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">ruamel.yaml</span> <span class="k">import</span> <span class="n">YAML</span>
+        <span class="n">yaml</span> <span class="o">=</span> <span class="n">YAML</span><span class="p">()</span>
+        <span class="n">yaml</span><span class="o">.</span><span class="n">default_flow_style</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">from_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load the current config&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">SafeLoader</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="k">def</span> <span class="nf">load_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load parameters for an experiment&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">dic_from_yml</span>
+        <span class="k">return</span> <span class="n">dic_from_yml</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">link</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">roots</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Link an experiment instance with the global configuration&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">roots</span> <span class="o">=</span> <span class="p">[</span><span class="n">roots</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linked</span> <span class="o">+=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">roots</span><span class="p">]</span>
+        <span class="n">requests</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">root</span> <span class="ow">in</span> <span class="n">roots</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_params</span><span class="p">(</span><span class="n">root</span><span class="p">)[</span><span class="s1">&#39;_status&#39;</span><span class="p">]</span>
+            <span class="n">requests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">LinkExperiment</span><span class="p">(</span>
+                    <span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+                    <span class="n">password</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">,</span>
+                    <span class="n">root</span><span class="o">=</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.local_user}</span><span class="s1">@</span><span class="si">{self.local_host}</span><span class="s1">:</span><span class="si">{root}</span><span class="s1">&#39;</span><span class="p">,</span>
+                    <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+                    <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_request</span><span class="p">(</span><span class="n">requests</span><span class="p">)</span>
+        <span class="c1"># finally update self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">roots</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_processes</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Synchronise linked experiments with the server. If experiments are found with the server that</span>
+<span class="sd">        exist on the current host but are not currently linked then they will be optionally relinked.</span>
+<span class="sd">        If they are found to not exist on the current host they will be deleted from the server.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">dic_from_yml</span>
+        <span class="k">if</span> <span class="n">roots</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">roots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linked</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_request</span><span class="p">([</span>
+            <span class="n">GetExperiments</span><span class="p">(</span>
+                <span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+                <span class="n">password</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">,</span>
+                <span class="n">roots</span><span class="o">=</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.local_user}</span><span class="s1">@</span><span class="si">{self.local_host}</span><span class="s1">:.*&#39;</span><span class="p">,</span>
+                <span class="n">max_n</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+                <span class="n">status</span><span class="o">=</span><span class="s1">&#39;.*&#39;</span><span class="p">)],</span> <span class="n">workers</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">requests</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">matches</span><span class="p">:</span>
+            <span class="n">server_roots</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">updated</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">response</span><span class="o">.</span><span class="n">matches</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">dic_from_yml</span><span class="p">(</span><span class="n">string</span><span class="o">=</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+            <span class="c1"># request that folders that are not currently linked with the global config are</span>
+            <span class="c1"># deleted from the server</span>
+            <span class="n">relink</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">delete</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">server_roots</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">updated</span><span class="p">,</span> <span class="n">status</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">linked</span> <span class="ow">and</span> <span class="n">s</span> <span class="o">!=</span> <span class="n">xmen</span><span class="o">.</span><span class="n">experiment</span><span class="o">.</span><span class="n">DELETED</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">],</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">)):</span>
+                        <span class="n">relink</span> <span class="o">+=</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">]]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">delete</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">])</span>
+                        <span class="n">requests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="n">DeleteExperiment</span><span class="p">(</span>
+                                <span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+                                <span class="n">password</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">,</span>
+                                <span class="n">root</span><span class="o">=</span><span class="n">r</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">delete</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The following experiments were found for deletion with the server:&#39;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">delete</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;y&#39;</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prompt</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Would you like to remove them from the server? [y | n] &#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">msg</span> <span class="o">!=</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+                    <span class="n">requests</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">relink</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The following experiments exist but are not currently linked with the config:&#39;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relink</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;y&#39;</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prompt</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Would you like to relink them? [y | n] &#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">msg</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">relink</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">root</span> <span class="ow">in</span> <span class="n">roots</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_params</span><span class="p">(</span><span class="n">root</span><span class="p">)[</span><span class="s1">&#39;_status&#39;</span><span class="p">]</span>
+            <span class="n">requests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">UpdateExperiment</span><span class="p">(</span>
+                    <span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+                    <span class="n">password</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">,</span>
+                    <span class="n">root</span><span class="o">=</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.local_user}</span><span class="s1">@</span><span class="si">{self.local_host}</span><span class="s1">:</span><span class="si">{root}</span><span class="s1">&#39;</span><span class="p">,</span>
+                    <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+                    <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_request</span><span class="p">(</span><span class="n">requests</span><span class="p">,</span> <span class="n">max_processes</span><span class="p">)</span>
+        <span class="c1"># finally update self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">add_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a experiments experiment ``name`` defined in ``module`` either as a class or function. &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">stat</span>
+        <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">get_run_script</span>
+        <span class="n">script</span> <span class="o">=</span> <span class="n">get_run_script</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># Make executable run script</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">,</span> <span class="s1">&#39;experiments&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">]))</span>
+        <span class="c1"># Note old experiments will be written over</span>
+        <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">st</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">|</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IEXEC</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">python_experiments</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">path</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iteratively search through experiment and remove any that no longer exist.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This is performed by checking that the experiment.yml file exists.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">corrupted</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">linked</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">)):</span>
+                <span class="n">corrupted</span> <span class="o">+=</span> <span class="p">[</span><span class="n">p</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">corrupted</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The following experiments were found for removal from the global configuration... &#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">corrupted</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  - &#39;</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prompt</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Would you like to remove them from the global configuration? [y | n]&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">msg</span> <span class="o">!=</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+                    <span class="k">return</span>
+
+        <span class="n">requests</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">corrupted</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">linked</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+            <span class="n">requests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">DeleteExperiment</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.local_user}</span><span class="s1">@</span><span class="si">{self.local_host}</span><span class="s1">:</span><span class="si">{c}</span><span class="s1">&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_request</span><span class="p">(</span><span class="n">requests</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Experiments were successfully removed from the global configuration&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pretty print the current configuration&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">recursive_print_lines</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">recursive_print_lines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">))</span>
 
 
 <span class="k">class</span> <span class="nc">NoMatchException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
@@ -192,37 +550,43 @@
 
 
 <div class="viewcode-block" id="GlobalExperimentManager"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager">[docs]</a><span class="k">class</span> <span class="nc">GlobalExperimentManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A helper class used to manage global configuration of the Experiment Manager&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;DEPRECIATED A helper class used to manage global configuration of the Experiment Manager&quot;&quot;&quot;</span>
 <div class="viewcode-block" id="GlobalExperimentManager.__init__"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">socket</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">python_experiments</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># A dictionary of paths to experiments modules compatible with the experiment api</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">python_paths</span> <span class="o">=</span> <span class="p">[]</span>         <span class="c1"># A list of experiments paths needed to run each module</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prompt_for_message</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_conda</span> <span class="o">=</span> <span class="kc">True</span>         <span class="c1"># Whether to save conda info to file</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span> <span class="o">=</span> <span class="p">{}</span>          <span class="c1"># A list of all experiments registered with an Experiment Manager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">redirect_stdout</span> <span class="o">=</span> <span class="kc">True</span>    <span class="c1"># Whether to also log the stdout and stderr to a text file in each experiment dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">requeue</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span> <span class="o">=</span> <span class="p">{}</span>          <span class="c1"># A list of all experiments roots with an Experiment Manager</span>
+        <span class="c1"># self.experiments = {}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="n">get_meta</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="mi">2030</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;HOME&#39;</span><span class="p">),</span> <span class="s1">&#39;.xmen&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">from_yml</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_from_yml</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">to_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_to_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save the current config to an ``config.yaml``&quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;_&#39;</span><span class="p">}</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">,</span> <span class="s1">&#39;config.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">Dumper</span><span class="o">=</span><span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">RoundTripDumper</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">from_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_from_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Load the experiment config from a ``config.yml`` file&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dir</span><span class="p">,</span> <span class="s1">&#39;config.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
@@ -243,7 +607,7 @@
             <span class="k">if</span> <span class="s1">&#39;meta&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
                 <span class="n">to_yml</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="n">to_yml</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">update_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
@@ -275,6 +639,10 @@
         <span class="sd">&quot;&quot;&quot;The current configuration as a string&quot;&quot;&quot;</span>
         <span class="n">string</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;prompt for message: </span><span class="si">{self.prompt_for_message}</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;save conda: </span><span class="si">{self.save_conda}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;enable requeue: </span><span class="si">{self.requeue}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;host: </span><span class="si">{self.host}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;port: </span><span class="si">{self.port}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;redirect stdout: </span><span class="si">{self.redirect_stdout}</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;experiments Path:</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">python_paths</span><span class="p">:</span>
             <span class="n">string</span> <span class="o">+=</span> <span class="n">f</span><span class="s1">&#39;  - </span><span class="si">{p}</span><span class="se">\n</span><span class="s1">&#39;</span>
@@ -293,12 +661,15 @@
 
         <span class="k">return</span> <span class="n">string</span>
 
-<div class="viewcode-block" id="GlobalExperimentManager.find"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">param_match</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">types_match</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">load_defaults</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">missing_entry</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="GlobalExperimentManager.find"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">last</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">param_match</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">types_match</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">load_defaults</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">missing_entry</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Search through all experiments in the globally filtering by experiment location, parameters, and type.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            mode (str): If &#39;all&#39; then all experiments for each set will be concatenated and summarised individually</span>
 <span class="sd">                whilst if &#39;set&#39; then experiments will be summarised and searched for based on the default parameters.</span>
+<span class="sd">            paths (List[str]): Extract all information from the passed list of path to experiments. If None then</span>
+<span class="sd">                a search will be performed instead.</span>
 <span class="sd">            pattern (str): A unix glob pattern of experiments to consider</span>
 <span class="sd">            param_match (list): A list of strings providing a condition to filter experiments by their parameters.</span>
 <span class="sd">                Compatible string formats are &quot;regex&quot;, &quot;regex op val&quot; or &quot;val1 op1 regex op2 val2&quot; where op is in</span>
@@ -330,6 +701,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">fnmatch</span>
         <span class="kn">import</span> <span class="nn">re</span>
+
         <span class="k">def</span> <span class="nf">_comparison</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
             <span class="n">arg</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
@@ -351,120 +723,142 @@
             <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;_experiments&#39;</span><span class="p">:</span> <span class="p">[]})</span>
 
         <span class="c1"># Filter experiment by name</span>
-        <span class="n">experiments</span> <span class="o">=</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">pattern</span><span class="p">)</span>
         <span class="n">encountered</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">root</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">last</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># find all possible paths to experiments</span>
+            <span class="n">experiments</span> <span class="o">=</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">pattern</span><span class="p">)</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">root</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">:</span>
                 <span class="n">em</span> <span class="o">=</span> <span class="n">xmen</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">ExperimentManager</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">load_defaults</span><span class="p">:</span>
                     <span class="n">defaults</span> <span class="o">=</span> <span class="n">em</span><span class="o">.</span><span class="n">load_defaults</span><span class="p">()</span>
                 <span class="k">if</span> <span class="n">types_match</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">em</span><span class="o">.</span><span class="n">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">types_match</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="n">NoMatchException</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+                <span class="n">paths</span> <span class="o">+=</span> <span class="n">em</span><span class="o">.</span><span class="n">experiments</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span> <span class="k">else</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">defaults</span><span class="p">]</span>
 
-                <span class="n">paths</span> <span class="o">=</span> <span class="n">em</span><span class="o">.</span><span class="n">experiments</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span> <span class="k">else</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">defaults</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">last</span><span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">],</span> <span class="n">last</span><span class="p">[</span><span class="s1">&#39;_name&#39;</span><span class="p">])]</span>
+        <span class="c1"># for root in experiments:</span>
+        <span class="c1">#     em = xmen.manager.ExperimentManager(root)</span>
+        <span class="c1">#     if load_defaults:</span>
+        <span class="c1">#         defaults = em.load_defaults()</span>
+        <span class="c1">#     if types_match is not None:</span>
+        <span class="c1">#         if em.type not in types_match:</span>
+        <span class="c1">#             raise NoMatchException(root)</span>
+        <span class="c1">#</span>
+        <span class="c1">#     paths = em.experiments if mode == &#39;all&#39; else [em.defaults]</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">managers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">paths</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">load_defaults</span><span class="p">:</span>
+                        <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
+                        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">params_yml</span><span class="p">:</span>
+                            <span class="n">params</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">params_yml</span><span class="p">,</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">RoundTripLoader</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
+                        <span class="n">params</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">defaults</span><span class="p">)</span>
+                        <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">em</span><span class="o">.</span><span class="n">overides</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">params</span> <span class="o">=</span> <span class="n">em</span><span class="o">.</span><span class="n">load_defaults</span><span class="p">()</span>
 
-                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">paths</span><span class="p">):</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="ow">not</span> <span class="n">load_defaults</span><span class="p">:</span>
-                                <span class="n">params</span> <span class="o">=</span> <span class="n">em</span><span class="o">.</span><span class="n">load_params</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-                                <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                                    <span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-                            <span class="k">else</span><span class="p">:</span>
-                                <span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
-                                <span class="n">params</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">defaults</span><span class="p">)</span>
-                                <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">em</span><span class="o">.</span><span class="n">overides</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="c1"># remove notes (_notes will be removed from version 0.2.5)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_notes&#39;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+                <span class="c1"># Find experiments who&#39;s parameters match all conditions</span>
+                <span class="k">if</span> <span class="n">param_match</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">extracted</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="c1"># Search through al param matches</span>
+                    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">param_match</span><span class="p">:</span>
+                        <span class="c1"># Condition from param string</span>
+                        <span class="n">splits</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(&lt;=|==|&gt;=|&lt;|&gt;|!=)&#39;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">reg</span> <span class="o">=</span> <span class="n">splits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="n">valid</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="kc">True</span>
+                        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                            <span class="n">reg</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">splits</span>
+                            <span class="n">valid</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">_comparison</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">op</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+                            <span class="n">y1</span><span class="p">,</span> <span class="n">op1</span><span class="p">,</span> <span class="n">reg</span><span class="p">,</span> <span class="n">op2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">splits</span>
+                            <span class="n">valid</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">_comparison</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">op1</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">op2</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
-                            <span class="n">params</span> <span class="o">=</span> <span class="n">em</span><span class="o">.</span><span class="n">load_defaults</span><span class="p">()</span>
+                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: Only strings of the form (3.0 | cat) &lt; param &lt;= (4.0 | dog) can be set but&#39;</span>
+                                      <span class="s1">&#39;got match_keys&#39;</span><span class="p">)</span>
+                                <span class="n">exit</span><span class="p">()</span>
 
-                        <span class="c1"># remove notes (_notes will be removed from version 0.2.5)</span>
-                        <span class="k">try</span><span class="p">:</span>
-                            <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_notes&#39;</span><span class="p">)</span>
-                        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                            <span class="k">pass</span>
+                        <span class="c1"># Keep keys if match or special (_...)</span>
+                        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">reg</span><span class="p">,</span> <span class="n">k</span><span class="p">)]</span>
 
-                        <span class="c1"># Find experiments who&#39;s parameters match all conditions</span>
-                        <span class="k">if</span> <span class="n">param_match</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                            <span class="n">extracted</span> <span class="o">=</span> <span class="p">{}</span>
-                            <span class="c1"># Search through al param matches</span>
-                            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">param_match</span><span class="p">:</span>
-                                <span class="c1"># Condition from param string</span>
-                                <span class="n">splits</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(&lt;=|==|&gt;=|&lt;|&gt;|!=)&#39;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
-                                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                                    <span class="n">reg</span> <span class="o">=</span> <span class="n">splits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                                    <span class="n">valid</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="kc">True</span>
-                                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-                                    <span class="n">reg</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">splits</span>
-                                    <span class="n">valid</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">_comparison</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">op</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-                                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
-                                    <span class="n">y1</span><span class="p">,</span> <span class="n">op1</span><span class="p">,</span> <span class="n">reg</span><span class="p">,</span> <span class="n">op2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">splits</span>
-                                    <span class="n">valid</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">_comparison</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">op1</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">op2</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span>
+                        <span class="c1"># the second term here operates as an and operator</span>
+                        <span class="c1"># in the case that the regex pattern matches multiple parameters in the params</span>
+                        <span class="c1"># file all parameters must satisfy the condition.</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">valid</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">):</span>
+                            <span class="n">keys</span> <span class="o">+=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
+                            <span class="k">raise</span> <span class="n">NoMatchException</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+
+                        <span class="c1"># extract info</span>
+                        <span class="n">keys</span> <span class="o">+=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
+                        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                            <span class="n">extracted</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">extracted</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">NoMatchException</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># If we get here add parameters to experiments</span>
+                        <span class="c1"># (extracted must have at least one element)</span>
+                        <span class="c1"># Infer current length of table (same length for every entry)</span>
+                        <span class="n">table_length</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span>
+                        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">values</span><span class="p">()]):</span>
+                            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;This should not happen&#39;</span><span class="p">)</span>
+
+                        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">extracted</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">,</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">]:</span>
+                                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
+                                    <span class="n">encountered</span> <span class="o">+=</span> <span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                                    <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">missing_entry</span><span class="p">]</span> <span class="o">*</span> <span class="n">table_length</span> <span class="o">+</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
                                 <span class="k">else</span><span class="p">:</span>
-                                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
-                                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR: Only strings of the form (3.0 | cat) &lt; param &lt;= (4.0 | dog) can be set but&#39;</span>
-                                              <span class="s1">&#39;got match_keys&#39;</span><span class="p">)</span>
-                                        <span class="n">exit</span><span class="p">()</span>
+                                    <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
 
-                                <span class="c1"># Keep keys if match or special (_...)</span>
-                                <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">reg</span><span class="p">,</span> <span class="n">k</span><span class="p">)]</span>
-                                
-                                <span class="c1"># the second term here operates as an and operator</span>
-                                <span class="c1"># in the case that the regex pattern matches multiple parameters in the params</span>
-                                <span class="c1"># file all parameters must satisfy the condition.</span>
-                                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">valid</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">):</span>
-                                    <span class="n">keys</span> <span class="o">+=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
-                                    <span class="k">raise</span> <span class="n">NoMatchException</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
-
-                                <span class="c1"># extract info</span>
-                                <span class="n">keys</span> <span class="o">+=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
-                                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
-                                    <span class="n">extracted</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-
-                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">extracted</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                                <span class="k">raise</span> <span class="n">NoMatchException</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="s1">&#39;_meta&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">extracted</span><span class="p">:</span>
+                            <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_meta&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">get_meta</span><span class="p">()]</span>
+                        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">encountered</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">extracted</span><span class="p">:</span>
+                                <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">missing_entry</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">,</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">,</span> <span class="s1">&#39;_notes&#39;</span><span class="p">]:</span>
+                            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
+                                <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
                             <span class="k">else</span><span class="p">:</span>
-                                <span class="c1"># If we get here add parameters to experiments</span>
-                                <span class="c1"># (extracted must have at least one element)</span>
-                                <span class="c1"># Infer current length of table (same length for every entry)</span>
-                                <span class="n">table_length</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span>
-                                <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">values</span><span class="p">()]):</span>
-                                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;This should not happen&#39;</span><span class="p">)</span>
+                                <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="s1">&#39;_meta&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                        <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_meta&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">get_meta</span><span class="p">()]</span>
 
-                                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">extracted</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                                    <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">,</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">]:</span>
-                                        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
-                                            <span class="n">encountered</span> <span class="o">+=</span> <span class="p">[</span><span class="n">k</span><span class="p">]</span>
-                                            <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">missing_entry</span><span class="p">]</span> <span class="o">*</span> <span class="n">table_length</span> <span class="o">+</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
-                                        <span class="k">else</span><span class="p">:</span>
-                                            <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
+                <span class="n">root</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">root</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">managers</span><span class="p">:</span>
+                    <span class="n">managers</span><span class="p">[</span><span class="n">root</span><span class="p">]</span> <span class="o">=</span> <span class="n">xmen</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">ExperimentManager</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+                <span class="n">em</span> <span class="o">=</span> <span class="n">managers</span><span class="p">[</span><span class="n">root</span><span class="p">]</span>
+                <span class="c1"># Add data to table from experiment.yml</span>
+                <span class="k">if</span> <span class="n">load_defaults</span><span class="p">:</span>
+                    <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_name&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">em</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]]</span>
+                <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+                    <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_experiments&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">experiments</span><span class="p">]</span>
 
-                                <span class="k">if</span> <span class="s1">&#39;_meta&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">extracted</span><span class="p">:</span>
-                                    <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_meta&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">get_meta</span><span class="p">()]</span>
-                                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">encountered</span><span class="p">:</span>
-                                    <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">extracted</span><span class="p">:</span>
-                                        <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">missing_entry</span><span class="p">]</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                                <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">,</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">,</span> <span class="s1">&#39;_notes&#39;</span><span class="p">]:</span>
-                                    <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
-                                        <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
-                                    <span class="k">else</span><span class="p">:</span>
-                                        <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
-                            <span class="k">if</span> <span class="s1">&#39;_meta&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
-                                <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_meta&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">get_meta</span><span class="p">()]</span>
+                <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">root</span><span class="p">]</span>
+                <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_purpose&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">purpose</span><span class="p">]</span>
+                <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_type&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
+                <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_notes&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">notes</span><span class="p">]</span>
 
-                        <span class="c1"># Add data to table from experiment.yml</span>
-                        <span class="k">if</span> <span class="n">load_defaults</span><span class="p">:</span>
-                            <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_name&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">em</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]]</span>
-                        <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
-                            <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_experiments&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">experiments</span><span class="p">]</span>
-
-                        <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">root</span><span class="p">]</span>
-                        <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_purpose&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">purpose</span><span class="p">]</span>
-                        <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_type&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
-                        <span class="n">table</span><span class="p">[</span><span class="s1">&#39;_notes&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">em</span><span class="o">.</span><span class="n">notes</span><span class="p">]</span>
-                    <span class="k">except</span> <span class="n">NoMatchException</span> <span class="k">as</span> <span class="n">m</span><span class="p">:</span>
-                        <span class="k">continue</span>
+            <span class="k">except</span> <span class="n">NoMatchException</span> <span class="k">as</span> <span class="n">m</span><span class="p">:</span>
+                <span class="k">continue</span>
 
         <span class="k">if</span> <span class="n">mode</span> <span class="o">!=</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
             <span class="n">table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_name&#39;</span><span class="p">)</span>
@@ -472,7 +866,7 @@
 
 <div class="viewcode-block" id="GlobalExperimentManager.find_to_dataframe"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.find_to_dataframe">[docs]</a>    <span class="k">def</span> <span class="nf">find_to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">display_git</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                           <span class="n">display_purpose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">display_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">display_messages</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">display_status</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                          <span class="n">display_meta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                          <span class="n">display_meta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">display_params</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert the output of the `find` method to a formatted data frame configured by args. If verbose then all</span>
 <span class="sd">        entries will be displayed (independent of the other args)&quot;&quot;&quot;</span>
 
@@ -488,6 +882,7 @@
                 <span class="k">return</span> <span class="n">out</span>
 
         <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+        <span class="n">param_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">table</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
         <span class="n">special_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">table</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
         <span class="n">display</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;root&#39;</span><span class="p">:</span> <span class="n">table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_root&#39;</span><span class="p">)}</span>
@@ -560,16 +955,15 @@
             <span class="n">display_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">display</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">display_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;root&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">display</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">display_git</span><span class="p">:</span>
-                <span class="n">display_keys</span> <span class="o">+=</span> <span class="n">git_keys</span>
-            <span class="k">if</span> <span class="n">display_status</span><span class="p">:</span>
-                <span class="n">display_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">display_date</span><span class="p">:</span>
                 <span class="n">display_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;created&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">display_status</span><span class="p">:</span>
+                <span class="n">display_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">display_git</span><span class="p">:</span>
+                <span class="n">display_keys</span> <span class="o">+=</span> <span class="n">git_keys</span>
             <span class="k">if</span> <span class="n">display_meta</span><span class="p">:</span>
                 <span class="n">display_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">meta_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">display_meta</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
                     <span class="n">display_meta</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;.*&#39;</span><span class="p">,</span> <span class="n">k</span><span class="p">)]</span>  <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;origin&#39;</span><span class="p">]</span>
-                <span class="c1"># </span>
                 <span class="c1"># display_keys += list(meta_dict.keys()) + [&#39;origin&#39;]</span>
             <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">display_messages</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="n">display_messages</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;_messages&#39;</span> <span class="ow">in</span> <span class="n">special_keys</span><span class="p">:</span>
                 <span class="n">display_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">message_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">display_messages</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
@@ -579,7 +973,11 @@
             <span class="k">if</span> <span class="n">display_purpose</span><span class="p">:</span>
                 <span class="n">display_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;purpose&#39;</span><span class="p">]</span>
 
-        <span class="n">display_keys</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">display_params</span><span class="p">:</span>
+                <span class="n">display_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">param_keys</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">display_params</span><span class="p">,</span> <span class="n">k</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">display_keys</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
         <span class="c1"># Add other params</span>
         <span class="n">display</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">display</span><span class="p">)</span>
@@ -590,10 +988,26 @@
             <span class="n">roots</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">roots</span><span class="p">]</span>
         <span class="n">df</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;root&#39;</span><span class="p">:</span> <span class="n">roots</span><span class="p">})</span>
         <span class="c1"># Finally filter</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;root&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+
+        <span class="c1"># display_keys += [&#39;path&#39;]</span>
+        <span class="c1"># display_keys.remove(&#39;name&#39;)</span>
+        <span class="n">display_keys</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;root&#39;</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">items</span><span class="o">=</span><span class="n">display_keys</span><span class="p">)</span>
+
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;slurm_&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">display_keys</span><span class="p">]</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;virtual_&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
+
+        <span class="n">updated_keys</span> <span class="o">=</span> <span class="p">{</span><span class="n">o</span><span class="p">:</span> <span class="n">n</span> <span class="k">for</span> <span class="n">o</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">display_keys</span><span class="p">,</span> <span class="n">keys</span><span class="p">)}</span>
+        <span class="n">get_rid</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;sid&#39;</span><span class="p">,</span> <span class="s1">&#39;sMCS_label&#39;</span><span class="p">,</span> <span class="s1">&#39;sQOS&#39;</span><span class="p">,</span> <span class="s1">&#39;sTimeMin&#39;</span><span class="p">,</span> <span class="s1">&#39;sEligibleTime&#39;</span><span class="p">,</span> <span class="s1">&#39;sAccrueTime&#39;</span><span class="p">,</span> <span class="s1">&#39;sDeadline&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;sSecsPreSuspend&#39;</span><span class="p">,</span> <span class="s1">&#39;sJobName&#39;</span><span class="p">,</span>  <span class="s1">&#39;sSuspendTime&#39;</span><span class="p">,</span>  <span class="s1">&#39;sLastSchedEval&#39;</span><span class="p">,</span> <span class="s1">&#39;sReqNodeList&#39;</span><span class="p">,</span> <span class="s1">&#39;sExcNodeList&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;sNice&#39;</span><span class="p">}</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">updated_keys</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;columns&#39;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">items</span><span class="o">=</span><span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">get_rid</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">prefix</span></div>
 
-<div class="viewcode-block" id="GlobalExperimentManager.add_experiment"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.add_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">add_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="viewcode-block" id="GlobalExperimentManager.add_experiment"><a class="viewcode-back" href="../../api.html#xmen.config.GlobalExperimentManager.add_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">add_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add a experiments experiment ``name`` defined in ``module`` either as a class or function.&quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">stat</span>
         <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">get_run_script</span>
@@ -609,7 +1023,29 @@
         <span class="n">st</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">st</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">|</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IEXEC</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">python_experiments</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">path</span><span class="p">})</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">types_match</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">fnmatch</span>
+        <span class="n">experiments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">pattern</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">experiments</span> <span class="o">=</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">experiments</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">root</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">:</span>
+            <span class="n">em</span> <span class="o">=</span> <span class="n">xmen</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">ExperimentManager</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">em</span><span class="o">.</span><span class="n">check_initialised</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">xmen</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">InvalidExperimentRoot</span> <span class="k">as</span> <span class="n">m</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">types_match</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">em</span><span class="o">.</span><span class="n">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">types_match</span><span class="p">:</span>
+                    <span class="k">continue</span>
+            <span class="n">paths</span> <span class="o">+=</span> <span class="n">em</span><span class="o">.</span><span class="n">experiments</span>
+        <span class="k">return</span> <span class="n">paths</span></div>
+
+
+
+
 </pre></div>
 
            </div>

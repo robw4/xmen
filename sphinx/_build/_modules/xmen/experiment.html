@@ -182,13 +182,11 @@
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">argparse</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span>
 <span class="kn">import</span> <span class="nn">signal</span>
-<span class="kn">import</span> <span class="nn">io</span>
 
-<span class="kn">from</span> <span class="nn">argparse</span> <span class="k">import</span> <span class="n">RawTextHelpFormatter</span>
 <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">get_meta</span><span class="p">,</span> <span class="n">get_version</span><span class="p">,</span> <span class="n">commented_to_py</span><span class="p">,</span> <span class="n">DATE_FORMAT</span><span class="p">,</span> <span class="n">recursive_print_lines</span><span class="p">,</span> <span class="n">TypedMeta</span><span class="p">,</span> <span class="n">MultiOut</span>
-
+<span class="kn">from</span> <span class="nn">xmen.server</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
 <span class="n">helps</span> <span class="o">=</span> <span class="p">{</span>
@@ -199,13 +197,13 @@
               <span class="s1">&#39;other flags and can be used in combination with --to_root, --to_defaults, and --link&#39;</span><span class="p">,</span>
     <span class="s1">&#39;root&#39;</span><span class="p">:</span> <span class="s1">&#39;Generate a run script and defaults.yml file for interfacing with xgent&#39;</span><span class="p">,</span>
     <span class="s1">&#39;debug&#39;</span><span class="p">:</span> <span class="s1">&#39;Run experiment in debug mode. The experiments debug will be called before registering.&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;txt&#39;</span><span class="p">:</span> <span class="s1">&#39;Also log stdout and stderr to an out.txt file. Enabled by default&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;restart&#39;</span><span class="p">:</span> <span class="s1">&#39;Restart the experiment&#39;</span><span class="p">}</span>
+    <span class="s1">&#39;txt&#39;</span><span class="p">:</span> <span class="s1">&#39;Also log stdout and stderr to an out.txt file. Enabled by default (default taken from xmen config)&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;restart&#39;</span><span class="p">:</span> <span class="s1">&#39;Restart the experiment&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;purpose&#39;</span><span class="p">:</span> <span class="s1">&#39;A string giving the purpose of the current experiment&#39;</span><span class="p">}</span>
 
-<span class="kn">from</span> <span class="nn">xmen.config</span> <span class="k">import</span> <span class="n">GlobalExperimentManager</span>
+<span class="kn">from</span> <span class="nn">xmen.config</span> <span class="k">import</span> <span class="n">Config</span>
 
-<span class="n">SAVE_CONDA</span> <span class="o">=</span> <span class="n">GlobalExperimentManager</span><span class="p">()</span><span class="o">.</span><span class="n">save_conda</span>
-
+<span class="n">CONFIG</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
 
 <span class="kn">import</span> <span class="nn">textwrap</span>
 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">helps</span><span class="p">:</span>
@@ -223,22 +221,46 @@
 
 <span class="n">experiment_parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawTextHelpFormatter</span><span class="p">)</span>
 <span class="n">experiment_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--update&#39;</span><span class="p">,</span> <span class="s1">&#39;-u&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">helps</span><span class="p">[</span><span class="s1">&#39;update&#39;</span><span class="p">])</span>
+<span class="n">experiment_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--purpose&#39;</span><span class="p">,</span> <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">helps</span><span class="p">[</span><span class="s1">&#39;purpose&#39;</span><span class="p">])</span>
 <span class="n">experiment_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--execute&#39;</span><span class="p">,</span> <span class="s1">&#39;-x&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">helps</span><span class="p">[</span><span class="s1">&#39;execute&#39;</span><span class="p">],</span>
                                <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span> <span class="n">const</span><span class="o">=</span><span class="n">NullRoot</span><span class="p">())</span>
 <span class="n">experiment_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--to_root&#39;</span><span class="p">,</span> <span class="s1">&#39;-r&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">helps</span><span class="p">[</span><span class="s1">&#39;root&#39;</span><span class="p">])</span>
 <span class="c1"># optional extras</span>
 <span class="n">experiment_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--debug&#39;</span><span class="p">,</span> <span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">helps</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">])</span>
-<span class="n">experiment_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--to_txt&#39;</span><span class="p">,</span> <span class="s1">&#39;-t&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">helps</span><span class="p">[</span><span class="s1">&#39;txt&#39;</span><span class="p">])</span>
+<span class="n">experiment_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--txt&#39;</span><span class="p">,</span> <span class="s1">&#39;-t&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="ow">not</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">helps</span><span class="p">[</span><span class="s1">&#39;txt&#39;</span><span class="p">])</span>
 <span class="n">experiment_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--restart&#39;</span><span class="p">,</span> <span class="s1">&#39;-f&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">helps</span><span class="p">[</span><span class="s1">&#39;restart&#39;</span><span class="p">])</span>
-<span class="n">_SPECIALS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">,</span> <span class="s1">&#39;_name&#39;</span><span class="p">,</span> <span class="s1">&#39;_status&#39;</span><span class="p">,</span> <span class="s1">&#39;_created&#39;</span><span class="p">,</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">,</span> <span class="s1">&#39;_messages&#39;</span><span class="p">,</span> <span class="s1">&#39;_version&#39;</span><span class="p">,</span> <span class="s1">&#39;_meta&#39;</span><span class="p">]</span>
-
-
-<span class="k">class</span> <span class="nc">IncompatibleYmlException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="k">pass</span>
+<span class="n">_SPECIALS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">,</span> <span class="s1">&#39;_status&#39;</span><span class="p">,</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">,</span> <span class="s1">&#39;_messages&#39;</span><span class="p">,</span> <span class="s1">&#39;_version&#39;</span><span class="p">,</span> <span class="s1">&#39;_meta&#39;</span><span class="p">]</span>
+<span class="n">_SPECIALS</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;_user&#39;</span><span class="p">,</span> <span class="s1">&#39;_host&#39;</span><span class="p">,</span> <span class="s1">&#39;_notes&#39;</span><span class="p">,</span> <span class="s1">&#39;_timestamps&#39;</span><span class="p">]</span>
+<span class="n">_DEPRECIATED</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;_name&#39;</span><span class="p">,</span> <span class="s1">&#39;_created&#39;</span><span class="p">]</span>
 
 
 <span class="k">class</span> <span class="nc">TimeoutException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="k">pass</span>
+
+
+<span class="k">def</span> <span class="nf">get_time</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">DATE_FORMAT</span><span class="p">)</span>
+
+
+<span class="n">DEFAULT</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+<span class="n">REGISTERED</span> <span class="o">=</span> <span class="s1">&#39;registered&#39;</span>
+<span class="n">RUNNING</span> <span class="o">=</span> <span class="s1">&#39;running&#39;</span>
+<span class="n">ERROR</span> <span class="o">=</span> <span class="s1">&#39;error&#39;</span>
+<span class="n">STOPPED</span> <span class="o">=</span> <span class="s1">&#39;stopped&#39;</span>
+<span class="n">TIMEOUT</span> <span class="o">=</span> <span class="s1">&#39;timeout&#39;</span>
+<span class="n">FINISHED</span> <span class="o">=</span> <span class="s1">&#39;finished&#39;</span>
+<span class="n">DETACHED</span> <span class="o">=</span> <span class="s1">&#39;detached&#39;</span>
+<span class="n">REQUEUE</span> <span class="o">=</span> <span class="s1">&#39;requeue&#39;</span>
+<span class="n">DELETED</span> <span class="o">=</span> <span class="s1">&#39;deleted&#39;</span>
+
+
+<span class="k">def</span> <span class="nf">get_timestamps</span><span class="p">(</span><span class="n">created</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stopped</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">last</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">registered</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;created&#39;</span><span class="p">:</span> <span class="n">created</span><span class="p">,</span>
+        <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
+        <span class="s1">&#39;stopped&#39;</span><span class="p">:</span> <span class="n">stopped</span><span class="p">,</span>
+        <span class="s1">&#39;last&#39;</span><span class="p">:</span> <span class="n">last</span><span class="p">,</span>
+        <span class="s1">&#39;registered&#39;</span><span class="p">:</span> <span class="n">registered</span><span class="p">}</span>
 
 
 <div class="viewcode-block" id="Experiment"><a class="viewcode-back" href="../../api.html#xmen.experiment.Experiment">[docs]</a><span class="k">class</span> <span class="nc">Experiment</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">TypedMeta</span><span class="p">):</span>
@@ -261,40 +283,52 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_params</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Used to store parameters registered by the MetaClass</span>
 
-<div class="viewcode-block" id="Experiment.__init__"><a class="viewcode-back" href="../../api.html#xmen.experiment.Experiment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="p">):</span>
+<div class="viewcode-block" id="Experiment.__init__"><a class="viewcode-back" href="../../api.html#xmen.experiment.Experiment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">copy_params</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create a new experiment object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            root, name (str): If not None then the experiment will be registered to a folder ``{root}\{name}``</span>
 <span class="sd">            purpose (str): An optional string giving the purpose of the experiment.</span>
-<span class="sd">            copy (bool): If True then parameters are deep copied to the object instance from the class definition.</span>
+<span class="sd">            copy_params (bool): If True then parameters are deep copied to the object instance from the class definition.</span>
 <span class="sd">                Mutable attributes will no longer be shared.</span>
 <span class="sd">            **kwargs: Override parameter defaults.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
-            <span class="kn">import</span> <span class="nn">copy</span>
+        <span class="kn">import</span> <span class="nn">copy</span>
+        <span class="k">if</span> <span class="n">copy_params</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">]:</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)))</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="n">now_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">DATE_FORMAT</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_root</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>     <span class="c1"># @p The root directory of the experiment</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>     <span class="c1"># @p The name of the experiment (under root)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>        <span class="c1"># @p One of [&#39;default&#39; | &#39;created&#39; | &#39;running&#39; | &#39;error&#39; | &#39;finished&#39;]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_created</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">now_time</span>        <span class="c1"># @p The date the experiment was created</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT</span>  <span class="c1"># @p One of [&#39;default&#39; | &#39;created&#39; | &#39;running&#39; | &#39;error&#39; | &#39;finished&#39;]</span>
+            <span class="c1"># self._created: Optional[float] = None  # @p Initial time the experiment was created</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_notes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># @p Notes attached to the experiment</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_purpose</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># @p A description of the experiment purpose</span>
+            <span class="c1"># new attributes</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">local_user</span>  <span class="c1"># @p The user of the experiment</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">local_host</span>  <span class="c1"># @p The name of the default host</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">get_timestamps</span><span class="p">()</span>   <span class="c1"># @p timestamps attached to the experiment</span>
+            <span class="c1"># These can all be varied</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_messages</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># @p Messages left by the experiment</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>   <span class="c1"># @p Experiment version information. See `get_version`</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>    <span class="c1"># @p The global configuration for the experiment manager</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># @p Experiment version information. See `get_version`</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># @p The global configuration for the experiment manager</span>
+
+            <span class="c1"># depreciated</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_specials</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">_SPECIALS</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_helps</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># queues</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queues</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_manager</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either both or neither of name and root can be set&quot;</span><span class="p">)</span>
 
         <span class="c1"># Update kwargs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">purpose</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="n">root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="n">purpose</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">root</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -302,17 +336,8 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;The name of the current experiment&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
-
-    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">directory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;The directory assigned to the experiment&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_root</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -322,8 +347,28 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">created</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;The date the experiment parameters were last updated.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_created</span>
+        <span class="sd">&quot;&quot;&quot;The date the experiment parameters was first registered.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="p">[</span><span class="s1">&#39;created&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The time the experiment last started running.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">registered</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The time the experiment was last registered.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="p">[</span><span class="s1">&#39;registered&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stopped</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The time the experiment was last stopped.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="p">[</span><span class="s1">&#39;stopped&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">last</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The time the experiment state was last communicated.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="p">[</span><span class="s1">&#39;last&#39;</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">purpose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -340,18 +385,24 @@
         <span class="sd">&quot;&quot;&quot;A dictionary giving the version information for the experiment&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version</span>
 
-    <span class="c1"># @property</span>
-    <span class="c1"># def notes(self):</span>
-    <span class="c1">#     &quot;&quot;&quot;A dictionary containing the notes attached to the experiment&quot;&quot;&quot;</span>
-    <span class="c1">#     return self._notes</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">notes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A dictionary containing the notes attached to the experiment&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_notes</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">user</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The current user of the experiment&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">host</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The host of the experiment&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host</span>
 
     <span class="nd">@root</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Property root cannot be set.&#39;</span><span class="p">)</span>
-
-    <span class="nd">@name</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Property name cannot be set.&#39;</span><span class="p">)</span>
 
     <span class="nd">@status</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
@@ -373,6 +424,26 @@
     <span class="k">def</span> <span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Property version cannot be set.&#39;</span><span class="p">)</span>
 
+    <span class="nd">@user</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Property user cannot be set.&#39;</span><span class="p">)</span>
+
+    <span class="nd">@host</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">host</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The host of the experiment&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Property host cannot be set.&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Experiment.note"><a class="viewcode-back" href="../../api.html#xmen.experiment.Experiment.note">[docs]</a>    <span class="k">def</span> <span class="nf">note</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Leave a note with the experiment. Will be removed if ``remove`` is ``False``&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_notes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_notes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">remove</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_notes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_notes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_notes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_notes</span> <span class="o">=</span> <span class="kc">None</span></div>
+
 <div class="viewcode-block" id="Experiment.get_param_helps"><a class="viewcode-back" href="../../api.html#xmen.experiment.Experiment.get_param_helps">[docs]</a>    <span class="k">def</span> <span class="nf">get_param_helps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get help for all attributes in class (including inherited and private).&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
@@ -383,9 +454,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_version</span> <span class="o">=</span> <span class="n">get_version</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">update_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">get_cpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="n">get_meta</span><span class="p">(</span>
-            <span class="n">get_platform</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_cpu</span><span class="o">=</span><span class="n">get_cpu</span><span class="p">,</span> <span class="n">get_gpu</span><span class="o">=</span><span class="n">get_gpu</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">update_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">get_platform</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_cpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="n">get_meta</span><span class="p">(</span><span class="n">get_platform</span><span class="p">,</span> <span class="n">get_cpu</span><span class="p">,</span> <span class="n">get_memory</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">()</span>
 
@@ -394,58 +464,76 @@
 <span class="sd">         Any base class inheriting from Experiment can create a default file as::</span>
 
 <span class="sd">            MyExperiment().to_yaml(&#39;/dir/to/defaults/root&#39;)</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="n">DEFAULT</span><span class="p">,</span> <span class="s1">&#39;An experiment can only be converted to default if it has not been registered&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_version</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_meta</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="p">[</span><span class="s1">&#39;created&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_time</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">defaults_dir</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">defaults_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">(</span><span class="n">defaults_dir</span><span class="p">)</span></div>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">!=</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;An experiment can only be converted to default if it has not been registered&#39;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># self.defaults_created = datetime.datetime.now().strftime(&quot;%I:%M%p %B %d, %Y&quot;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">(</span><span class="n">defaults_dir</span><span class="p">)</span></div>
-
-    <span class="k">def</span> <span class="nf">_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">defaults_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Save experiment to either a defaults.yml file or a params.yml file depending on its status&quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
+    <span class="k">def</span> <span class="nf">as_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">as_string</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">dic_to_yaml</span>
         <span class="kn">from</span> <span class="nn">ruamel.yaml.comments</span> <span class="k">import</span> <span class="n">CommentedMap</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">update_version</span><span class="p">()</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_keys</span><span class="p">()</span> <span class="ow">or</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specials</span><span class="p">}</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">}</span>
         <span class="n">helps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param_helps</span><span class="p">()</span>
 
         <span class="c1"># Add definition module to experiment object</span>
-        <span class="n">defaults</span> <span class="o">=</span> <span class="n">CommentedMap</span><span class="p">()</span>
+        <span class="nb">map</span> <span class="o">=</span> <span class="n">CommentedMap</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">,</span> <span class="s1">&#39;_name&#39;</span><span class="p">,</span> <span class="s1">&#39;_status&#39;</span><span class="p">,</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">,</span> <span class="s1">&#39;_messages&#39;</span><span class="p">,</span> <span class="s1">&#39;_origin&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="n">DEFAULT</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">,</span> <span class="s1">&#39;_status&#39;</span><span class="p">,</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;_messages&#39;</span><span class="p">,</span> <span class="s1">&#39;_origin&#39;</span><span class="p">,</span> <span class="s1">&#39;_timestamps&#39;</span><span class="p">,</span> <span class="s1">&#39;_notes&#39;</span><span class="p">,</span> <span class="s1">&#39;_type&#39;</span><span class="p">]:</span>
                     <span class="k">continue</span>
-            <span class="c1"># comment = helps[k].split(k)[1] if helps[k] is not None else None</span>
             <span class="n">comment</span> <span class="o">=</span> <span class="n">helps</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">comment</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
                 <span class="n">comment</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">defaults</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="n">comment</span><span class="p">)</span>
+            <span class="nb">map</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="n">comment</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">as_string</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">dic_to_yaml</span><span class="p">(</span><span class="nb">map</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">map</span>
+
+    <span class="k">def</span> <span class="nf">to_update_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">xmen.config</span> <span class="k">import</span> <span class="n">Config</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_yaml</span><span class="p">()</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{config.local_user}</span><span class="s1">@</span><span class="si">{config.local_host}</span><span class="s1">:</span><span class="si">{self.root}</span><span class="s1">&#39;</span>
+        <span class="k">return</span> <span class="n">UpdateExperiment</span><span class="p">(</span>
+            <span class="n">user</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">password</span><span class="p">,</span>
+            <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">defaults_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save experiment to either a defaults.yml file or a params.yml file depending on its status&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="n">DEFAULT</span><span class="p">:</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">defaults_dir</span><span class="p">,</span> <span class="s1">&#39;defaults.yml&#39;</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_root</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">)</span>
 
-        <span class="c1"># Convert to yaml</span>
-        <span class="n">yaml</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">YAML</span><span class="p">()</span>
-        <span class="n">yaml</span><span class="o">.</span><span class="n">register_class</span><span class="p">(</span><span class="n">NullRoot</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s1">&#39;detached&#39;</span><span class="p">:</span>
-                <span class="k">pass</span>
-            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">defaults</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">())</span>
-        <span class="k">except</span> <span class="n">yaml</span><span class="o">.</span><span class="n">representer</span><span class="o">.</span><span class="n">RepresenterError</span> <span class="k">as</span> <span class="n">m</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Invalid yaml encountered with error </span><span class="si">{m}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">RUNNING</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="p">[</span><span class="s1">&#39;last&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_time</span><span class="p">()</span>
 
+        <span class="c1"># save parameters (always)</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_yaml</span><span class="p">()</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">defaults</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DEFAULT</span><span class="p">,</span> <span class="n">REGISTERED</span><span class="p">]:</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_update_request</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queues</span><span class="p">:</span>
+                <span class="c1"># get one item and put one item</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="n">q</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">REGISTERED</span><span class="p">:</span>
+            <span class="c1"># the global configuration will link with the server...</span>
+            <span class="n">Config</span><span class="p">()</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Experiment.debug"><a class="viewcode-back" href="../../api.html#xmen.experiment.Experiment.debug">[docs]</a>    <span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Inherited classes may overload debug. Used to define a set of open_socket for minimum example&quot;&quot;&quot;</span>
@@ -454,23 +542,29 @@
 <div class="viewcode-block" id="Experiment.from_yml"><a class="viewcode-back" href="../../api.html#xmen.experiment.Experiment.from_yml">[docs]</a>    <span class="k">def</span> <span class="nf">from_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Load state from either a ``params.yml`` or ``defaults.yml`` file (inferred from the filename).</span>
 <span class="sd">        The status of the experiment will be updated to ``&#39;default&#39;`` if ``&#39;defaults.yml&#39;``</span>
-<span class="sd">        file else ``&#39;registered&#39;`` if ``params.yml`` file.&quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
-        <span class="n">yaml</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">YAML</span><span class="p">()</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-                <span class="n">params</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">IncompatibleYmlException</span>
+<span class="sd">        file else ``&#39;registered&#39;`` if ``params.yml`` file.</span>
+
+<span class="sd">        If copy is ``True`` then only user defined parameters themselves will be copied from the params.yml file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">dic_from_yml</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">dic_from_yml</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="c1"># backward compatibility</span>
+        <span class="k">if</span> <span class="s1">&#39;_name&#39;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">],</span> <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_name&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="s1">&#39;_created&#39;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;_timestamps&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_timestamps</span><span class="p">()</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;_timestamps&#39;</span><span class="p">][</span><span class="s1">&#39;created&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_created&#39;</span><span class="p">)</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">commented_to_py</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">}</span>
+
         <span class="k">if</span> <span class="n">copy</span><span class="p">:</span>
             <span class="c1"># Copy only parameter values themselves (and not specials)</span>
             <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)}</span>
-        <span class="c1"># Update created date</span>
-        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_created</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">DATE_FORMAT</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Experiment.register"><a class="viewcode-back" href="../../api.html#xmen.experiment.Experiment.register">[docs]</a>    <span class="k">def</span> <span class="nf">link</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">same_names</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">generate_script</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># update created date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Experiment.register"><a class="viewcode-back" href="../../api.html#xmen.experiment.Experiment.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">same_names</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">_</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Register an experiment to an experiment directory. Its status will be updated to ``registered``. If an</span>
 <span class="sd">        experiment called ``name`` exists in ``root`` and ``force==True`` then name will be appended with an int</span>
 <span class="sd">        (eg. ``{name}_0``) until a unique name is found in ``root``. If ``force==False`` a ``ValueError`` will be raised.</span>
@@ -481,78 +575,39 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: if ``{root}/{name}`` already contains a ``params.yml`` file</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="n">exists</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">))</span>
+        <span class="n">exists</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">restart</span> <span class="ow">or</span> <span class="p">(</span><span class="n">restart</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">exists</span><span class="p">:</span>
                 <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="k">if</span> <span class="n">force</span><span class="p">:</span>
                     <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">same_names</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">)):</span>
-                            <span class="n">folder</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                            <span class="n">name</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">)):</span>
+                            <span class="n">root</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                            <span class="c1"># name += &#39;_&#39; + str(i)</span>
                             <span class="k">break</span>
                         <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="n">same_names</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Experiment folder {os.path.join(root, name)} already contains a params.yml file. &#39;</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Experiment folder </span><span class="si">{root}</span><span class="s1"> already contains a params.yml file. &#39;</span>
                                      <span class="n">f</span><span class="s1">&#39;An Experiment cannot be created in an already existing experiment folder&#39;</span><span class="p">)</span>
-            <span class="c1"># Make the folder if it does not exist</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
 
-            <span class="c1"># Generate a script.sh in each folder that can be used to run the experiment</span>
-            <span class="k">if</span> <span class="n">generate_script</span><span class="p">:</span>
-                <span class="n">script</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_run_script</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;individual&#39;</span><span class="p">)</span>
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;run.sh&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+            <span class="c1"># Make the folder if it does not exist</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">update_version</span><span class="p">()</span>  <span class="c1"># Get new version information</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_meta</span><span class="p">()</span>   <span class="c1"># Get the newest meta information</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_root</span> <span class="o">=</span> <span class="n">root</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_purpose</span> <span class="o">=</span> <span class="n">purpose</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="s1">&#39;registered&#39;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="p">[</span><span class="s1">&#39;created&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="p">[</span><span class="s1">&#39;created&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_time</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="p">[</span><span class="s1">&#39;registered&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_time</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">REGISTERED</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">from_yml</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">))</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="s1">&#39;registered&#39;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="s1">&#39;registered&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">from_yml</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">REGISTERED</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">REGISTERED</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">()</span></div>
-
-    <span class="k">def</span> <span class="nf">get_run_script</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;set&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="s1">&#39;/usr/bin/env python3&#39;</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="nb">type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;set&#39;</span><span class="p">,</span> <span class="s1">&#39;indiviual&#39;</span><span class="p">],</span> <span class="s1">&#39;Only types &quot;set&quot; and &quot;individual&quot; are currently supported.&#39;</span>
-        <span class="n">sh</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;#!</span><span class="si">{shell}</span><span class="s1">&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">update_version</span><span class="p">()</span>
-        <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;# File generated on the {datetime.datetime.now().strftime(&quot;%I:%M%p %B </span><span class="si">%d</span><span class="s1">, %Y&quot;)}&#39;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="s1">&#39;git&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version</span><span class="p">:</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{comment}</span><span class="s1"> GIT:&#39;</span><span class="p">]</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{comment}</span><span class="s1"> - repo </span><span class="si">{self._version[&quot;git&quot;][&quot;local&quot;]}</span><span class="s1">&#39;</span><span class="p">]</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{comment}</span><span class="s1"> - branch </span><span class="si">{self._version[&quot;git&quot;][&quot;branch&quot;]}</span><span class="s1">&#39;</span><span class="p">]</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{comment}</span><span class="s1"> - remote </span><span class="si">{self._version[&quot;git&quot;][&quot;remote&quot;]}</span><span class="s1">&#39;</span><span class="p">]</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{comment}</span><span class="s1"> - commit </span><span class="si">{self._version[&quot;git&quot;][&quot;commit&quot;]}</span><span class="s1">&#39;</span><span class="p">]</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
-        <span class="n">possible_roots</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version</span><span class="p">[</span><span class="s1">&#39;module&#39;</span><span class="p">]])</span>
-        <span class="n">root</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">possible_roots</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">root</span> <span class="o">=</span> <span class="n">possible_roots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="s1">&#39;experiments&#39;</span> <span class="ow">in</span> <span class="n">shell</span><span class="p">:</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;import sys&#39;</span><span class="p">]</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;import importlib&#39;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;sys.path.append(&quot;</span><span class="si">{root}</span><span class="s1">&quot;)&#39;</span><span class="p">]</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;import logging&#39;</span><span class="p">]</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;logger = logging.getLogger()&#39;</span><span class="p">]</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;logger.setLevel(logging.INFO)&#39;</span><span class="p">]</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;module = importlib.import_module(&quot;</span><span class="si">{self.__class__.__module__}</span><span class="s1">&quot;)&#39;</span><span class="p">]</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;X = getattr(module, &quot;</span><span class="si">{self.__class__.__name__}</span><span class="s1">&quot;)&#39;</span><span class="p">]</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;X().main()&#39;</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">sh</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;#!</span><span class="si">{shell}</span><span class="s1">&#39;</span><span class="p">]</span>
-            <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;python3 &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version</span><span class="p">[</span><span class="s1">&#39;module&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; --execute &#39;</span><span class="p">]</span>
-            <span class="n">sh</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="s1">&#39;$</span><span class="si">{1}</span><span class="s1">&#39;</span> <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;set&#39;</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sh</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Experiment.to_root"><a class="viewcode-back" href="../../api.html#xmen.experiment.Experiment.to_root">[docs]</a>    <span class="k">def</span> <span class="nf">to_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_dir</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="s1">&#39;/bin/bash&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Generate a ``defaults.yml`` file and ``script.sh`` file in ``root_dir``.</span>
@@ -564,7 +619,7 @@
         <span class="kn">import</span> <span class="nn">stat</span>
         <span class="c1"># get_git is deliberately called outside to_defaults as git information is also added to script.sh</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_version</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">update_meta</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_meta</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">get_run_script</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;fn&#39;</span><span class="p">):</span>
@@ -583,7 +638,7 @@
         <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">st</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">|</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IEXEC</span><span class="p">)</span>
 
         <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="s1">&#39;script.sh&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-            <span class="n">f</span><span class="s1">&#39;#!</span><span class="si">{shell}</span><span class="se">\n</span><span class="si">{path}</span><span class="s1"> --execute ${{1}}&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="s1">&#39;#!</span><span class="si">{shell}</span><span class="se">\n</span><span class="s1">exec </span><span class="si">{path}</span><span class="s1"> --execute ${{1}}&#39;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">to_defaults</span><span class="p">(</span><span class="n">root_dir</span><span class="p">)</span></div>
 
@@ -594,18 +649,15 @@
 
     <span class="k">def</span> <span class="nf">detach</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_root</span> <span class="o">=</span> <span class="n">NullRoot</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="s1">&#39;detached&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">DETACHED</span>
 
 <div class="viewcode-block" id="Experiment.update"><a class="viewcode-back" href="../../api.html#xmen.experiment.Experiment.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update the parameters with a given dictionary&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="s1">&#39;detached&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DEFAULT</span><span class="p">,</span> <span class="n">DETACHED</span><span class="p">]:</span>
             <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_keys</span><span class="p">()</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specials</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">]):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Key not recognised!&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="c1"># Update the created date</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_created</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%m-</span><span class="si">%d</span><span class="s2">-%y-%H:%M:%S&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Parameters of a created experiment cannot be updated.&#39;</span><span class="p">)</span></div>
 
@@ -614,44 +666,79 @@
 
     <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Attributes can only be changed when the status of the experiment is default&quot;&quot;&quot;</span>
-        <span class="c1"># specials = [&#39;name&#39;, &#39;root&#39;, &#39;status&#39;, &#39;created&#39;, &#39;purpose&#39;, &#39;messages&#39;, &#39;version&#39;]</span>
         <span class="k">if</span> <span class="s1">&#39;_status&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_keys</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="s1">&#39;detached&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specials</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_keys</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DEFAULT</span><span class="p">,</span> <span class="n">DETACHED</span><span class="p">]</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specials</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Parameters can only be changed when status = &quot;default&quot; or &quot;detached&quot;&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
 
     <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">_sigusr1_handler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">handler</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">TimeoutException</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="n">TimeoutException</span>
+        <span class="c1"># set up the signal usr1 signal handler</span>
         <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGUSR1</span><span class="p">,</span> <span class="n">_sigusr1_handler</span><span class="p">)</span>
-        <span class="n">meta</span> <span class="o">=</span> <span class="n">get_meta</span><span class="p">(</span>
-            <span class="n">get_platform</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_cpu</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_disk</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">get_slurm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_conda</span><span class="o">=</span><span class="n">SAVE_CONDA</span><span class="p">,</span> <span class="n">get_network</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_gpu</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">get_environ</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># get all the meta information for the current system</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">get_meta</span><span class="p">(</span><span class="n">get_platform</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_cpu</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_disk</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">get_slurm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_conda</span><span class="o">=</span><span class="n">CONFIG</span><span class="o">.</span><span class="n">save_conda</span><span class="p">,</span> <span class="n">get_network</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_gpu</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">get_environ</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># save conda environment information</span>
+        <span class="c1"># saved seperately from the params.yml file for clarity</span>
         <span class="n">conda</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;conda&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="kn">from</span> <span class="nn">ruamel.yaml</span> <span class="k">import</span> <span class="n">YAML</span>
         <span class="n">yaml</span> <span class="o">=</span> <span class="n">YAML</span><span class="p">()</span>
         <span class="n">yaml</span><span class="o">.</span><span class="n">default_flow_style</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">conda</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s1">&#39;environment.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s1">&#39;environment.yml&#39;</span><span class="p">))</span>
                 <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">conda</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s1">&#39;meta.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_update_status</span><span class="p">(</span><span class="s1">&#39;running&#39;</span><span class="p">)</span>
+        <span class="c1"># update internal state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="n">meta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_status</span><span class="p">(</span><span class="n">RUNNING</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_time</span><span class="p">()</span>
+
+        <span class="c1"># setup queues for interfacing with remote server</span>
+        <span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="k">import</span> <span class="n">Process</span><span class="p">,</span> <span class="n">Manager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queues</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_manager</span><span class="o">.</span><span class="n">Queue</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">2</span><span class="p">)]</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">send_request_task</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_queues</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">))</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span> <span class="o">+=</span> <span class="p">[</span><span class="n">p</span><span class="p">]</span>
+
+        <span class="c1"># finally save the experiment (and send UpdateExperiment request to server)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="p">[</span><span class="s1">&#39;stopped&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_time</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">exc_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_update_status</span><span class="p">(</span><span class="s1">&#39;finished&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_status</span><span class="p">(</span><span class="n">FINISHED</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">exc_type</span> <span class="ow">is</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_update_status</span><span class="p">(</span><span class="s1">&#39;stopped&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;########################&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Stopping experiment&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;########################&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_status</span><span class="p">(</span><span class="n">STOPPED</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">exc_type</span> <span class="ow">is</span> <span class="n">TimeoutException</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_update_status</span><span class="p">(</span><span class="s1">&#39;timeout&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;########################&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Timeout encountered&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;########################&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_status</span><span class="p">(</span><span class="n">TIMEOUT</span><span class="p">)</span>
+            <span class="n">slurm_job</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;SLURM_JOBID&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">slurm_job</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">reque</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">subprocess</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_update_status</span><span class="p">(</span><span class="n">REQUEUE</span><span class="p">)</span>
+                <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">([</span><span class="s1">&#39;scontrol&#39;</span><span class="p">,</span> <span class="s1">&#39;requeue&#39;</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{slurm_job}</span><span class="s1">&#39;</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;timeout&#39;</span><span class="p">,</span> <span class="s1">&#39;stopped&#39;</span><span class="p">]:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_update_status</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;########################&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;An error occurred encountered&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;########################&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">TIMEOUT</span><span class="p">,</span> <span class="n">STOPPED</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_update_status</span><span class="p">(</span><span class="n">ERROR</span><span class="p">)</span>
+
+        <span class="c1"># stop running processes</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queues</span><span class="p">:</span>
+            <span class="n">q</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Processes terminated&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Used to run experiment. Upon entering the experiment status is updated to ``&#39;running`` before ``args`` and</span>
@@ -683,7 +770,6 @@
 <span class="sd">            (if possible) then string thereafter.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Add leader to messages group</span>
             <span class="k">if</span> <span class="n">leader</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -718,6 +804,7 @@
 <div class="viewcode-block" id="Experiment.parse_args"><a class="viewcode-back" href="../../api.html#xmen.experiment.Experiment.parse_args">[docs]</a>    <span class="k">def</span> <span class="nf">parse_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Configure the experiment instance from the command line arguments.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">IncompatibleYmlException</span>
         <span class="n">experiment_parser</span><span class="o">.</span><span class="n">prog</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;xmen </span><span class="si">{self.__class__.__name__}</span><span class="s1">&#39;</span>
 
         <span class="c1"># Configure help information from the class</span>
@@ -766,9 +853,10 @@
                         <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;ERROR: File </span><span class="si">{args.execute}</span><span class="s1"> is not a valid params.yml file&#39;</span><span class="p">)</span>
                 <span class="c1"># (2) link experiment to a repository</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">execute</span><span class="p">))</span>
-                    <span class="n">root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">execute</span><span class="p">))</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">restart</span><span class="p">)</span>
+                    <span class="n">purpose</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">purpose</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">prompt</span><span class="p">:</span>
+                        <span class="n">purpose</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Enter the purpose of the experiment: &#39;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">execute</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">restart</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="n">purpose</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">args</span></div>
@@ -791,7 +879,7 @@
         <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">a</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">execute</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">to_root</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">to_txt</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">update</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">a</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">execute</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">to_root</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">txt</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">update</span><span class="p">)):</span>
             <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">For more help use --help.&#39;</span><span class="p">)</span>
 
@@ -802,14 +890,14 @@
 
         <span class="c1"># Run the experiment</span>
         <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">execute</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;registered&#39;</span><span class="p">,</span> <span class="s1">&#39;detached&#39;</span><span class="p">],</span> <span class="s1">&#39;Experiment must be registered before execution&#39;</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">[</span><span class="n">REGISTERED</span><span class="p">,</span> <span class="n">DETACHED</span><span class="p">,</span> <span class="n">TIMEOUT</span><span class="p">,</span> <span class="n">REQUEUE</span><span class="p">],</span>\
+                <span class="n">f</span><span class="s1">&#39;Experiment must be registered before execution but got </span><span class="si">{self.status}</span><span class="s1">&#39;</span>
             <span class="c1"># Configure standard out to print to the registered directory as well as</span>
             <span class="c1"># the original standard out</span>
-            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">to_txt</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">txt</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stdout_to_txt</span><span class="p">()</span>
             <span class="c1"># Execute experiment</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="c1"># print(self)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="fm">__call__</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;WARNING: The --execute flag was passed but run is not implemented for </span><span class="si">{self.__class__}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -821,7 +909,7 @@
         <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">MultiOut</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">__stderr__</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s1">&#39;out.txt&#39;</span><span class="p">),</span> <span class="s1">&#39;a+&#39;</span><span class="p">))</span></div>
 
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Provides a useful help message for the experiment&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Pretty print the experiment&quot;&quot;&quot;</span>
         <span class="c1"># params = {k: v for k, v in self.__dict__.items() if k[0] != &#39;_&#39;}</span>
         <span class="n">helps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param_helps</span><span class="p">()</span>
         <span class="n">base_params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specials</span><span class="p">}</span>

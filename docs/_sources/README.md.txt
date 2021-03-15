@@ -38,7 +38,7 @@
     # add an experiment
     >>> xmen experiments --add xmen.examples.hello_world HelloWorld
     # get documentation
-    >>> xmen experiments HelloWorld
+    >>> xmen experiments HelloWorld  
       A class experiment
 
       Parameters:

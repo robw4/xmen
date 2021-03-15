@@ -215,7 +215,7 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#xmen.config.GlobalExperimentManager.add_experiment">add_python() (xmen.config.GlobalExperimentManager method)</a>
+      <li><a href="api.html#xmen.config.GlobalExperimentManager.add_experiment">add_experiment() (xmen.config.GlobalExperimentManager method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -251,9 +251,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.experiment.Experiment.debug">debug() (xmen.experiment.Experiment method)</a>
 </li>
+      <li><a href="api.html#xmen.utils.dic_from_yml">dic_from_yml() (in module xmen.utils)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#xmen.experiment.Experiment.directory">directory() (xmen.experiment.Experiment property)</a>
+      <li><a href="api.html#xmen.utils.dic_to_yaml">dic_to_yaml() (in module xmen.utils)</a>
+</li>
+      <li><a href="api.html#xmen.utils.dics_to_pandas">dics_to_pandas() (in module xmen.utils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -279,6 +283,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.utils.flatten">flatten() (in module xmen.utils)</a>
+</li>
       <li><a href="api.html#xmen.experiment.Experiment.from_yml">from_yml() (xmen.experiment.Experiment method)</a>
 </li>
       <li><a href="api.html#xmen.functional.functional_experiment">functional_experiment() (in module xmen.functional)</a>
@@ -318,6 +324,10 @@
       <li><a href="api.html#xmen.monitor.Hook">Hook (class in xmen.monitor)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.experiment.Experiment.host">host() (xmen.experiment.Experiment property)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="I">I</h2>
@@ -327,6 +337,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.utils.IncompatibleYmlException">IncompatibleYmlException</a>
+</li>
       <li><a href="api.html#xmen.manager.ExperimentManager.initialise">initialise() (xmen.manager.ExperimentManager method)</a>
 </li>
   </ul></td>
@@ -335,7 +347,7 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#xmen.manager.ExperimentManager.list">list() (xmen.manager.ExperimentManager method)</a>
+      <li><a href="api.html#xmen.experiment.Experiment.last">last() (xmen.experiment.Experiment property)</a>
 </li>
       <li><a href="api.html#xmen.monitor.load">load() (in module xmen.monitor)</a>
 
@@ -343,12 +355,18 @@
         <li><a href="api.html#xmen.monitor.TorchMonitor.load">(xmen.monitor.TorchMonitor method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.manager.ExperimentManager.load_defaults">load_defaults() (xmen.manager.ExperimentManager method)</a>
 </li>
-      <li><a href="api.html#xmen.manager.ExperimentManager.load_params">load_params() (xmen.manager.ExperimentManager method)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.utils.load_param">load_param() (in module xmen.utils)</a>
 </li>
+      <li><a href="api.html#xmen.utils.load_params">load_params() (in module xmen.utils)</a>
+
+      <ul>
+        <li><a href="api.html#xmen.manager.ExperimentManager.load_params">(xmen.manager.ExperimentManager method)</a>
+</li>
+      </ul></li>
       <li><a href="api.html#xmen.monitor.Monitor.log">log() (xmen.monitor.Monitor method)</a>
 </li>
       <li><a href="api.html#xmen.monitor.Logger">Logger (class in xmen.monitor)</a>
@@ -381,11 +399,15 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#xmen.experiment.Experiment.name">name() (xmen.experiment.Experiment property)</a>
+      <li><a href="api.html#xmen.experiment.Experiment.note">note() (xmen.experiment.Experiment method)</a>
+
+      <ul>
+        <li><a href="api.html#xmen.manager.ExperimentManager.note">(xmen.manager.ExperimentManager method)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#xmen.manager.ExperimentManager.note">note() (xmen.manager.ExperimentManager method)</a>
+      <li><a href="api.html#xmen.experiment.Experiment.notes">notes() (xmen.experiment.Experiment property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -407,16 +429,18 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.functional.read_comments">read_comments() (in module xmen.functional)</a>
 </li>
-      <li><a href="api.html#xmen.experiment.Experiment.register">link() (xmen.experiment.Experiment method)</a>
+      <li><a href="api.html#xmen.experiment.Experiment.register">register() (xmen.experiment.Experiment method)</a>
 
       <ul>
         <li><a href="api.html#xmen.manager.ExperimentManager.register">(xmen.manager.ExperimentManager method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#xmen.manager.ExperimentManager.relink">relink() (xmen.manager.ExperimentManager method)</a>
+      <li><a href="api.html#xmen.experiment.Experiment.registered">registered() (xmen.experiment.Experiment property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.manager.ExperimentManager.relink">relink() (xmen.manager.ExperimentManager method)</a>
+</li>
       <li><a href="api.html#xmen.manager.ExperimentManager.reset">reset() (xmen.manager.ExperimentManager method)</a>
 </li>
       <li><a href="api.html#xmen.functional.Root">Root (class in xmen.functional)</a>
@@ -431,13 +455,19 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.utils.save_param">save_param() (in module xmen.utils)</a>
+</li>
       <li><a href="api.html#xmen.manager.ExperimentManager.save_params">save_params() (xmen.manager.ExperimentManager method)</a>
 </li>
-      <li><a href="api.html#xmen.experiment.Experiment.status">status() (xmen.experiment.Experiment property)</a>
+      <li><a href="api.html#xmen.experiment.Experiment.start">start() (xmen.experiment.Experiment property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#xmen.experiment.Experiment.status">status() (xmen.experiment.Experiment property)</a>
+</li>
       <li><a href="api.html#xmen.experiment.Experiment.stdout_to_txt">stdout_to_txt() (xmen.experiment.Experiment method)</a>
+</li>
+      <li><a href="api.html#xmen.experiment.Experiment.stopped">stopped() (xmen.experiment.Experiment property)</a>
 </li>
       <li><a href="api.html#xmen.monitor.Monitor.summary">summary() (xmen.monitor.Monitor method)</a>
 </li>
@@ -471,11 +501,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.manager.ExperimentManager.unlink">unlink() (xmen.manager.ExperimentManager method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.experiment.Experiment.update">update() (xmen.experiment.Experiment method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#xmen.manager.ExperimentManager.update_meta">update_meta() (xmen.manager.ExperimentManager method)</a>
+</li>
+      <li><a href="api.html#xmen.experiment.Experiment.user">user() (xmen.experiment.Experiment property)</a>
 </li>
   </ul></td>
 </tr></table>

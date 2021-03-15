@@ -195,25 +195,25 @@
 <h2>xmen<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <ol>
 <li><p>Define experiments in experiments</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">xmen</span> <span class="kn">import</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">Root</span>
+<div class="highlight-experiments notranslate"><div class="highlight"><pre><span></span>from xmen import Experiment, Root
 
-<span class="c1"># as classes... </span>
-<span class="k">class</span> <span class="nc">HelloWorld</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A class experiment&quot;&quot;&quot;</span>
-    <span class="n">a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span> <span class="c1"># @p The first argument</span>
-    <span class="n">b</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;World&#39;</span> <span class="c1"># @p The second argument</span>
+# as classes... 
+class HelloWorld(Experiment):
+    &quot;&quot;&quot;A class experiment&quot;&quot;&quot;
+    a: str = &#39;Hello&#39; # @p The first argument
+    b: str = &#39;World&#39; # @p The second argument
 
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{a} {b}!&#39;</span><span class="p">)</span>
+    def run(self):
+        print(f&#39;{a} {b}!&#39;)
 
-<span class="c1"># as functions...</span>
-<span class="k">def</span> <span class="nf">hello_world</span><span class="p">(</span>
-  <span class="n">root</span><span class="p">:</span> <span class="n">Root</span><span class="p">,</span> 
-  <span class="n">a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span><span class="p">,</span>  <span class="c1"># the first argument</span>
-  <span class="n">b</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;World&#39;</span>   <span class="c1"># the second argument</span>
-  <span class="p">):</span>
-  <span class="sd">&quot;&quot;&quot;A functional experiment&quot;&quot;&quot;</span>
-  <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{a}  {b}&#39;</span><span class="p">)</span>
+# as functions...
+def hello_world(
+  root: Root, 
+  a: str = &#39;Hello&#39;,  # the first argument
+  b: str = &#39;World&#39;   # the second argument
+  ):
+  &quot;&quot;&quot;A functional experiment&quot;&quot;&quot;
+  print(f&#39;{a}  {b}&#39;)
 </pre></div>
 </div>
 </li>
@@ -221,7 +221,7 @@
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># add an experiment</span>
 &gt;&gt;&gt; xmen experiments --add xmen.examples.hello_world HelloWorld
 <span class="c1"># get documentation</span>
-&gt;&gt;&gt; xmen experiments HelloWorld
+&gt;&gt;&gt; xmen experiments HelloWorld  
   A class experiment
 
   Parameters:
@@ -343,11 +343,11 @@
 </pre></div>
 </div>
 <p>The following experiments are defined</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">xmen.examples</span> <span class="kn">import</span> <span class="n">hello_world</span><span class="p">,</span> <span class="n">HelloWorld</span>  <span class="c1"># simple examples</span>
-<span class="kn">from</span> <span class="nn">xmen.examples</span> <span class="kn">import</span> <span class="n">AnotherExperiment</span><span class="p">,</span> <span class="n">MultiParentsExperiment</span>  <span class="c1"># with inheritance</span>
-<span class="kn">from</span> <span class="nn">xmen.examples</span> <span class="kn">import</span> <span class="n">dcgan</span> <span class="c1"># functional dcgan in pytorch</span>
-<span class="kn">from</span> <span class="nn">xmen.examples</span> <span class="kn">import</span> <span class="n">Dcgan</span> <span class="c1"># object-orientated dcgan in pytorch</span>
-<span class="kn">from</span> <span class="nn">xmen.examples</span> <span class="kn">import</span> <span class="n">InheritedMnistGAN</span><span class="p">,</span> <span class="n">InheritedMnistVae</span>  <span class="c1"># inheritance examples</span>
+<div class="highlight-experiments notranslate"><div class="highlight"><pre><span></span>from xmen.examples import hello_world, HelloWorld  # simple examples
+from xmen.examples import AnotherExperiment, MultiParentsExperiment  # with inheritance
+from xmen.examples import dcgan # functional dcgan in pytorch
+from xmen.examples import Dcgan # object-orientated dcgan in pytorch
+from xmen.examples import InheritedMnistGAN, InheritedMnistVae  # inheritance examples
 </pre></div>
 </div>
 <p>All these experimens can be run from using the xmen commandline tool, eg.:</p>

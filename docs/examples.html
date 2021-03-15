@@ -208,8 +208,6 @@
 <div class="section" id="hello-world">
 <h3>Hello World<a class="headerlink" href="#hello-world" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Basic Examples.</span>
-
-
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="c1">#  Copyright (C) 2019  Robert J Weston, Oxford Robotics Institute</span>
 <span class="c1">#</span>
@@ -349,7 +347,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">h</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s1">&#39;h has been overloaded as propery and will no longer&#39;</span> \
+        <span class="k">return</span> <span class="s1">&#39;h has been overloaded as property and will no longer&#39;</span> \
                <span class="s1">&#39;considered as a parameter&#39;</span>
 
 
@@ -400,7 +398,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-------------&#39;</span><span class="p">)</span>
     <span class="c1"># Before being run an experiment needs to be registered</span>
     <span class="c1"># to a directory</span>
-    <span class="n">exp</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="s1">&#39;/tmp/an_experiment&#39;</span><span class="p">,</span> <span class="s1">&#39;first_experiment&#39;</span><span class="p">,</span>
+    <span class="n">exp</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;/tmp/an_experiment&#39;</span><span class="p">,</span> <span class="s1">&#39;first_experiment&#39;</span><span class="p">,</span>
                  <span class="n">purpose</span><span class="o">=</span><span class="s1">&#39;A bit of a test of the xmen experiment api&#39;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">GIT, and system information is automatically logged</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -512,8 +510,8 @@
 
 <span class="c1"># link some experiments</span>
 <span class="n">ex1</span><span class="p">,</span> <span class="n">ex2</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(),</span> <span class="n">Experiment</span><span class="p">()</span>
-<span class="n">ex1</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex1&#39;</span><span class="p">)</span>
-<span class="n">ex2</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex2&#39;</span><span class="p">)</span>
+<span class="n">ex1</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex1&#39;</span><span class="p">)</span>
+<span class="n">ex2</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex2&#39;</span><span class="p">)</span>
 
 <span class="c1"># open_socket monitor</span>
 <span class="n">m</span> <span class="o">=</span> <span class="n">Monitor</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s1">&#39;y.*-&gt;ex.*@10s&#39;</span><span class="p">)</span>
@@ -574,7 +572,7 @@
 <span class="kn">from</span> <span class="nn">xmen.monitor</span> <span class="k">import</span> <span class="n">TorchMonitor</span>
 
 <span class="n">ex</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
-<span class="n">ex</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex&#39;</span><span class="p">)</span>
+<span class="n">ex</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="s1">&#39;ex&#39;</span><span class="p">)</span>
 <span class="n">m</span> <span class="o">=</span> <span class="n">TorchMonitor</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s1">&#39;^y$|^i$-&gt;^ex$@10s&#39;</span><span class="p">,</span> <span class="n">msg_keep</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="n">msg_leader</span><span class="o">=</span><span class="s1">&#39;^y$&#39;</span><span class="p">)</span>
 
 <span class="n">x</span> <span class="o">=</span> <span class="o">-</span><span class="mi">50</span>

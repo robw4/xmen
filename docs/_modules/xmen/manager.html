@@ -382,13 +382,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_specials</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">,</span> <span class="s1">&#39;_name&#39;</span><span class="p">,</span> <span class="s1">&#39;_status&#39;</span><span class="p">,</span> <span class="s1">&#39;_created&#39;</span><span class="p">,</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">,</span> <span class="s1">&#39;_messages&#39;</span><span class="p">,</span> <span class="s1">&#39;_version&#39;</span><span class="p">,</span> <span class="s1">&#39;_meta&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">headless</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">xmen</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">GlobalExperimentManager</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">xmen</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">Config</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Load dir from yaml</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;experiment.yml&#39;</span><span class="p">)):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">from_yml</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_from_yml</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="ExperimentManager.check_initialised"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.check_initialised">[docs]</a>    <span class="k">def</span> <span class="nf">check_initialised</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make sure that ``&#39;experiment.yml&#39;``, ``&#39;script.sh&#39;``, ``&#39;defaults.yml&#39;`` all exist in the directory&quot;&quot;&quot;</span>
@@ -404,7 +404,7 @@
             <span class="n">defaults</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">RoundTripLoader</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">defaults</span></div>
 
-<div class="viewcode-block" id="ExperimentManager.save_params"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.save_params">[docs]</a>    <span class="k">def</span> <span class="nf">save_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">experiment_name</span><span class="p">):</span>
+<div class="viewcode-block" id="ExperimentManager.save_params"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.save_params">[docs]</a>    <span class="k">def</span> <span class="nf">save_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save a dictionary of parameters at ``{root}/{experiment_name}/params.yml``</span>
 
 <span class="sd">        Args:</span>
@@ -412,8 +412,7 @@
 <span class="sd">            experiment_name (str): The name of the experiment</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
-        <span class="n">experiment_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">experiment_name</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">experiment_path</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out</span><span class="p">:</span>
             <span class="n">yaml</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">YAML</span><span class="p">()</span>
             <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span></div>
 
@@ -462,14 +461,14 @@
             <span class="n">params</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">params_yml</span><span class="p">,</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">RoundTripLoader</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">params</span></div>
 
-    <span class="k">def</span> <span class="nf">to_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_to_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save the current experiment manager to an ``experiment.yaml``&quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;_&#39;</span> <span class="ow">or</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specials</span><span class="p">}</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;experiment.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">Dumper</span><span class="o">=</span><span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">RoundTripDumper</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">from_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_from_yml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Load an experiment manager from an ``experiment.yml`` file&quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;experiment.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
@@ -528,10 +527,10 @@
                 <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Python Experiment </span><span class="si">{name}</span><span class="s1"> has not been registered with the global configuration. Aborting!&#39;</span><span class="p">)</span>
                 <span class="k">return</span>
 
-            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">python_paths</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">python_experiments</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
-                    <span class="c1"># Inserted right at the start (will be the first one searched in)</span>
-                    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+            <span class="c1"># for p in self._config.python_paths:</span>
+            <span class="c1">#     if self._config.python_experiments[name].startswith(p):</span>
+            <span class="c1">#         # Inserted right at the start (will be the first one searched in)</span>
+            <span class="c1">#         sys.path.insert(0, p)</span>
 
             <span class="kn">import</span> <span class="nn">subprocess</span>
             <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">python_experiments</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="s1">&#39;--to_root&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">])</span>
@@ -551,18 +550,12 @@
         <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Experiment root created at </span><span class="si">{self.root}</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="c1"># Add purpose message</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">prompt_for_message</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">prompt</span><span class="p">:</span>
             <span class="n">purpose</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Please enter the purpose of the experiments: &#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">purpose</span> <span class="o">=</span> <span class="n">purpose</span>
 
         <span class="c1"># Add experiment to global config</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s1">&#39;created&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">,</span>
-                <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
-                <span class="s1">&#39;purpose&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">purpose</span><span class="p">,</span>
-                <span class="s1">&#39;notes&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">notes</span><span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">_generate_params_from_string_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Take as input a dictionary and convert the dictionary to a list of keys and a list of list of values</span>
@@ -592,18 +585,25 @@
             <span class="n">values</span> <span class="o">=</span> <span class="n">new_values</span>
         <span class="k">return</span> <span class="n">values</span><span class="p">,</span> <span class="n">keys</span>
 
-<div class="viewcode-block" id="ExperimentManager.note"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.note">[docs]</a>    <span class="k">def</span> <span class="nf">note</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Add a note to the epxeriment manager. If remove is True msg is deleted instead.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ExperimentManager.note"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.note">[docs]</a>    <span class="k">def</span> <span class="nf">note</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a note to experiments matching pattern. If remove is True msg is deleted instead.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_initialised</span><span class="p">()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">remove</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">notes</span> <span class="o">+=</span> <span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">notes</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">notes</span> <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">!=</span> <span class="n">n</span><span class="p">]</span>
-
-        <span class="c1"># Add experiment to global config</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">][</span><span class="s1">&#39;notes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">notes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span></div>
+        <span class="n">experiments</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">pattern</span><span class="p">))</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">root</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">ruamel.yaml.comments</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_params</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;_notes&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">params</span> <span class="ow">or</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;_notes&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="s1">&#39;_notes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">remove</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="s1">&#39;_notes&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">ruamel.yaml.comments</span> <span class="k">import</span> <span class="n">CommentedSeq</span>
+                <span class="k">if</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;_notes&#39;</span><span class="p">]:</span>
+                    <span class="n">params</span><span class="p">[</span><span class="s1">&#39;_notes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;_notes&#39;</span><span class="p">]:</span>
+                        <span class="n">params</span><span class="p">[</span><span class="s1">&#39;_notes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="c1"># params[&#39;_notes&#39;] = CommentedSeq([n for n in params[&#39;_notes&#39;] if msg.strip() != n])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">replant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
         <span class="c1"># Relink experiments under root</span>
@@ -623,25 +623,24 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;No script.sh file found in </span><span class="si">{root}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-        <span class="c1"># Update global config</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="k">as</span> <span class="n">config</span><span class="p">:</span>
-            <span class="n">entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">entry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">config</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">root</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span>
-            <span class="k">else</span><span class="p">:</span>  <span class="c1"># We will need to do a bit more work</span>
-                <span class="c1"># The experiment did not exist in the global configuration</span>
-                <span class="n">config</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">root</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s2">&quot;created&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="s2">&quot;purpose&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">purpose</span><span class="p">,</span> <span class="s2">&quot;notes&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">notes</span><span class="p">}</span>
+        <span class="c1"># # Update global config</span>
+        <span class="c1"># with self._config as config:</span>
+        <span class="c1">#     entry = self._config.experiments.pop(self.root, None)</span>
+        <span class="c1">#     if entry is not None:</span>
+        <span class="c1">#         config.experiments[root] = entry</span>
+        <span class="c1">#     else:  # We will need to do a bit more work</span>
+        <span class="c1">#         # The experiment did not exist in the global configuration</span>
+        <span class="c1">#         config.experiments[root] = {</span>
+        <span class="c1">#             &quot;created&quot;: self.created, &quot;type&quot;: self.type, &quot;purpose&quot;: self.purpose, &quot;notes&quot;: self.notes}</span>
 
         <span class="c1"># Update params.yml file of each experiment</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">root</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">):</span>
             <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_params</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
             <span class="n">params</span><span class="p">[</span><span class="s2">&quot;_root&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">root</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">save_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
 
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span>
 
 <div class="viewcode-block" id="ExperimentManager.move"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Move the current experiment set from one location to another.&quot;&quot;&quot;</span>
@@ -653,32 +652,8 @@
         <span class="n">os</span><span class="o">.</span><span class="n">renames</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
         <span class="c1"># self.root = dest</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">replant</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span></div>
-        <span class="c1">#</span>
-        <span class="c1"># # Update params.yml file</span>
-        <span class="c1"># for i, path in enumerate(self.experiments):</span>
-        <span class="c1">#     params = self.load_params(path)</span>
-        <span class="c1">#     params[&quot;_root&quot;] = dest</span>
-        <span class="c1">#     self.save_params(params, os.path.basename(path))</span>
-        <span class="c1">#     self.experiments[i] = path.replace(self.root, dest)</span>
-        <span class="c1">#</span>
-        <span class="c1"># # Change location of defaults.yml and script.sh</span>
-        <span class="c1"># self.defaults = self.defaults.replace(self.root, dest)</span>
-        <span class="c1"># self.script = self.script.replace(self.root, dest)</span>
-        <span class="c1">#</span>
-        <span class="c1"># # Update global config</span>
-        <span class="c1"># with self._config as config:</span>
-        <span class="c1">#     entry = self._config.experiments.pop(self.root, None)</span>
-        <span class="c1">#     if entry is not None:</span>
-        <span class="c1">#         config.experiments[dest] = self._config.experiments.pop(self.root)</span>
-        <span class="c1">#     else:  # We will need to do a bit more work</span>
-        <span class="c1">#         print(&#39;More work needed&#39;)</span>
-        <span class="c1">#</span>
-        <span class="c1"># # Do the move</span>
-        <span class="c1"># os.renames(self.root, dest)</span>
-        <span class="c1"># self.root = dest</span>
-        <span class="c1"># self.to_yml()</span>
 
-<div class="viewcode-block" id="ExperimentManager.register"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.register">[docs]</a>    <span class="k">def</span> <span class="nf">link</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">string_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="s1">&#39;/bin/bash&#39;</span><span class="p">,</span> <span class="n">repeats</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="ExperimentManager.register"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">string_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="s1">&#39;/bin/bash&#39;</span><span class="p">,</span> <span class="n">repeats</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Register a set of experiments with the experiment manager.</span>
 
 <span class="sd">        Experiments are created by passing a yaml dictionary string of parameters to overload in the ``params.yml``</span>
@@ -731,6 +706,7 @@
         <span class="n">values</span><span class="p">,</span> <span class="n">keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_params_from_string_params</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 
         <span class="c1"># Add new experiments</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
             <span class="n">overides</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">elem</span><span class="p">):</span>
@@ -802,13 +778,17 @@
                     <span class="n">yaml</span><span class="o">.</span><span class="n">default_flow_style</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">experiment_name</span><span class="p">,</span> <span class="s1">&#39;environment.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                         <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">conda_env</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
-                
+
+                <span class="kn">from</span> <span class="nn">xmen.experiment</span> <span class="k">import</span> <span class="n">CONFIG</span><span class="p">,</span> <span class="n">get_timestamps</span><span class="p">,</span> <span class="n">get_time</span>
+                <span class="n">ts</span> <span class="o">=</span> <span class="n">get_time</span><span class="p">()</span>
                 <span class="n">extra_params</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s1">&#39;_root&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span>
-                    <span class="s1">&#39;_name&#39;</span><span class="p">:</span> <span class="n">experiment_name</span><span class="p">,</span>
+                    <span class="s1">&#39;_root&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">experiment_name</span><span class="p">),</span>
                     <span class="s1">&#39;_status&#39;</span><span class="p">:</span> <span class="s1">&#39;registered&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;_created&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">DATE_FORMAT</span><span class="p">),</span>
-                    <span class="s1">&#39;_purpose&#39;</span><span class="p">:</span> <span class="n">purpose</span><span class="p">,</span>
+                    <span class="s1">&#39;_purpose&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">purpose</span><span class="p">,</span>
+                    <span class="s1">&#39;_notes&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="s1">&#39;_user&#39;</span><span class="p">:</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">local_user</span><span class="p">,</span>
+                    <span class="s1">&#39;_host&#39;</span><span class="p">:</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">local_host</span><span class="p">,</span>
+                    <span class="s1">&#39;_timestamps&#39;</span><span class="p">:</span> <span class="n">get_timestamps</span><span class="p">(</span><span class="n">created</span><span class="o">=</span><span class="n">ts</span><span class="p">,</span> <span class="n">registered</span><span class="o">=</span><span class="n">ts</span><span class="p">),</span>
                     <span class="s1">&#39;_messages&#39;</span><span class="p">:</span> <span class="p">{},</span>
                     <span class="s1">&#39;_version&#39;</span><span class="p">:</span> <span class="n">version</span><span class="p">,</span>
                     <span class="s1">&#39;_meta&#39;</span><span class="p">:</span> <span class="n">get_meta</span><span class="p">()}</span>
@@ -832,7 +812,11 @@
                     <span class="n">header_str</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">header</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">header_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">header</span>
-                <span class="n">script</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;#!</span><span class="si">{shell}</span><span class="se">\n</span><span class="si">{header_str}</span><span class="se">\n</span><span class="si">{shell}</span><span class="s1"> {os.path.join(self.script)} {os.path.join(experiment_path, &quot;params.yml&quot;)}&#39;</span>
+                <span class="n">script</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">f</span><span class="s1">&#39;#!</span><span class="si">{shell}</span><span class="se">\n</span><span class="si">{header_str}</span><span class="s1">&#39;</span><span class="p">,</span>
+                     <span class="n">f</span><span class="s1">&#39;exec </span><span class="si">{shell}</span><span class="s1"> {os.path.join(self.script)} {os.path.join(experiment_path, &quot;params.yml&quot;)}&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;echo EXPERIMENT FINISHED!&#39;</span><span class="p">]</span>
+                <span class="p">)</span>
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">experiment_name</span><span class="p">,</span> <span class="s1">&#39;run.sh&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
 
@@ -841,8 +825,10 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">save_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">experiment_name</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">experiment_path</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">overides</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">overides</span><span class="p">)</span>
+                <span class="n">paths</span> <span class="o">+=</span> <span class="p">[</span><span class="n">experiment_path</span><span class="p">]</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="ExperimentManager.reset"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;registered&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update the status of the experiment. This is useful if you need to re-run an experiment</span>
@@ -855,66 +841,8 @@
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">:</span>
             <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_params</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
             <span class="n">P</span><span class="p">[</span><span class="s1">&#39;_status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">save_params</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">P</span><span class="p">[</span><span class="s1">&#39;_name&#39;</span><span class="p">])</span></div>
-
-<div class="viewcode-block" id="ExperimentManager.list"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.list">[docs]</a>    <span class="k">def</span> <span class="nf">list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;List all experiments currently created with the experiment manager.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">check_initialised</span><span class="p">()</span>
-        <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">purpose</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Purpose: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">purpose</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">()</span>
-
-        <span class="c1"># Construct dictionary</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span> <span class="o">!=</span> <span class="p">[]:</span>
-            <span class="n">table</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;overrides&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;purpose&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;created&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;messages&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;commit&#39;</span><span class="p">:</span> <span class="p">[]}</span>
-            <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;_name&#39;</span><span class="p">,</span> <span class="s1">&#39;_purpose&#39;</span><span class="p">,</span> <span class="s1">&#39;_created&#39;</span><span class="p">,</span> <span class="s1">&#39;_status&#39;</span><span class="p">,</span> <span class="s1">&#39;_messages&#39;</span><span class="p">,</span> <span class="s1">&#39;_version&#39;</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">):</span>
-                <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_params</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">k_table</span><span class="p">,</span> <span class="n">k_params</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">k_params</span> <span class="o">==</span> <span class="s1">&#39;_version&#39;</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="s1">&#39;git&#39;</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="n">k_params</span><span class="p">]:</span>
-                            <span class="n">v</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="n">k_params</span><span class="p">][</span><span class="s1">&#39;git&#39;</span><span class="p">][</span><span class="s1">&#39;commit&#39;</span><span class="p">]</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="n">v</span> <span class="o">=</span> <span class="kc">None</span>
-                        <span class="c1"># print(P[k_params].keys())</span>
-                        <span class="c1"># v = P[k_params][&#39;comit&#39;]</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">v</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="n">k_params</span><span class="p">]</span>
-                    <span class="n">table</span><span class="p">[</span><span class="n">k_table</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
-            <span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
-            <span class="c1"># with pd.option_context(&#39;display.max_rows&#39;, None, &#39;display.max_columns&#39;,</span>
-            <span class="c1">#                        None):  # more options can be specified also</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No experiments currently registered!&#39;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">()</span>
-
-        <span class="c1"># Print Notes</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">notes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Notes:&#39;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">notes</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- &#39;</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span>
-
-        <span class="c1"># Get defaults information</span>
-        <span class="n">defaults</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_defaults</span><span class="p">()</span>
-        <span class="k">if</span> <span class="s1">&#39;_created&#39;</span> <span class="ow">in</span> <span class="n">defaults</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Defaults: </span><span class="se">\n</span><span class="s1">&#39;</span>
-                  <span class="n">f</span><span class="s1">&#39;- created: </span><span class="si">{defaults[&quot;_created&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s1">&#39;_version&#39;</span> <span class="ow">in</span> <span class="n">defaults</span><span class="p">:</span>
-            <span class="n">version</span> <span class="o">=</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;_version&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="s1">&#39;path&#39;</span> <span class="ow">in</span> <span class="n">version</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;- path: </span><span class="si">{version[&quot;path&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;- module: </span><span class="si">{version[&quot;module&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;- class: </span><span class="si">{version[&quot;class&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="s1">&#39;git&#39;</span> <span class="ow">in</span> <span class="n">version</span><span class="p">:</span>
-                <span class="n">git</span> <span class="o">=</span> <span class="n">version</span><span class="p">[</span><span class="s1">&#39;git&#39;</span><span class="p">]</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;- git:&#39;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;   local: </span><span class="si">{git[&quot;local&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;   commit: </span><span class="si">{git[&quot;commit&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;   remote: </span><span class="si">{git[&quot;remote&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_params</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">P</span><span class="p">[</span><span class="s1">&#39;_root&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">sync</span><span class="p">(</span><span class="n">experiments</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ExperimentManager.clean"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Remove directories no longer linked to the experiment manager&quot;&quot;&quot;</span>
@@ -924,7 +852,7 @@
                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">))</span> <span class="ow">and</span>
                    <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">)]</span>
         <span class="k">if</span> <span class="n">subdirs</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">prompt_for_message</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">prompt</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The following experiments were found for deletion:&#39;</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">subdirs</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
@@ -938,34 +866,52 @@
                     <span class="n">rmtree</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
                     <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;no folders found for deletion&#39;</span><span class="p">)</span></div>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;no folders found for deletion&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">rm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">shutil</span> <span class="k">import</span> <span class="n">rmtree</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_initialised</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">prompt_for_message</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">prompt</span><span class="p">:</span>
             <span class="n">inp</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;This command will remove the whole experiment folder </span><span class="si">{self.root}</span><span class="s1">. &#39;</span>
                         <span class="n">f</span><span class="s1">&#39;Do you wish to continue? [y | n]: &#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">inp</span> <span class="o">!=</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Aborting!&#39;</span><span class="p">)</span>
                 <span class="k">return</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
-            <span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Removed </span><span class="si">{self.root}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Removed </span><span class="si">{self.root}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
 
-<div class="viewcode-block" id="ExperimentManager.run"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<div class="viewcode-block" id="ExperimentManager.run"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="o">*</span><span class="n">flags</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Run all experiments that match the global pattern using the run command given by args.&quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">subprocess</span>
+        <span class="kn">from</span> <span class="nn">subprocess</span> <span class="k">import</span> <span class="n">Popen</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="o">*</span><span class="n">popenargs</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">Popen</span><span class="p">(</span><span class="o">*</span><span class="n">popenargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+                    <span class="n">p</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+                    <span class="n">p</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.</span><span class="p">)</span>
+                    <span class="k">raise</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">p</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+                    <span class="n">p</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+                    <span class="k">raise</span>
+
         <span class="n">experiments</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">pattern</span><span class="p">))</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">experiments</span><span class="p">:</span>
             <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_params</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s1">&#39;_status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;registered&#39;</span><span class="p">:</span>
-                <span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s1">&#39;sbatch&#39;</span> <span class="ow">in</span> <span class="n">options</span> <span class="ow">and</span> <span class="s1">&#39;--job-name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
+                    <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span>
+                        <span class="n">f</span><span class="s1">&#39;--job-name=</span><span class="si">{P[&quot;_name&quot;]}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;--output={os.path.join(P[&quot;_root&quot;], P[&quot;_name&quot;], &quot;slurm.out&quot;)}&#39;</span><span class="p">]</span>
                 <span class="n">subprocess_args</span> <span class="o">=</span> <span class="n">args</span> <span class="o">+</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s1">&#39;run.sh&#39;</span><span class="p">)]</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Running: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">subprocess_args</span><span class="p">)))</span>
-                <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">subprocess_args</span><span class="p">)</span>
-                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span></div>
+                <span class="n">call</span><span class="p">(</span><span class="n">subprocess_args</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ExperimentManager.unlink"><a class="viewcode-back" href="../../api.html#xmen.manager.ExperimentManager.unlink">[docs]</a>    <span class="k">def</span> <span class="nf">unlink</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Unlink all experiments matching pattern. Does not delete experiment folders simply deletes the experiment</span>
@@ -977,7 +923,7 @@
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">remove_paths</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Note models are removed from the experiment list only. To remove the model directories run&quot;</span>
                   <span class="s2">&quot;experiment clean&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1002,7 +948,7 @@
                 <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Relinking </span><span class="si">{d}</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span> <span class="o">+=</span> <span class="p">[</span><span class="n">d</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">overides</span> <span class="o">+=</span> <span class="p">[{</span><span class="n">pk</span><span class="p">:</span> <span class="n">pv</span> <span class="k">for</span> <span class="n">pk</span><span class="p">,</span> <span class="n">pv</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">pk</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">defaults</span><span class="p">[</span><span class="n">pk</span><span class="p">]</span> <span class="o">!=</span> <span class="n">pv</span><span class="p">}]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">to_yml</span><span class="p">()</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_yml</span><span class="p">()</span></div></div>
 
 
 </pre></div>

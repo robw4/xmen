@@ -183,7 +183,94 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="n">DATE_FORMAT</span> <span class="o">=</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H-%M-%S&quot;</span>
+<span class="n">DATE_FORMAT</span> <span class="o">=</span> <span class="s2">&quot;%y-%m-</span><span class="si">%d</span><span class="s2">-%H-%M-%S-</span><span class="si">%f</span><span class="s2">&quot;</span>
+
+
+<div class="viewcode-block" id="load_param"><a class="viewcode-back" href="../../api.html#xmen.utils.load_param">[docs]</a><span class="k">def</span> <span class="nf">load_param</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="s1">&#39;params.yml&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load parameters from a params.yml file.&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">params_yml</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">params_yml</span><span class="p">,</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">RoundTripLoader</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">params</span></div>
+
+
+<div class="viewcode-block" id="save_param"><a class="viewcode-back" href="../../api.html#xmen.utils.save_param">[docs]</a><span class="k">def</span> <span class="nf">save_param</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="s1">&#39;params.yml&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Save a dictionary of parameters at ``{root}/params.yml``</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        params (dict): A dictionary of parameters to be saved. Can also be a CommentedMap from ruamel.yaml</span>
+<span class="sd">        root (str): The root of the experiment</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out</span><span class="p">:</span>
+        <span class="n">yaml</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">YAML</span><span class="p">()</span>
+        <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_params"><a class="viewcode-back" href="../../api.html#xmen.utils.load_params">[docs]</a><span class="k">def</span> <span class="nf">load_params</span><span class="p">(</span><span class="n">roots</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load params.yml files into a list of dictionaries from a list of paths&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
+    <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">commented_to_py</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">roots</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;params.yml&#39;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">params_yml</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">params_yml</span><span class="p">,</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">RoundTripLoader</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">commented_to_py</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="IncompatibleYmlException"><a class="viewcode-back" href="../../api.html#xmen.utils.IncompatibleYmlException">[docs]</a><span class="k">class</span> <span class="nc">IncompatibleYmlException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="flatten"><a class="viewcode-back" href="../../api.html#xmen.utils.flatten">[docs]</a><span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">parent_key</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Flatten a nested dictionary to a single dictionary. The keys of nested entries will be joined using sep&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">collections</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">new_key</span> <span class="o">=</span> <span class="n">parent_key</span> <span class="o">+</span> <span class="n">sep</span> <span class="o">+</span> <span class="n">k</span> <span class="k">if</span> <span class="n">parent_key</span> <span class="k">else</span> <span class="n">k</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">MutableMapping</span><span class="p">):</span>
+            <span class="n">items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">flatten</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">new_key</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">new_key</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">items</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">dic_to_json</span><span class="p">(</span><span class="n">dic</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">json</span>
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">dic</span><span class="p">)</span>
+
+
+<span class="c1"># Convert to yaml</span>
+<div class="viewcode-block" id="dic_to_yaml"><a class="viewcode-back" href="../../api.html#xmen.utils.dic_to_yaml">[docs]</a><span class="k">def</span> <span class="nf">dic_to_yaml</span><span class="p">(</span><span class="n">dic</span><span class="p">,</span> <span class="n">typ</span><span class="o">=</span><span class="s1">&#39;rt&#39;</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert dictionary to a yaml string (``dic`` can also be a CommentedMap)&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
+    <span class="kn">from</span> <span class="nn">ruamel.yaml</span> <span class="k">import</span> <span class="n">StringIO</span>
+
+    <span class="n">stream</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+    <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">round_trip_dump</span><span class="p">(</span><span class="n">dic</span><span class="p">,</span> <span class="n">stream</span><span class="p">)</span>
+    <span class="c1"># yaml = ruamel.yaml.YAML(typ=typ)</span>
+    <span class="c1"># yaml.default_flow_style = default_flow_style</span>
+    <span class="c1"># yaml.dump(dic, stream)</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">string</span></div>
+
+
+<div class="viewcode-block" id="dic_from_yml"><a class="viewcode-back" href="../../api.html#xmen.utils.dic_from_yml">[docs]</a><span class="k">def</span> <span class="nf">dic_from_yml</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">string</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load from either a yaml string or path to a yaml file&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">string</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span> <span class="s1">&#39;One of string and path must be set&#39;</span>
+    <span class="kn">import</span> <span class="nn">ruamel.yaml</span>
+    <span class="n">yaml</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">YAML</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">ruamel</span><span class="o">.</span><span class="n">yaml</span><span class="o">.</span><span class="n">round_trip_load</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">preserve_quotes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">IncompatibleYmlException</span>
+    <span class="k">return</span> <span class="n">params</span></div>
 
 
 <span class="k">def</span> <span class="nf">recursive_print_lines</span><span class="p">(</span><span class="n">dic</span><span class="p">,</span> <span class="n">helps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
@@ -237,8 +324,9 @@
         <span class="nb">bytes</span> <span class="o">/=</span> <span class="n">factor</span></div>
 
 
-<div class="viewcode-block" id="get_meta"><a class="viewcode-back" href="../../api.html#xmen.utils.get_meta">[docs]</a><span class="k">def</span> <span class="nf">get_meta</span><span class="p">(</span><span class="n">get_platform</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_cpu</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_disk</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-             <span class="n">get_slurm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_conda</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_network</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_environ</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">live</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="get_meta"><a class="viewcode-back" href="../../api.html#xmen.utils.get_meta">[docs]</a><span class="k">def</span> <span class="nf">get_meta</span><span class="p">(</span><span class="n">get_platform</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_cpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_disk</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+             <span class="n">get_slurm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_conda</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_network</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+             <span class="n">get_environ</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">live</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Get Meta information for the system&quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">uuid</span>
     <span class="kn">import</span> <span class="nn">socket</span>
@@ -359,19 +447,25 @@
     <span class="k">if</span> <span class="n">get_gpu</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">GPUtil</span>
-            <span class="n">gpus</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">for</span> <span class="n">gpu</span> <span class="ow">in</span> <span class="n">GPUtil</span><span class="o">.</span><span class="n">getGPUs</span><span class="p">():</span>
-                <span class="n">gpus</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
-                  <span class="nb">str</span><span class="p">(</span><span class="n">gpu</span><span class="o">.</span><span class="n">id</span><span class="p">):</span> <span class="p">{</span>
-                      <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">gpu</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                      <span class="s1">&#39;load&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;{gpu.load*100}%&quot;</span><span class="p">,</span>
-                      <span class="s1">&#39;memory&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{gpu.memoryFree}</span><span class="s2">MB&quot;</span><span class="p">,</span>
-                      <span class="s1">&#39;used&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{gpu.memoryUsed}</span><span class="s2">MB&quot;</span><span class="p">,</span>
-                      <span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{gpu.temperature}</span><span class="s2">°C&quot;</span><span class="p">,</span>
-                      <span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{gpu.uuid}</span><span class="s2">&quot;</span><span class="p">}</span>
-                <span class="p">})</span>
-            <span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;gpu&#39;</span><span class="p">:</span> <span class="n">gpus</span><span class="p">})</span>
-        <span class="k">except</span><span class="p">:</span>
+            <span class="n">device</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;CUDA_VISIBLE_DEVICES&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">device</span> <span class="o">=</span> <span class="p">[</span><span class="n">device</span><span class="p">]</span>
+                <span class="n">device</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">device</span><span class="p">]</span>
+                <span class="n">gpus</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">gpu</span> <span class="ow">in</span> <span class="n">GPUtil</span><span class="o">.</span><span class="n">getGPUs</span><span class="p">():</span>
+                    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">if</span> <span class="n">gpu</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="n">device</span><span class="p">:</span>
+                        <span class="n">gpus</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                            <span class="nb">str</span><span class="p">(</span><span class="n">count</span><span class="p">):</span> <span class="p">{</span>
+                                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">gpu</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{gpu.id}</span><span class="s2">&quot;</span><span class="p">,</span>
+                                <span class="s1">&#39;stats&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{gpu.temperature}</span><span class="s2">°C, {gpu.load*100}%, </span><span class="si">{gpu.memoryUsed}</span><span class="s2">/</span><span class="si">{gpu.memoryTotal}</span><span class="s2">MB&quot;</span><span class="p">,</span>
+                                <span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{gpu.uuid}</span><span class="s2">&quot;</span><span class="p">}})</span>
+                        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;gpu&#39;</span><span class="p">:</span> <span class="n">gpus</span><span class="p">})</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">m</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
             <span class="k">pass</span>
 
     <span class="k">if</span> <span class="n">get_slurm</span><span class="p">:</span>
@@ -816,6 +910,25 @@
     <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;    X = functional_experiment(X)&#39;</span><span class="p">]</span>
     <span class="n">sh</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;X().main()&#39;</span><span class="p">]</span>
     <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sh</span><span class="p">)</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="dics_to_pandas"><a class="viewcode-back" href="../../api.html#xmen.utils.dics_to_pandas">[docs]</a><span class="k">def</span> <span class="nf">dics_to_pandas</span><span class="p">(</span><span class="n">dics</span><span class="p">,</span> <span class="n">reg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert a list of nested dictionaries into a pandas data frame keeping only keys that match reg</span>
+<span class="sd">    (after flattening)&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">re</span>
+    <span class="n">frames</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+    <span class="kn">from</span> <span class="nn">xmen.utils</span> <span class="k">import</span> <span class="n">flatten</span>
+    <span class="k">for</span> <span class="n">dic</span> <span class="ow">in</span> <span class="n">dics</span><span class="p">:</span>
+        <span class="n">dic</span> <span class="o">=</span> <span class="n">flatten</span><span class="p">(</span><span class="n">dic</span><span class="p">)</span>
+        <span class="n">dic</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">dic</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">reg</span><span class="p">,</span> <span class="n">k</span><span class="p">)}</span>
+        <span class="n">dic</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">dic</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">dic</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>

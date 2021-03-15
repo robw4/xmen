@@ -408,23 +408,23 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Functional-Experiments">
 <h3>Functional Experiments<a class="headerlink" href="#Functional-Experiments" title="Permalink to this headline">¶</a></h3>
 <p>In the functional API experiments are defined as functions:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">xmen</span> <span class="kn">import</span> <span class="n">Root</span>
+<div class="highlight-experiments notranslate"><div class="highlight"><pre><span></span>from xmen import Root
 
-<span class="k">def</span> <span class="nf">hello_world</span><span class="p">(</span>
-    <span class="n">root</span><span class="p">:</span> <span class="n">Root</span><span class="p">,</span>   <span class="c1"># experiments are assigned a root before being executed</span>
-    <span class="n">a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span><span class="p">,</span>  <span class="c1"># the first</span>
-    <span class="c1"># argument comment spans multiple lines</span>
-    <span class="n">b</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;World&#39;</span>   <span class="c1"># the second argument</span>
-<span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A hello world experiment designed to demonstrate</span>
-<span class="sd">    defining experiments through the functional experiment api&quot;&quot;&quot;</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{a}  {b}&#39;</span><span class="p">)</span>
+def hello_world(
+    root: Root,   # experiments are assigned a root before being executed
+    a: str = &#39;Hello&#39;,  # the first
+    # argument comment spans multiple lines
+    b: str = &#39;World&#39;   # the second argument
+):
+    &quot;&quot;&quot;A hello world experiment designed to demonstrate
+    defining experiments through the functional experiment api&quot;&quot;&quot;
+    print(f&#39;{a}  {b}&#39;)
 
-    <span class="o">...</span>  <span class="c1">#  Whatever other experiment code you want</span>
+    ...  #  Whatever other experiment code you want
 
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">directory</span> <span class="o">+</span> <span class="s1">&#39;/out.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{a} {b}&#39;</span><span class="p">)</span>
-    <span class="n">root</span><span class="o">.</span><span class="n">message</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">a</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="n">b</span><span class="p">})</span>
+    with open(root.directory + &#39;/out.txt&#39;, &#39;w&#39;) as f:
+        f.write(f&#39;{a} {b}&#39;)
+    root.message({&#39;a&#39;: a, &#39;b&#39;: b})
 </pre></div>
 </div>
 <p>Arguments to the function are treated as parameters, with comments next to each parameter treated as documentation. You are also encouraged to specify parameters with their type and a default value, alongside specifying the doc string of the experiment.</p>
@@ -433,21 +433,21 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Class-Experiments">
 <h3>Class Experiments<a class="headerlink" href="#Class-Experiments" title="Permalink to this headline">¶</a></h3>
 <p>Alternatively experiments can be specified as experiments classes:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">xmen</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<div class="highlight-experiments notranslate"><div class="highlight"><pre><span></span>from xmen import Experiment
 
-<span class="k">class</span> <span class="nc">HelloWorld</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A hello world experiment designed to demonstrate</span>
-<span class="sd">    defining experiments through the class experiment api&quot;&quot;&quot;</span>
-    <span class="c1"># Parameters</span>
-    <span class="n">a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Hello&#39;</span>  <span class="c1"># @p The first argument</span>
-    <span class="n">b</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;World&#39;</span>  <span class="c1"># @p The second argument</span>
+class HelloWorld(Experiment):
+    &quot;&quot;&quot;A hello world experiment designed to demonstrate
+    defining experiments through the class experiment api&quot;&quot;&quot;
+    # Parameters
+    a: str = &#39;Hello&#39;  # @p The first argument
+    b: str = &#39;World&#39;  # @p The second argument
 
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{self.a} {self.b}!&#39;</span><span class="p">)</span>
+    def run(self):
+        print(f&#39;{self.a} {self.b}!&#39;)
 
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">+</span> <span class="s1">&#39;/out.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;{a} {b}&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">})</span>
+        with open(self.directory + &#39;/out.txt&#39;, &#39;w&#39;) as f:
+            f.write(f&#39;{a} {b}&#39;)
+        self.message({&#39;a&#39;: self.a, &#39;b&#39;: self.b})
 </pre></div>
 </div>
 <p>In this case, all experiments must inherit from <code class="docutils literal notranslate"><span class="pre">Experiment</span></code>. Parameters are defined as class attributes marked with a <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">&#64;p</span></code> comment - any method not marked with <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">&#64;p</span></code> will not be regarded as a parameter. The directory and messaging method are directly available to the experiment as class attributes.</p>

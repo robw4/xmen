@@ -384,81 +384,81 @@ div.rendered_html tbody tr:hover {
 <h1>Xmen Experiment Classes<a class="headerlink" href="#Xmen-Experiment-Classes" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="Defining-Experiments">
 <h2>Defining Experiments<a class="headerlink" href="#Defining-Experiments" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">xmen.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<div class="highlight-experiments notranslate"><div class="highlight"><pre><span></span>from xmen.experiment import Experiment
+import os
+import time
+from typing import List
 
 
-<span class="k">class</span> <span class="nc">BaseExperiment</span><span class="p">(</span><span class="n">Experiment</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A basic experiments experiment demonstrating the features of the xmen api.&quot;&quot;&quot;</span>
+class BaseExperiment(Experiment):
+    &quot;&quot;&quot;A basic experiments experiment demonstrating the features of the xmen api.&quot;&quot;&quot;
 
-    <span class="c1"># Parameters are defined as attributes in the class body with the</span>
-    <span class="c1"># @p identifier</span>
+    # Parameters are defined as attributes in the class body with the
+    # @p identifier
 
-    <span class="n">t</span> <span class="o">=</span> <span class="s1">&#39;cat&#39;</span>    <span class="c1"># @p</span>
-    <span class="n">w</span> <span class="o">=</span> <span class="mi">3</span>        <span class="c1"># @p parameter w has a help message whilst t does not</span>
-    <span class="n">h</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># @p h declared with typing is very concise and neat</span>
+    t = &#39;cat&#39;    # @p
+    w = 3        # @p parameter w has a help message whilst t does not
+    h: int = 10  # @p h declared with typing is very concise and neat
 
-    <span class="c1"># Parameters can also be defined in the __init__ method</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">BaseExperiment</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    # Parameters can also be defined in the __init__ method
+    def __init__(self, *args, **kwargs):
+        super(BaseExperiment, self).__init__(*args, **kwargs)
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;h&#39;</span>  <span class="c1"># @p A parameter</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">17</span>   <span class="c1"># @p Another parameter</span>
+        self.a: str = &#39;h&#39;  # @p A parameter
+        self.b: int = 17   # @p Another parameter
 
-        <span class="c1"># Normal attributes are still allowed</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>    <span class="c1"># This is not a parameter</span>
-
-
-<span class="k">class</span> <span class="nc">AnotherExperiment</span><span class="p">(</span><span class="n">BaseExperiment</span><span class="p">):</span>
-    <span class="n">m</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Another value&#39;</span>  <span class="c1"># @p Multiple inheritance example</span>
-    <span class="n">p</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;A parameter only in Another Experiment &#39;</span>  <span class="c1"># @p</span>
+        # Normal attributes are still allowed
+        self.c: int = 5    # This is not a parameter
 
 
-<span class="k">class</span> <span class="nc">AnExperiment</span><span class="p">(</span><span class="n">BaseExperiment</span><span class="p">):</span>
-                    <span class="c1">#     |</span>
-                    <span class="c1"># Experiments can inherit from other experiments</span>
-                    <span class="c1"># parameters are inherited too</span>
-    <span class="sd">&quot;&quot;&quot;An experiment testing the xmen experiment API. The __docstring__ will</span>
-<span class="sd">    appear in both the docstring of the class __and__ as the prolog in the</span>
-<span class="sd">    command line interface.&quot;&quot;&quot;</span>
-
-    <span class="c1"># Feel free to define more parameters</span>
-    <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">]</span>  <span class="c1"># @p Parameters can be defined cleanly as class attributes</span>
-    <span class="n">y</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># @p This parameter will have this</span>
-    <span class="c1"># Parameters can be overridden</span>
-    <span class="n">a</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># a&#39;s default and type will be changed. Its help will be overridden</span>
-    <span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">17</span>  <span class="c1"># @p b&#39;s help will be changed</span>
-
-    <span class="n">m</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Defined in AnExperiment&#39;</span>  <span class="c1"># @p m is defined in AnExperiment</span>
-
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Experiment execution is defined in the run method</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;The experiment state inside run is {self.status}&#39;</span><span class="p">)</span>
-
-        <span class="c1"># recording messaging is super easy</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">({</span><span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()})</span>
-
-        <span class="c1"># Each experiment has its own unique directory. You are encourage to</span>
-        <span class="c1"># write out data accumulated through the execution (snapshots, logs etc.)</span>
-        <span class="c1"># to this directory.</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="s1">&#39;logs.txt&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;This was written from a running experiment&#39;</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="s1">&#39;In debug mode&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">h</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s1">&#39;h has been overloaded as propery and will no longer&#39;</span> \
-               <span class="s1">&#39;considered as a parameter&#39;</span>
+class AnotherExperiment(BaseExperiment):
+    m: str = &#39;Another value&#39;  # @p Multiple inheritance example
+    p: str = &#39;A parameter only in Another Experiment &#39;  # @p
 
 
-<span class="c1"># Experiments can inheret from multiple classes</span>
-<span class="k">class</span> <span class="nc">MultiParentsExperiment</span><span class="p">(</span><span class="n">AnotherExperiment</span><span class="p">,</span> <span class="n">AnExperiment</span><span class="p">):</span>
-    <span class="k">pass</span>
+class AnExperiment(BaseExperiment):
+                    #     |
+                    # Experiments can inherit from other experiments
+                    # parameters are inherited too
+    &quot;&quot;&quot;An experiment testing the xmen experiment API. The __docstring__ will
+    appear in both the docstring of the class __and__ as the prolog in the
+    command line interface.&quot;&quot;&quot;
+
+    # Feel free to define more parameters
+    x: List[float] = [3., 2.]  # @p Parameters can be defined cleanly as class attributes
+    y: float = 5  # @p This parameter will have this
+    # Parameters can be overridden
+    a: float = 0.5  # a&#39;s default and type will be changed. Its help will be overridden
+    b: int = 17  # @p b&#39;s help will be changed
+
+    m: str = &#39;Defined in AnExperiment&#39;  # @p m is defined in AnExperiment
+
+    def run(self):
+        # Experiment execution is defined in the run method
+        print(f&#39;The experiment state inside run is {self.status}&#39;)
+
+        # recording messaging is super easy
+        self.message({&#39;time&#39;: time.time()})
+
+        # Each experiment has its own unique directory. You are encourage to
+        # write out data accumulated through the execution (snapshots, logs etc.)
+        # to this directory.
+        with open(os.path.join(self.directory, &#39;logs.txt&#39;), &#39;w&#39;) as f:
+            f.write(&#39;This was written from a running experiment&#39;)
+
+    def debug(self):
+        self.a = &#39;In debug mode&#39;
+        return self
+
+    @property
+    def h(self):
+        return &#39;h has been overloaded as propery and will no longer&#39; \
+               &#39;considered as a parameter&#39;
+
+
+# Experiments can inheret from multiple classes
+class MultiParentsExperiment(AnotherExperiment, AnExperiment):
+    pass
 </pre></div>
 </div>
 <p>Note: the above is a copy of what is defined in <code class="docutils literal notranslate"><span class="pre">xmen.examplex.inheritance</span></code></p>
