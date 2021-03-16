@@ -746,7 +746,8 @@ class ExperimentManager(object):
                 args = list(flags)
                 if 'sbatch' in options and '--job-name' not in options:
                     args += [
-                        f'--job-name={P["_name"]}', f'--output={os.path.join(P["_root"], P["_name"], "slurm.out")}']
+                        f'--job-name={os.path.split(P["_root"])[-1]}',
+                        f'--output={os.path.join(P["_root"], "slurm.out")}']
                 subprocess_args = args + [os.path.join(p, 'run.sh')]
                 print('\nRunning: {}'.format(" ".join(subprocess_args)))
                 call(subprocess_args)
