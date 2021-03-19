@@ -43,7 +43,7 @@ def split_operators(m):
         raise RuntimeError(f'invalid parameter config passed {m}')
 
 
-def visualise_params(dics, *filters, roots=None):
+def visualise_params(dics, *filters, roots=None, short_root=False):
     """Visualise a set of experiment parameters as a data-frame.
 
     Args:
@@ -103,6 +103,28 @@ def visualise_params(dics, *filters, roots=None):
                 updates[k] = k.replace(s, n)
     df = df.rename(updates, axis='columns')
     df = df.replace(np.nan, '', regex=True)
+
+    max_ch = 70
+    if short_root:
+        _ = []
+        for r in df['root']:
+            r = r.split(':')
+            if len(r) > 2:
+                r = [r[0], ':'.join(r[1:])]
+            r[0] = r[0] + ':'
+            if len(r[0]) + len(r[1]) > max_ch:
+                remainder = r[1].split(os.sep)
+                back = []
+                for rr in reversed(remainder[1:]):
+                    back += [rr]
+                    if sum(len(x) for x in back) > max_ch - len(r[0]):
+                        break
+                if len(back) > 1:
+                    back = back[1:]
+                r[1] = ' ... ' + os.sep.join(back)
+            _ += [''.join([r[0], r[1]])]
+        df['root'] = _
+
     # shorten paths for visualisation
     import os
 
@@ -204,9 +226,10 @@ def interactive_display(stdscr, args):
     global root
     global default_pattern
     global expand_helps
+    global short_root
     default_pattern = None
     expand_helps = False
-
+    short_root = True
     stdscr.refresh()
 
     rows, cols = stdscr.getmaxyx()
@@ -238,7 +261,7 @@ def interactive_display(stdscr, args):
     window = curses.newwin(rows, cols, 0, 0)
 
     def generate_table(results, roots, args):
-        data_frame, root = visualise_params(results, *args_to_filters(args), roots=roots)
+        data_frame, root = visualise_params(results, *args_to_filters(args), roots=roots, short_root=short_root)
         return data_frame, root
 
     def toggle(args, name, update=None):
@@ -292,6 +315,7 @@ def interactive_display(stdscr, args):
         x0 = x[0]
         xi = x[i]
         # stdscr.addstr(i + 2, 1, xx)
+        root = [ii for ii, hh in enumerate(x0.split('|')) if hh.strip() == 'root']
         status = [ii for ii, hh in enumerate(x0.split('|')) if hh.strip() == 'status']
         if i == 0:
             xi = xi.replace('|', '')
@@ -326,19 +350,19 @@ def interactive_display(stdscr, args):
         from tabulate import tabulate
         x = tabulate(table, headers='keys', tablefmt='github').split('\n')
         x.pop(1)
-        window.addstr(0, 0, f'Experiments matching {args.pattern}')
-        window.addstr(1, 0, f'Roots relative to {root}')
+        # window.addstr(0, 0, f'Experiments matching {args.pattern}')
+        # window.addstr(1, 0, f'Roots relative to {root}')
         if last_time is not None:
-            window.addstr(2, 0, f'Last message recieved @ {time.time() - last_time:.3f} seconds ago', curses.A_DIM)
+            window.addstr(1, 0, f'Last message recieved @ {time.time() - last_time:.3f} seconds ago', curses.A_DIM)
         else:
-            window.addstr(2, 0, f'No running experiments', curses.A_DIM)
+            window.addstr(1, 0, f'No running experiments', curses.A_DIM)
 
         import curses
         legend_pad = curses.newpad(5, 500)
 
         if expand_helps:
             legend_pad.addstr(0, 0, 'Help: (press o to minimise)', curses.A_BOLD)
-            legend_pad.addstr(1, 0, 'd=date s=status v=version p=purpose t=monitor-message M=meta ')
+            legend_pad.addstr(1, 0, 'R=expand-roots d=date s=status v=version p=purpose t=monitor-message M=meta ')
             legend_pad.addstr(2, 0, 'G=gpu S=slurm c=cpu n=network V=virtual w=swap O=os D=disks')
             legend_pad.addstr(3, 0, 'r=filter by root (press r for more info))')
             legend_pad.addstr(4, 0, 'f=filter parammeters (press f for more info)')
@@ -363,7 +387,7 @@ def interactive_display(stdscr, args):
         #     for x in range(0, n * cols - 1):
         #         pad.addch(y, x, ord('a') + (x * x + y * y) % 26)
         window.noutrefresh()
-        pad.noutrefresh(pos_x, 0, 3, 0, rows - 5, cols - 1)
+        pad.noutrefresh(pos_x, 0, 2, 0, rows - 5, cols - 1)
         legend_pad.noutrefresh(0, 0, rows - 5, 0, rows - 1, cols - 1)
 
         curses.doupdate()
@@ -506,7 +530,9 @@ def interactive_display(stdscr, args):
                         text = '(?!_)' + text
                     args = toggle(args, 'filters', text)
                     visualise_results(results, roots, args)
-
+                if c == ord('R'):
+                    short_root = not short_root
+                    visualise_results(results, roots, args)
                 if c == ord('r'):
                     from curses.textpad import Textbox, rectangle
                     rows, cols = stdscr.getmaxyx()
