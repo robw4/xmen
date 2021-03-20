@@ -1,0 +1,1915 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tutorial &mdash; xmen 0.2.3 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/jquery.fancybox.min.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/glpi.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="xmen 0.2.3 documentation" href="index.html"/>
+        <link rel="next" title="Examples" href="examples.html"/>
+        <link rel="prev" title="Xmen" href="README.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> xmen
+          
+
+          
+          </a>
+
+          
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">Xmen</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Defining-Experiments">Defining Experiments</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Functional-Experiments">Functional Experiments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Class-Experiments">Class Experiments</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Running-Experiments">Running Experiments</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#1.-xmen-command-line-interface">1. xmen command line interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#2.-Adding-an-Experiment-to-Xmen">2. Adding an Experiment to Xmen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#3.-Initialising-an-experiment-folder">3. Initialising an experiment folder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#4.-Update-default-parameters">4. Update default parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#5.-Register-experiments">5. Register experiments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#6.-Run-experiments">6. Run experiments</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Features">Features</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Experiment-Visualisation">Experiment Visualisation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Git-support">Git support</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Automatic-Record-Keeping">Automatic Record Keeping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Note-Taking">Note Taking</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Conda-support">Conda support</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Interfacing-with-the-slurm-job-scheduler">Interfacing with the slurm job scheduler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Language-agnostic-experiment-configuration">Language agnostic experiment configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Clean-Up">Clean Up</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Next-Steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="class-api.html">Xmen Experiment Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cheat-sheet.html">Cheat Sheet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">xmen</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Tutorial</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/tutorial.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="README.html" class="btn btn-neutral" title="Xmen" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 7ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="Tutorial">
+<h1>Tutorial<a class="headerlink" href="#Tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Note, this tutorial corresponds to the jupyter notebook found at <code class="docutils literal notranslate"><span class="pre">xmen/examples/tutorial.ipynb</span></code>. After installing xmen you should be able to run this notebook on your local machine.</p>
+<div class="section" id="Defining-Experiments">
+<h2>Defining Experiments<a class="headerlink" href="#Defining-Experiments" title="Permalink to this headline">¶</a></h2>
+<p>Experiments can be defined in one of two ways: 1. As experiments functions 2. As experiments classes</p>
+<div class="section" id="Functional-Experiments">
+<h3>Functional Experiments<a class="headerlink" href="#Functional-Experiments" title="Permalink to this headline">¶</a></h3>
+<p>In the functional API experiments are defined as functions:</p>
+<div class="highlight-experiments notranslate"><div class="highlight"><pre><span></span>from xmen import Root
+
+def hello_world(
+    root: Root,   # experiments are assigned a root before being executed
+    a: str = &#39;Hello&#39;,  # the first
+    # argument comment spans multiple lines
+    b: str = &#39;World&#39;   # the second argument
+):
+    &quot;&quot;&quot;A hello world experiment designed to demonstrate
+    defining experiments through the functional experiment api&quot;&quot;&quot;
+    print(f&#39;{a}  {b}&#39;)
+
+    ...  #  Whatever other experiment code you want
+
+    with open(root.directory + &#39;/out.txt&#39;, &#39;w&#39;) as f:
+        f.write(f&#39;{a} {b}&#39;)
+    root.message({&#39;a&#39;: a, &#39;b&#39;: b})
+</pre></div>
+</div>
+<p>Arguments to the function are treated as parameters, with comments next to each parameter treated as documentation. You are also encouraged to specify parameters with their type and a default value, alongside specifying the doc string of the experiment.</p>
+<p>Before being run each experiment is first linked to a driectory. This is supplied to the experiment as the first argument - defined as <code class="docutils literal notranslate"><span class="pre">root</span></code> in the example above. Principally, two methods are exposed to the experiment through root: 1. <code class="docutils literal notranslate"><span class="pre">root.directory</span></code> gives the directory the experiment is linked to 2. <code class="docutils literal notranslate"><span class="pre">root.message()</span></code> allows the experiment to leave simple messages (either floats, ints or strings) with the experiment root</p>
+</div>
+<div class="section" id="Class-Experiments">
+<h3>Class Experiments<a class="headerlink" href="#Class-Experiments" title="Permalink to this headline">¶</a></h3>
+<p>Alternatively experiments can be specified as experiments classes:</p>
+<div class="highlight-experiments notranslate"><div class="highlight"><pre><span></span>from xmen import Experiment
+
+class HelloWorld(Experiment):
+    &quot;&quot;&quot;A hello world experiment designed to demonstrate
+    defining experiments through the class experiment api&quot;&quot;&quot;
+    # Parameters
+    a: str = &#39;Hello&#39;  # @p The first argument
+    b: str = &#39;World&#39;  # @p The second argument
+
+    def run(self):
+        print(f&#39;{self.a} {self.b}!&#39;)
+
+        with open(self.directory + &#39;/out.txt&#39;, &#39;w&#39;) as f:
+            f.write(f&#39;{a} {b}&#39;)
+        self.message({&#39;a&#39;: self.a, &#39;b&#39;: self.b})
+</pre></div>
+</div>
+<p>In this case, all experiments must inherit from <code class="docutils literal notranslate"><span class="pre">Experiment</span></code>. Parameters are defined as class attributes marked with a <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">&#64;p</span></code> comment - any method not marked with <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">&#64;p</span></code> will not be regarded as a parameter. The directory and messaging method are directly available to the experiment as class attributes.</p>
+<p>Defining experiment as experiments classes allows experiments to benefit from all the features of an object orientated programming approach including encapsulation and inheritance. Further examples showing the benefits of defining experiments as classes can be found in: - <code class="docutils literal notranslate"><span class="pre">/xmen/examples/inheritance.py</span></code> - <code class="docutils literal notranslate"><span class="pre">/xmen/examples/torch/inheritance.py</span></code></p>
+<p>and is documented further in the <code class="docutils literal notranslate"><span class="pre">class-api.ipynb</span></code>.</p>
+</div>
+</div>
+<div class="section" id="Running-Experiments">
+<h2>Running Experiments<a class="headerlink" href="#Running-Experiments" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="1.-xmen-command-line-interface">
+<h3>1. xmen command line interface<a class="headerlink" href="#1.-xmen-command-line-interface" title="Permalink to this headline">¶</a></h3>
+<p>Any experiment that conforms to the xmen api can automatically be run in the commandline. This is facilitated by the <code class="docutils literal notranslate"><span class="pre">xmen</span></code> command line tool which allows multiple experiments to be quickly configured and run from the command line and is designed to easily interface with the slurm job scheduler.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+usage: xmen [-h]
+            {experiments,config,init,link,run,note,reset,unlink,clean,rm,relink,list}
+            ...
+
+||||||||||||||||||||||||||| WELCOME TO |||||||||||||||||||||||||||
+||                                                              ||
+||          &amp;@&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;@&amp;%          ||
+||         *@&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;         ||
+||          &amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;          ||
+||           &amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;          ||
+||           &amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#          ||
+||           &amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;.          ||
+||           &amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.          ||
+||           &amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*          ||
+||           @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@          ||
+||   #&amp;@@@@@&amp;%&amp;&amp;&amp;&amp;&amp;&amp;&amp;@@@@@@@@@@@@@@@@@@@@@@@@@&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;@@@@@@&amp;#  ||
+||  /#%%%%%%%%%&amp;&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;&amp;%%&amp;%%%%%%#  ||
+||   &amp;%&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;&amp;@&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;   ||
+||     (@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;.    ||
+||      ...,*/#%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&amp;##(*,...      ||
+||                                                              ||
+||    \\\  ///  |||\\        //|||  |||||||||  |||\\   |||      ||
+||     \\\///   |||\\\      ///|||  |||        |||\\\  |||      ||
+||      ||||    ||| \\\    /// |||  ||||||     ||| \\\ |||      ||
+||     ///\\\   |||  \\\  ///  |||  |||        |||  \\\|||      ||
+||    ///  \\\  |||   \\\///   |||  |||||||||  |||   \\|||      ||
+||                                                              ||
+||                      %@@,     (@@/                           ||
+||                     @@@@@@@@@@@@@@@@@@@@@                    ||
+||        @@        @@@@@@@@@@@@@@@@@@@@@@@@@@/        @#       ||
+||       @@#     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#     @@       ||
+||        @@@@@@@@@@@@@@@@@@@@@@@.@@@@@@@@@@@@@@@@@@@@@@.       ||
+||           ,@@@@@@@@@@@@@@@%       @@@@@@@@@@@@@@@@           ||
+||                                                              ||
+|||||||||||||| FAST - REPRODUCIBLE - EXPERIMENTATION |||||||||||||
+
+positional arguments:
+  {experiments,config,init,link,run,note,reset,unlink,clean,rm,relink,list}
+    experiments              Python interface
+    config              View / edit the global configuration
+    init                Initialise an experiment set
+    link            Register a set of experiments
+    run                 Run experiments matching glob in experiment set that have not yetbeen run.
+    note                add notes to an experiment
+    reset               Reset an experiment to registered status
+    unlink              Unlink experiments from experiment set
+    clean               Remove unlinked experiments (DESTRUCTIVE)
+    rm                  Remove an experiment set (DESTRUCTIVE)
+    relink              Relink experiments to global configuration or to a set root
+    list                list experiments to screen
+
+optional arguments:
+  -h, --help            show this help message and exit
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="2.-Adding-an-Experiment-to-Xmen">
+<h3>2. Adding an Experiment to Xmen<a class="headerlink" href="#2.-Adding-an-Experiment-to-Xmen" title="Permalink to this headline">¶</a></h3>
+<p>Before being run an experiment must first be registered with <code class="docutils literal notranslate"><span class="pre">xmen</span></code>. This is achieved by passing the module and the name of each experiment. For example the experiments defined above which are copies of <code class="docutils literal notranslate"><span class="pre">hello_world</span></code> and <code class="docutils literal notranslate"><span class="pre">HelloWorld</span></code> in <code class="docutils literal notranslate"><span class="pre">xmen.examples.hello_world</span></code> can be added as:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen experiments --add xmen.examples.hello_world hello_world
+xmen experiments -a xmen.examples.hello_world HelloWorld
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Added experiment hello_world from module xmen.examples.hello_world
+Added experiment HelloWorld from module xmen.examples.hello_world
+</pre></div></div>
+</div>
+<p>To see that the experiments have been registered with <code class="docutils literal notranslate"><span class="pre">xmen</span></code> we can run:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen experiments --list
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The following experiments experiments are currently linked
+CycleGan: /Users/robweston/projects/rad2sim2rad/experiments/rad2sim2rad/experiments/cycle_gan/cycle_gan.py
+ThereAndBackCycleGan: /Users/robweston/projects/rad2sim2rad/experiments/rad2sim2rad/experiments/cycle_gan/there_and_back.py
+MaskingByMoving: /Users/robweston/projects/rad2sim2rad/experiments/rad2sim2rad/experiments/masking_by_moving/experiment.py
+ThereAndBack: /Users/robweston/projects/rad2sim2rad/experiments/rad2sim2rad/experiments/there_and_back/there_and_back.py
+AnExperiment: /Users/robweston/xmen/examples/experiment.py
+HelloWorld: /Users/robweston/.xmen/experiments/xmen.examples.hello_world.HelloWorld
+MnistCGan: /Users/robweston/.xmen/experiments/xmen.examples.object.MnistCGan
+hello_world: /Users/robweston/.xmen/experiments/xmen.examples.hello_world.hello_world
+dcgan: /Users/robweston/.xmen/experiments/xmen.examples.torch.functional.dcgan
+</pre></div></div>
+</div>
+<p>They can now be accessed in <code class="docutils literal notranslate"><span class="pre">xmen</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen experiments hello_world
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+A hello world experiment designed to demonstrate
+    defining experiments through the functional experiment api
+
+Parameters:
+    a: str=Hello ~ the first argument
+    b: str=World ~ the second argument
+
+For more help use --help.
+</pre></div></div>
+</div>
+<p>Xmen automatically takes care of the command line interface including automatically reading comments next to parameters and adding them to the experiments help, alonsidge the experiments <code class="docutils literal notranslate"><span class="pre">__doc__</span></code> string.</p>
+</div>
+<div class="section" id="3.-Initialising-an-experiment-folder">
+<h3>3. Initialising an experiment folder<a class="headerlink" href="#3.-Initialising-an-experiment-folder" title="Permalink to this headline">¶</a></h3>
+<p>A set of experiments is initialised from a experiments experiment definition using the <code class="docutils literal notranslate"><span class="pre">xmen</span> <span class="pre">init</span></code> command. For example,</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen init -n hello_world -r ~/tmp/xmen/hello_world
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Generating experiment root at /Users/robweston/tmp/xmen/hello_world
+hello_world
+Experiment root created at /Users/robweston/tmp/xmen/hello_world
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="4.-Update-default-parameters">
+<h3>4. Update default parameters<a class="headerlink" href="#4.-Update-default-parameters" title="Permalink to this headline">¶</a></h3>
+<p>After a set of experiments has been initialised, the default parameters of the experiment can be changed by changing the <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> generated by xmen during the <code class="docutils literal notranslate"><span class="pre">xmen</span> <span class="pre">init</span></code> call:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">tmp</span><span class="o">/</span><span class="n">xmen</span><span class="o">/</span><span class="n">hello_world</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/Users/robweston/tmp/xmen/hello_world
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+cat defaults.yml
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+_created: 02-08-21-19:04:29  # _created: str=now_time ~ The date the experiment was created
+_meta: # _meta: Optional[Dict]=None ~ The global configuration for the experiment manager
+  mac: &#39;0x6c96cfdb71b9&#39;
+  host: dhcp55.robots.ox.ac.uk
+  user: robweston
+  home: /Users/robweston
+  system:
+    system: Darwin
+    node: dhcp55.robots.ox.ac.uk
+    release: 16.7.0
+    version: &#39;Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 2018; root:xnu-3789.73.11~1/RELEASE_X86_64&#39;
+    machine: x86_64
+    processor: i386
+  virtual:
+    total: 16.00GB
+    free: 6.03GB
+    used: 9.09GB
+    percentage: 62.3%
+  swap:
+    total: 2.00GB
+    free: &#39; 1.54GB&#39;
+    used: 470.25MB
+    percentage: &#39;23.0&#39;
+_version: # _version: Optional[Dict[Any, Any]]=None ~ Experiment version information. See `get_version`
+  module: xmen.examples.hello_world
+  function: hello_world
+  path: /Users/robweston/xmen/xmen/examples/hello_world.py
+  git:
+    local: /Users/robweston/xmen
+    remote: https://github.com/robw4/xmen.git
+    commit: 7b6e0734d93fdaad5cd8daac012ecef5afb237f5
+    branch: master
+a: Hello # a: str=Hello ~ the first argument
+b: World # b: str=World ~ the second argument
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="5.-Register-experiments">
+<h3>5. Register experiments<a class="headerlink" href="#5.-Register-experiments" title="Permalink to this headline">¶</a></h3>
+<p>After this experiments are registered to the experiment set using the <code class="docutils literal notranslate"><span class="pre">xment</span> <span class="pre">link</span></code> command:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen link -u <span class="s2">&quot;{a: Hello | Bye, b: World | Planet}&quot;</span>
+</pre></div>
+</div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">-u</span></code> flag is used to specify the parameters that should be updated for each parameter instance. It is passed as a yaml dictionary with the <code class="docutils literal notranslate"><span class="pre">|</span></code> character used as an or operator. For example, in this case four experiments are registered corresponding to:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 47%" />
+<col style="width: 53%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>a</p></th>
+<th class="head"><p>b</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Hello</p></td>
+<td><p>World</p></td>
+</tr>
+<tr class="row-odd"><td><p>Hello</p></td>
+<td><p>Planet</p></td>
+</tr>
+<tr class="row-even"><td><p>Bye</p></td>
+<td><p>World</p></td>
+</tr>
+<tr class="row-odd"><td><p>Bye</p></td>
+<td><p>Planet</p></td>
+</tr>
+</tbody>
+</table>
+<p>The experiments registered in the experiment set are summarised using the <code class="docutils literal notranslate"><span class="pre">xmen</span> <span class="pre">list</span></code> command:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen list -sd
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/Users/robweston/tmp/xmen/hello_world*
+          root               name      status              created
+0  hello_world   a=Hello__b=World  registered  2021-02-08-19-04-30
+1  hello_world  a=Hello__b=Planet  registered  2021-02-08-19-04-30
+2  hello_world     a=Bye__b=World  registered  2021-02-08-19-04-30
+3  hello_world    a=Bye__b=Planet  registered  2021-02-08-19-04-30
+
+Roots relative to: /Users/robweston/tmp/xmen
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="6.-Run-experiments">
+<h3>6. Run experiments<a class="headerlink" href="#6.-Run-experiments" title="Permalink to this headline">¶</a></h3>
+<p>After registering experiments are run using the <code class="docutils literal notranslate"><span class="pre">xmen</span> <span class="pre">run</span></code> command:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen run <span class="s2">&quot;*&quot;</span> bash
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Bye  Planet
+Bye  World
+Hello  Planet
+Hello  World
+
+Running: bash /Users/robweston/tmp/xmen/hello_world/a=Bye__b=Planet/run.sh
+
+Running: bash /Users/robweston/tmp/xmen/hello_world/a=Bye__b=World/run.sh
+
+Running: bash /Users/robweston/tmp/xmen/hello_world/a=Hello__b=Planet/run.sh
+
+Running: bash /Users/robweston/tmp/xmen/hello_world/a=Hello__b=World/run.sh
+</pre></div></div>
+</div>
+<p>If we now run</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen list -sd -m <span class="s2">&quot;a|b&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/Users/robweston/tmp/xmen/hello_world*
+          root               name    status              created      a       b
+0  hello_world   a=Hello__b=World  finished  2021-02-08-19-04-35  Hello   World
+1  hello_world  a=Hello__b=Planet  finished  2021-02-08-19-04-34  Hello  Planet
+2  hello_world     a=Bye__b=World  finished  2021-02-08-19-04-33    Bye   World
+3  hello_world    a=Bye__b=Planet  finished  2021-02-08-19-04-32    Bye  Planet
+
+Roots relative to: /Users/robweston/tmp/xmen
+</pre></div></div>
+</div>
+<p>the experiment status has been changed from registered to finished and each message has been logged. Once finished experiments cannot be re-run unless they are first re-registered. This is achieved using the <code class="docutils literal notranslate"><span class="pre">xmen</span> <span class="pre">reset</span></code> command:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen reset <span class="s2">&quot;*&quot;</span>
+xmen run <span class="s2">&quot;*&quot;</span> bash
+xmen list -sd -m <span class="s2">&quot;a|b&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Bye  Planet
+Bye  World
+Hello  Planet
+Hello  World
+
+Running: bash /Users/robweston/tmp/xmen/hello_world/a=Bye__b=Planet/run.sh
+
+Running: bash /Users/robweston/tmp/xmen/hello_world/a=Bye__b=World/run.sh
+
+Running: bash /Users/robweston/tmp/xmen/hello_world/a=Hello__b=Planet/run.sh
+
+Running: bash /Users/robweston/tmp/xmen/hello_world/a=Hello__b=World/run.sh
+/Users/robweston/tmp/xmen/hello_world*
+          root               name    status              created      a       b
+0  hello_world   a=Hello__b=World  finished  2021-02-08-19-04-41  Hello   World
+1  hello_world  a=Hello__b=Planet  finished  2021-02-08-19-04-40  Hello  Planet
+2  hello_world     a=Bye__b=World  finished  2021-02-08-19-04-39    Bye   World
+3  hello_world    a=Bye__b=Planet  finished  2021-02-08-19-04-38    Bye  Planet
+
+Roots relative to: /Users/robweston/tmp/xmen
+</pre></div></div>
+</div>
+<p>In this case notice how the created time has been updated. This correpsonds to the time the experiment was last run. Various options exist for running experiments using the <code class="docutils literal notranslate"><span class="pre">xmen</span> <span class="pre">run</span></code> command. For example we could run each experiment in a screen command as:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen reset <span class="s2">&quot;*&quot;</span>
+xmen run <span class="s2">&quot;*&quot;</span> screen -dm bash
+xmen list -sd -m <span class="s2">&quot;a|b&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Running: screen -dm bash /Users/robweston/tmp/xmen/hello_world/a=Bye__b=Planet/run.sh
+
+Running: screen -dm bash /Users/robweston/tmp/xmen/hello_world/a=Bye__b=World/run.sh
+
+Running: screen -dm bash /Users/robweston/tmp/xmen/hello_world/a=Hello__b=Planet/run.sh
+
+Running: screen -dm bash /Users/robweston/tmp/xmen/hello_world/a=Hello__b=World/run.sh
+/Users/robweston/tmp/xmen/hello_world*
+          root               name    status              created      a       b
+0  hello_world   a=Hello__b=World  finished  2021-02-08-19-04-45  Hello   World
+1  hello_world  a=Hello__b=Planet  finished  2021-02-08-19-04-44  Hello  Planet
+2  hello_world     a=Bye__b=World  finished  2021-02-08-19-04-44    Bye   World
+3  hello_world    a=Bye__b=Planet  finished  2021-02-08-19-04-44    Bye  Planet
+
+Roots relative to: /Users/robweston/tmp/xmen
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Features">
+<h2>Features<a class="headerlink" href="#Features" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Experiment-Visualisation">
+<h3>Experiment Visualisation<a class="headerlink" href="#Experiment-Visualisation" title="Permalink to this headline">¶</a></h3>
+<p>Experiments can be visualised using the <code class="docutils literal notranslate"><span class="pre">xmen</span> <span class="pre">list</span></code> command. For more info see:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen list --help
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+usage: xmen list [-h] [-p [PARAM_MATCH [PARAM_MATCH ...]]]
+                 [-n [TYPE_MATCH [TYPE_MATCH ...]]] [-v] [-d] [-g] [-P] [-s]
+                 [-m [DISPLAY_MESSAGES]] [-M [DISPLAY_META]] [-l]
+                 [--load_defaults] [--max_width MAX_WIDTH]
+                 [--max_rows MAX_ROWS] [--csv]
+                 [pattern [pattern ...]]
+
+positional arguments:
+  pattern               List experiments which match pattern.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p [PARAM_MATCH [PARAM_MATCH ...]], --param_match [PARAM_MATCH [PARAM_MATCH ...]]
+                        List only experiments with certain parameter
+                        conditions of the form reg, reg==val or
+                        val1==reg==val2. Here reg is a regex matching a set of
+                        parameters. ==, &lt;, &gt;, !=, &gt;=, &lt;= are all supported
+                        with meaning defined as in experiments. Eg. a.*==cat and
+                        1.0&lt;a.*&lt;=2.0 will return any experiment that has
+                        parameters that match a.* provided that each match
+                        satisfies the condition.
+  -n [TYPE_MATCH [TYPE_MATCH ...]], --type_match [TYPE_MATCH [TYPE_MATCH ...]]
+                        List only experiments with this type (class).
+  -v, --verbose         Display all information for each experiment
+  -d, --display_date    Display created date for each experiment
+  -g, --display_git     Display git commit for each experiment
+  -P, --display_purpose
+                        Display purpose for each experiment
+  -s, --display_status  Display status for each experiment
+  -m [DISPLAY_MESSAGES], --display_messages [DISPLAY_MESSAGES]
+                        Display messages for each experiment
+  -M [DISPLAY_META], --display_meta [DISPLAY_META]
+                        Display meta information for each experiment. The
+                        regex &#39;^root$|^name$|^mac$|^host$|^user$|^home$&#39; gives
+                        basic meta information logged with every experiment.
+                        Other information is separated into groups including
+                        &#39;network.*&#39;, &#39;gpu.*&#39;, &#39;cpu.*&#39;, &#39;system.*&#39;,
+                        &#39;virtual.*&#39;, &#39;swap.*&#39;
+  -l, --list            Display as list and not a table
+  --load_defaults       Infer parameters from defaults.yml and overides
+                        instead of params.yml. Potentially faster but no
+                        messages are available.
+  --max_width MAX_WIDTH
+                        The maximum width of an individual collumn. If None
+                        then will print for ever
+  --max_rows MAX_ROWS   Display tables with this number of rows.
+  --csv                 Display the table as csv.
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Git-support">
+<h3>Git support<a class="headerlink" href="#Git-support" title="Permalink to this headline">¶</a></h3>
+<p>When running experiments xmen logs lots of useful information automatically. For example, the git information for the repo in which the experiement is defined. This can be found in the <code class="docutils literal notranslate"><span class="pre">params.yml</span></code> folder and can be visualised as:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen list -g
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/Users/robweston/tmp/xmen/hello_world*
+          root               name                  local                             remote                                    commit  branch
+0  hello_world   a=Hello__b=World  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master
+1  hello_world  a=Hello__b=Planet  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master
+2  hello_world     a=Bye__b=World  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master
+3  hello_world    a=Bye__b=Planet  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master
+
+Roots relative to: /Users/robweston/tmp/xmen
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Automatic-Record-Keeping">
+<h3>Automatic Record Keeping<a class="headerlink" href="#Automatic-Record-Keeping" title="Permalink to this headline">¶</a></h3>
+<p>Other meta information is also logged and can be visualised using the meta flag <code class="docutils literal notranslate"><span class="pre">-M</span></code></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+<span class="c1"># basic meta information</span>
+xmen list -M
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/Users/robweston/tmp/xmen/hello_world*
+          root               name             mac                    host       user              home
+0  hello_world   a=Hello__b=World  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston
+1  hello_world  a=Hello__b=Planet  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston
+2  hello_world     a=Bye__b=World  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston
+3  hello_world    a=Bye__b=Planet  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston
+
+Roots relative to: /Users/robweston/tmp/xmen
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+<span class="c1"># system info</span>
+xmen list -M <span class="s2">&quot;system_.*&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/Users/robweston/tmp/xmen/hello_world*
+          root               name system_system             system_node system_release                                               system_version system_machine system_processor
+0  hello_world   a=Hello__b=World        Darwin  dhcp55.robots.ox.ac.uk         16.7.0  Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 20...         x86_64             i386
+1  hello_world  a=Hello__b=Planet        Darwin  dhcp55.robots.ox.ac.uk         16.7.0  Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 20...         x86_64             i386
+2  hello_world     a=Bye__b=World        Darwin  dhcp55.robots.ox.ac.uk         16.7.0  Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 20...         x86_64             i386
+3  hello_world    a=Bye__b=Planet        Darwin  dhcp55.robots.ox.ac.uk         16.7.0  Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 20...         x86_64             i386
+
+Roots relative to: /Users/robweston/tmp/xmen
+</pre></div></div>
+</div>
+<p>Meta information is also logged for <code class="docutils literal notranslate"><span class="pre">&quot;cpu_.*&quot;,</span> <span class="pre">&quot;swap_.*&quot;,</span> <span class="pre">&quot;virtual_.*&quot;,</span> <span class="pre">&quot;gpu_.*&quot;</span></code>. In addition, a more extensive summary of the environment is logged when each experiment is run and can be found in the <code class="docutils literal notranslate"><span class="pre">meta.yml</span></code> file in the experiments folder including network information and global flags. For example:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+cat ~/tmp/xmen/hello_world/a<span class="o">=</span><span class="nv">Hello__b</span><span class="o">=</span>World/meta.yml
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+mac: &#39;0x6c96cfdb71b9&#39;
+host: dhcp55.robots.ox.ac.uk
+user: robweston
+home: /Users/robweston
+system:
+  system: Darwin
+  node: dhcp55.robots.ox.ac.uk
+  release: 16.7.0
+  version: &#39;Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 2018; root:xnu-3789.73.11~1/RELEASE_X86_64&#39;
+  machine: x86_64
+  processor: i386
+cpu:
+  physical: 4
+  total: 8
+  max_freq: 2200.00Mhz
+  min_freq: 2200.00Mhz
+  cur_freq: 2200.00Mhz
+virtual:
+  total: 16.00GB
+  free: 6.15GB
+  used: 8.97GB
+  percentage: 61.5%
+swap:
+  total: 2.00GB
+  free: &#39; 1.54GB&#39;
+  used: 470.25MB
+  percentage: &#39;23.0&#39;
+disks:
+  /dev/disk1:
+    mountpoint: /
+    fstype: hfs
+    total: 464.78GB
+    used: 430.99GB
+    free: 33.54GB
+    percent: 92.8%
+  read: 90.18GB
+  write: 147.87GB
+network:
+  lo0:
+    AF_INET6:
+      address: fe80::1%lo0
+      netmask: &#39;ffff:ffff:ffff:ffff::&#39;
+      broadcast: None
+  en0:
+    AF_INET6:
+      address: fe80::cf3:b64a:220b:17d8%en0
+      netmask: &#39;ffff:ffff:ffff:ffff::&#39;
+      broadcast: None
+  en6:
+    AF_INET6:
+      address: fe80::107d:1836:a969:5191%en6
+      netmask: &#39;ffff:ffff:ffff:ffff::&#39;
+      broadcast: None
+  en1:
+    AF_LINK:
+      address: 6a:00:03:5b:d3:f0
+      netmask: None
+      broadcast: None
+  en2:
+    AF_LINK:
+      address: 6a:00:03:5b:d3:f1
+      netmask: None
+      broadcast: None
+  bridge0:
+    AF_LINK:
+      address: 6a:00:03:5b:d3:f0
+      netmask: None
+      broadcast: None
+  p2p0:
+    AF_LINK:
+      address: 0e:96:cf:db:71:b9
+      netmask: None
+      broadcast: None
+  awdl0:
+    AF_INET6:
+      address: fe80::d86a:adff:fe3b:d95%awdl0
+      netmask: &#39;ffff:ffff:ffff:ffff::&#39;
+      broadcast: None
+  utun0:
+    AF_INET6:
+      address: fe80::77eb:8860:4aa1:d43b%utun0
+      netmask: &#39;ffff:ffff:ffff:ffff::&#39;
+      broadcast: None
+  sent: 21.37GB
+  received: 37.36GB
+environ:
+  PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: cpp
+  TERM_PROGRAM: iTerm.app
+  TERM: screen
+  SHELL: /bin/zsh
+  CLICOLOR: &#39;1&#39;
+  TMPDIR: /var/folders/3f/7jm6_wkj6rq0znrt1zgbg7hm0000gn/T/
+  CONDA_SHLVL: &#39;2&#39;
+  Apple_PubSub_Socket_Render: /private/tmp/com.apple.launchd.fPKHCGpHV7/Render
+  CONDA_PROMPT_MODIFIER: &#39;(python3.6) &#39;
+  TERM_PROGRAM_VERSION: 3.1.5
+  TERM_SESSION_ID: w0t4p0:7B70FECE-A287-43A3-A009-150E7FF3AA01
+  ZSH: /Users/robweston/.oh-my-zsh
+  USER: robweston
+  CONDA_EXE: /Users/robweston/miniconda3/bin/conda
+  TERMCAP: &#34;SC|screen|VT 100/ANSI X3.64 virtual terminal:\\\n\t:DO=\\E[%dB:LE=\\E[%dD:RI=\\\
+    E[%dC:UP=\\E[%dA:bs:bt=\\E[Z:\\\n\t:cd=\\E[J:ce=\\E[K:cl=\\E[H\\E[J:cm=\\E[%i%d;%dH:ct=\\\
+    E[3g:\\\n\t:do=^J:nd=\\E[C:pt:rc=\\E8:rs=\\Ec:sc=\\E7:st=\\EH:up=\\EM:\\\n\t:le=^H:bl=^G:cr=^M:it#8:ho=\\\
+    E[H:nw=\\EE:ta=^I:is=\\E)0:\\\n\t:li#24:co#80:am:xn:xv:LP:sr=\\EM:al=\\E[L:AL=\\\
+    E[%dL:\\\n\t:cs=\\E[%i%d;%dr:dl=\\E[M:DL=\\E[%dM:dc=\\E[P:DC=\\E[%dP:\\\n\t:im=\\\
+    E[4h:ei=\\E[4l:mi:IC=\\E[%d@:ks=\\E[?1h\\E=:\\\n\t:ke=\\E[?1l\\E&gt;:vi=\\E[?25l:ve=\\\
+    E[34h\\E[?25h:vs=\\E[34l:\\\n\t:ti=\\E[?1049h:te=\\E[?1049l:k0=\\E[10~:k1=\\EOP:k2=\\\
+    EOQ:\\\n\t:k3=\\EOR:k4=\\EOS:k5=\\E[15~:k6=\\E[17~:k7=\\E[18~:\\\n\t:k8=\\E[19~:k9=\\\
+    E[20~:k;=\\E[21~:F1=\\E[23~:F2=\\E[24~:\\\n\t:kh=\\E[1~:@1=\\E[1~:kH=\\E[4~:@7=\\\
+    E[4~:kN=\\E[6~:kP=\\E[5~:\\\n\t:kI=\\E[2~:kD=\\E[3~:ku=\\EOA:kd=\\EOB:kr=\\EOC:kl=\\\
+    EOD:&#34;
+  SSH_AUTH_SOCK: /private/tmp/com.apple.launchd.c8iOoBTn71/Listeners
+  KERNEL_LAUNCH_TIMEOUT: &#39;40&#39;
+  __CF_USER_TEXT_ENCODING: 0x1F5:0x0:0x2
+  JPY_PARENT_PID: &#39;89428&#39;
+  PAGER: cat
+  _CE_CONDA: &#39;&#39;
+  LSCOLORS: Gxfxcxdxbxegedabagacad
+  CONDA_PREFIX_1: /Users/robweston/miniconda3
+  PATH: /Users/robweston/.rbenv/shims:/Users/robweston/.gem/ruby/2.7.0/bin:/usr/local/opt/ruby/bin:/Users/robweston/.rbenv/shims:/Users/robweston/miniconda3/envs/python3.6/bin:/Users/robweston/miniconda3/condabin:/Users/robweston/.rbenv/shims:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/usr/local/share/dotnet:~/.dotnet/tools:/usr/local/git/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Library/TeX/texbin
+  STY: 2844..dhcp55
+  _: /Users/robweston/tmp/xmen/hello_world/xmen.examples.hello_world.hello_world
+  CONDA_PREFIX: /Users/robweston/miniconda3/envs/python3.6
+  PWD: /Users/robweston/tmp/xmen/hello_world
+  MPLBACKEND: module://ipykernel.pylab.backend_inline
+  LANG: en_GB.UTF-8
+  ITERM_PROFILE: Default
+  XPC_FLAGS: &#39;0x0&#39;
+  RBENV_SHELL: zsh
+  _CE_M: &#39;&#39;
+  CXX: /usr/bin/clang++
+  XPC_SERVICE_NAME: &#39;0&#39;
+  SHLVL: &#39;4&#39;
+  HOME: /Users/robweston
+  COLORFGBG: 12;8
+  ITERM_SESSION_ID: w0t4p0:7B70FECE-A287-43A3-A009-150E7FF3AA01
+  CONDA_PYTHON_EXE: /Users/robweston/miniconda3/bin/experiments
+  PYTHONPATH: :/Users/robweston/code/experiments-mrg-viewer/build-conda-build-conda-py36/experiments:/Users/robweston/code/experiments-moos/build/lib:/Users/robweston/xmen/experiments:/Users/robweston/projects/rad2sim2rad/experiments
+  LESS: -R
+  LOGNAME: robweston
+  WINDOW: &#39;0&#39;
+  LC_CTYPE: en_GB.UTF-8
+  CONDA_DEFAULT_ENV: python3.6
+  PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION: &#39;2&#39;
+  CC: /usr/bin/clang
+  DISPLAY: /private/tmp/com.apple.launchd.9Ugqo2pZGO/org.macosforge.xquartz:0
+  GIT_PAGER: cat
+  COLORTERM: truecolor
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Note-Taking">
+<h3>Note Taking<a class="headerlink" href="#Note-Taking" title="Permalink to this headline">¶</a></h3>
+<p>Notes can be manually added to an experiment using the <code class="docutils literal notranslate"><span class="pre">xmen</span> <span class="pre">note</span></code> command:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen note --help
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+usage: xmen note [-h] [-r DIR] [-d] message
+
+positional arguments:
+  message             Add note to experiment set
+
+optional arguments:
+  -h, --help          show this help message and exit
+  -r DIR, --root DIR  Path to the root experiment folder. If None then the
+                      current work directory will be used
+  -d, --delete        Delete the note corresponding to message.
+</pre></div></div>
+</div>
+<p>For example to add a note to the experiments run:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen note <span class="s2">&quot;example of adding a note&quot;</span>
+</pre></div>
+</div>
+</div>
+<p>Xmens list command provides an easy way to viusalise notes attached to an experiment.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen list -l
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ 0 /Users/robweston/tmp/xmen/hello_world
+     |- a=Hello__b=World
+     |- a=Hello__b=Planet
+     |- a=Bye__b=World
+     |- a=Bye__b=Planet
+     purpose:
+     created: 02-08-21-19:04:29
+     version:
+       module: xmen.examples.hello_world
+       function: hello_world
+       path: /Users/robweston/xmen/xmen/examples/hello_world.py
+       git:
+         local: /Users/robweston/xmen
+         remote: https://github.com/robw4/xmen.git
+         commit: 7b6e0734d93fdaad5cd8daac012ecef5afb237f5
+         branch: master
+     notes:
+       example of adding a note
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Conda-support">
+<h3>Conda support<a class="headerlink" href="#Conda-support" title="Permalink to this headline">¶</a></h3>
+<p>To make reproducing experiments as easy as possible, alongside the git version information, the conda environent is also logged as an <code class="docutils literal notranslate"><span class="pre">experiment.yml</span></code> file when each experiment is run. To turn this feature on run:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen config --enable_save_conda
+</pre></div>
+</div>
+</div>
+<p>Now lets re-run <code class="docutils literal notranslate"><span class="pre">&quot;a=Hello__b=World&quot;</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen reset <span class="s2">&quot;a=Hello__b=World&quot;</span>
+xmen run <span class="s2">&quot;a=Hello__b=World&quot;</span> bash
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/Users/robweston/tmp/xmen/hello_world/a=Hello__b=World/environment.yml
+Hello  World
+
+Running: bash /Users/robweston/tmp/xmen/hello_world/a=Hello__b=World/run.sh
+</pre></div></div>
+</div>
+<p>In this case an <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> file has been generated automatically once the experiment was run</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+head -20 ~/tmp/xmen/hello_world/a<span class="o">=</span><span class="nv">Hello__b</span><span class="o">=</span>World/environment.yml
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+name: python3.6
+channels:
+- pytorch
+- anaconda
+- conda-forge
+- defaults
+dependencies:
+- _tflow_select=2.3.0=mkl
+- absl-py=0.8.0=py36_0
+- alabaster=0.7.12=py36_0
+- appnope=0.1.0=py36hf537a9a_0
+- asn1crypto=1.0.1=py36_0
+- astor=0.8.0=py36_0
+- attrs=19.2.0=py_0
+- babel=2.7.0=py_0
+- backcall=0.1.0=py36_0
+- beautifulsoup4=4.8.0=py36_0
+- blas=1.0=mkl
+- bleach=3.1.0=py36_0
+- bzip2=1.0.8=h1de35cc_0
+</pre></div></div>
+</div>
+<p>Note, that while this is a useful feature this does have some additional overhead particularly when working with bloated conda environments. The feature can therefore be disabled as:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen config --disable_save_conda
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Interfacing-with-the-slurm-job-scheduler">
+<h3>Interfacing with the slurm job scheduler<a class="headerlink" href="#Interfacing-with-the-slurm-job-scheduler" title="Permalink to this headline">¶</a></h3>
+<p>Another powerful option for running experiments on high performance computing clusters is the slurm job scheduler. To run experiments using the slurm job scheduler first add a header,</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+cat ~/xmen/examples/header.txt
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+#SBATCH --nodes=1
+#SBATCH --job-name=single_job
+#SBATCH --time=1-00:00:00
+#SBATCH --gres=gpu:1
+#SBATCH --constraint=&#39;gpu_sku:RTX|gpu_sku:V100-LS|gpu_sku:V100|gpu_sku:P100&#39;
+#SBATCH --partition=htc-nova,htc
+#SBATCH --cpus-per-task=2
+#SBATCH --mail-user=robw@robots.ox.ac.uk
+#SBATCH --mail-type=ALL
+#SBATCH --account=engs-a2i
+#SBATCH --signal=SIGUSR1@90
+# Author: Rob Weston
+# Email: robw@robots.ox.ac.uk
+</pre></div></div>
+</div>
+<p>to the global configuration:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen config -H ~/xmen/examples/header.txt
+</pre></div>
+</div>
+</div>
+<p>This will be appended to each run script generated by xmen. Experiments can then be submitted using the steps described before, but this time running each job with the sbatch command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>xmen run <span class="s2">&quot;*&quot;</span> sbatch
+</pre></div>
+</div>
+<p>Note the header is used to set <em>default</em> paraeter values. They can still be overidden by passing command line flags to sbatch. For example the <code class="docutils literal notranslate"><span class="pre">--job-name</span></code> flag can be set to override the name of the experiment as:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>xmen run <span class="s2">&quot;*&quot;</span> sbatch --job-name<span class="o">=</span>new_name
+</pre></div>
+</div>
+</div>
+<div class="section" id="Language-agnostic-experiment-configuration">
+<h3>Language agnostic experiment configuration<a class="headerlink" href="#Language-agnostic-experiment-configuration" title="Permalink to this headline">¶</a></h3>
+<p>Whilst so far we have considered defining and running experiments in experiments <code class="docutils literal notranslate"><span class="pre">xmen</span></code> is designed to work with other types of experiments. A general experiment can be defined through a <code class="docutils literal notranslate"><span class="pre">script.sh</span></code> which takes a yaml file of parameters as its first argment. For example, a trivial bash experiment <code class="docutils literal notranslate"><span class="pre">script.sh</span></code> which takes a yaml file and prints to screen might look something like:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#! /bin/bash</span>
+<span class="nb">echo</span> <span class="s2">&quot;contents of params.yml file </span><span class="si">${</span><span class="nv">1</span><span class="si">}</span><span class="s2">&quot;</span>
+cat <span class="si">${</span><span class="nv">1</span><span class="si">}</span>
+</pre></div>
+</div>
+<p>Next to interface with the <code class="docutils literal notranslate"><span class="pre">xmen</span></code> command line tool we need to generate a set of default paramaters in a yaml file called <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code>. The script <code class="docutils literal notranslate"><span class="pre">xmen.examples.bash.generate</span></code> is provided to do this for you:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+experiments -m xmen.examples.bash.generate ~/tmp/xmen/bash
+</pre></div>
+</div>
+</div>
+<p>Now when we look in <code class="docutils literal notranslate"><span class="pre">~/tmp/xmen/bash</span></code> we find a copy of the <code class="docutils literal notranslate"><span class="pre">script.sh</span></code> defined above alongside a <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">tmp</span><span class="o">/</span><span class="n">xmen</span><span class="o">/</span><span class="n">bash</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/Users/robweston/tmp/xmen/bash
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+ls -l ~/tmp/xmen/bash
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+total 16
+-rw-r--r--  1 robweston  staff  109  8 Feb 19:05 defaults.yml
+-rw-r--r--  1 robweston  staff  164  8 Feb 19:05 script.sh
+</pre></div></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">defaults.yml</span></code> file defines two parameters <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code>. The special parameters <code class="docutils literal notranslate"><span class="pre">_version</span></code> and <code class="docutils literal notranslate"><span class="pre">_created</span></code> can also be included. Here, <code class="docutils literal notranslate"><span class="pre">_created</span></code> gives the date the file was created whilst version is a dictionary with a single entry giving the path to the file in which the parameters were originally defined.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+cat ~/tmp/xmen/bash/defaults.yml
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+_version:
+  path: /Users/robweston/xmen/xmen/examples/bash/generate.py
+_created: 8/2/2021
+a: Hello
+b: Planet
+</pre></div></div>
+</div>
+<p>It is now possible to initialise, link and run experiments using the xmen command line tool in a similar way to before.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen init
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+None
+Defaults from /Users/robweston/tmp/xmen/bash/defaults.yml
+Script from /Users/robweston/tmp/xmen/bash/script.sh
+Experiment root created at /Users/robweston/tmp/xmen/bash
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen link -u <span class="s2">&quot;{a: Hello | Bye, b: World| Planet}&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen run <span class="s2">&quot;*&quot;</span> bash
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+#######################################
+contents of params.yml file /Users/robweston/tmp/xmen/bash/a=Bye__b=Planet/params.yml
+#######################################
+_root: /Users/robweston/tmp/xmen/bash  # The root directory of the experiment
+_name: a=Bye__b=Planet # The name of the experiment (under root)
+_status: registered # One of [&#39;default&#39; | &#39;created&#39; | &#39;running&#39; | &#39;error&#39; | &#39;finished&#39;]
+_created: 2021-02-08-19-05-03 # The date the experiment was created
+_purpose: # A description of the experiment purpose
+_messages: {} # Messages left by the experiment
+_version: # Experiment version information. See `get_version`
+  path: /Users/robweston/xmen/xmen/examples/bash/generate.py
+  git:
+    local: /Users/robweston/xmen
+    remote: https://github.com/robw4/xmen.git
+    commit: 7b6e0734d93fdaad5cd8daac012ecef5afb237f5
+    branch: master
+_meta: # The global configuration for the experiment manager
+  mac: &#39;0x6c96cfdb71b9&#39;
+  host: dhcp55.robots.ox.ac.uk
+  user: robweston
+  home: /Users/robweston
+  system:
+    system: Darwin
+    node: dhcp55.robots.ox.ac.uk
+    release: 16.7.0
+    version: &#39;Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 2018; root:xnu-3789.73.11~1/RELEASE_X86_64&#39;
+    machine: x86_64
+    processor: i386
+  cpu:
+    physical: 4
+    total: 8
+    max_freq: 2200.00Mhz
+    min_freq: 2200.00Mhz
+    cur_freq: 2200.00Mhz
+  virtual:
+    total: 16.00GB
+    free: 6.10GB
+    used: 9.02GB
+    percentage: 61.9%
+  swap:
+    total: 2.00GB
+    free: &#39; 1.54GB&#39;
+    used: 470.25MB
+    percentage: &#39;23.0&#39;
+a: Bye
+b: Planet
+
+#######################################
+contents of params.yml file /Users/robweston/tmp/xmen/bash/a=Bye__b=World/params.yml
+#######################################
+_root: /Users/robweston/tmp/xmen/bash  # The root directory of the experiment
+_name: a=Bye__b=World # The name of the experiment (under root)
+_status: registered # One of [&#39;default&#39; | &#39;created&#39; | &#39;running&#39; | &#39;error&#39; | &#39;finished&#39;]
+_created: 2021-02-08-19-05-03 # The date the experiment was created
+_purpose: # A description of the experiment purpose
+_messages: {} # Messages left by the experiment
+_version: # Experiment version information. See `get_version`
+  path: /Users/robweston/xmen/xmen/examples/bash/generate.py
+  git:
+    local: /Users/robweston/xmen
+    remote: https://github.com/robw4/xmen.git
+    commit: 7b6e0734d93fdaad5cd8daac012ecef5afb237f5
+    branch: master
+_meta: # The global configuration for the experiment manager
+  mac: &#39;0x6c96cfdb71b9&#39;
+  host: dhcp55.robots.ox.ac.uk
+  user: robweston
+  home: /Users/robweston
+  system:
+    system: Darwin
+    node: dhcp55.robots.ox.ac.uk
+    release: 16.7.0
+    version: &#39;Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 2018; root:xnu-3789.73.11~1/RELEASE_X86_64&#39;
+    machine: x86_64
+    processor: i386
+  cpu:
+    physical: 4
+    total: 8
+    max_freq: 2200.00Mhz
+    min_freq: 2200.00Mhz
+    cur_freq: 2200.00Mhz
+  virtual:
+    total: 16.00GB
+    free: 6.11GB
+    used: 9.02GB
+    percentage: 61.8%
+  swap:
+    total: 2.00GB
+    free: &#39; 1.54GB&#39;
+    used: 470.25MB
+    percentage: &#39;23.0&#39;
+a: Bye
+b: World
+
+#######################################
+contents of params.yml file /Users/robweston/tmp/xmen/bash/a=Hello__b=Planet/params.yml
+#######################################
+_root: /Users/robweston/tmp/xmen/bash  # The root directory of the experiment
+_name: a=Hello__b=Planet # The name of the experiment (under root)
+_status: registered # One of [&#39;default&#39; | &#39;created&#39; | &#39;running&#39; | &#39;error&#39; | &#39;finished&#39;]
+_created: 2021-02-08-19-05-03 # The date the experiment was created
+_purpose: # A description of the experiment purpose
+_messages: {} # Messages left by the experiment
+_version: # Experiment version information. See `get_version`
+  path: /Users/robweston/xmen/xmen/examples/bash/generate.py
+  git:
+    local: /Users/robweston/xmen
+    remote: https://github.com/robw4/xmen.git
+    commit: 7b6e0734d93fdaad5cd8daac012ecef5afb237f5
+    branch: master
+_meta: # The global configuration for the experiment manager
+  mac: &#39;0x6c96cfdb71b9&#39;
+  host: dhcp55.robots.ox.ac.uk
+  user: robweston
+  home: /Users/robweston
+  system:
+    system: Darwin
+    node: dhcp55.robots.ox.ac.uk
+    release: 16.7.0
+    version: &#39;Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 2018; root:xnu-3789.73.11~1/RELEASE_X86_64&#39;
+    machine: x86_64
+    processor: i386
+  cpu:
+    physical: 4
+    total: 8
+    max_freq: 2200.00Mhz
+    min_freq: 2200.00Mhz
+    cur_freq: 2200.00Mhz
+  virtual:
+    total: 16.00GB
+    free: 6.10GB
+    used: 9.02GB
+    percentage: 61.9%
+  swap:
+    total: 2.00GB
+    free: &#39; 1.54GB&#39;
+    used: 470.25MB
+    percentage: &#39;23.0&#39;
+a: Hello
+b: Planet
+
+#######################################
+contents of params.yml file /Users/robweston/tmp/xmen/bash/a=Hello__b=World/params.yml
+#######################################
+_root: /Users/robweston/tmp/xmen/bash  # The root directory of the experiment
+_name: a=Hello__b=World # The name of the experiment (under root)
+_status: registered # One of [&#39;default&#39; | &#39;created&#39; | &#39;running&#39; | &#39;error&#39; | &#39;finished&#39;]
+_created: 2021-02-08-19-05-03 # The date the experiment was created
+_purpose: # A description of the experiment purpose
+_messages: {} # Messages left by the experiment
+_version: # Experiment version information. See `get_version`
+  path: /Users/robweston/xmen/xmen/examples/bash/generate.py
+  git:
+    local: /Users/robweston/xmen
+    remote: https://github.com/robw4/xmen.git
+    commit: 7b6e0734d93fdaad5cd8daac012ecef5afb237f5
+    branch: master
+_meta: # The global configuration for the experiment manager
+  mac: &#39;0x6c96cfdb71b9&#39;
+  host: dhcp55.robots.ox.ac.uk
+  user: robweston
+  home: /Users/robweston
+  system:
+    system: Darwin
+    node: dhcp55.robots.ox.ac.uk
+    release: 16.7.0
+    version: &#39;Darwin Kernel Version 16.7.0: Tue Jan 30 11:27:06 PST 2018; root:xnu-3789.73.11~1/RELEASE_X86_64&#39;
+    machine: x86_64
+    processor: i386
+  cpu:
+    physical: 4
+    total: 8
+    max_freq: 2200.00Mhz
+    min_freq: 2200.00Mhz
+    cur_freq: 2200.00Mhz
+  virtual:
+    total: 16.00GB
+    free: 6.10GB
+    used: 9.02GB
+    percentage: 61.8%
+  swap:
+    total: 2.00GB
+    free: &#39; 1.54GB&#39;
+    used: 470.25MB
+    percentage: &#39;23.0&#39;
+a: Hello
+b: World
+
+
+Running: bash /Users/robweston/tmp/xmen/bash/a=Bye__b=Planet/run.sh
+
+Running: bash /Users/robweston/tmp/xmen/bash/a=Bye__b=World/run.sh
+
+Running: bash /Users/robweston/tmp/xmen/bash/a=Hello__b=Planet/run.sh
+
+Running: bash /Users/robweston/tmp/xmen/bash/a=Hello__b=World/run.sh
+</pre></div></div>
+</div>
+<p>Alongside allowing experiments to be initialised and run quickly, <code class="docutils literal notranslate"><span class="pre">xmen</span></code> still takes care of record keeping behind the scenes, automatically logging git and system information as before:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+xmen list -dsgM
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/Users/robweston/tmp/xmen/bash*
+   root               name                  local                             remote                                    commit  branch      status              created             mac                    host       user              home
+0  bash   a=Hello__b=World  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master  registered  2021-02-08-19-05-03  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston
+1  bash  a=Hello__b=Planet  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master  registered  2021-02-08-19-05-03  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston
+2  bash     a=Bye__b=World  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master  registered  2021-02-08-19-05-03  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston
+3  bash    a=Bye__b=Planet  /Users/robweston/xmen  https://github.com/robw4/xmen.git  7b6e0734d93fdaad5cd8daac012ecef5afb237f5  master  registered  2021-02-08-19-05-03  0x6c96cfdb71b9  dhcp55.robots.ox.ac.uk  robweston  /Users/robweston
+
+Roots relative to: /Users/robweston/tmp/xmen
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Clean-Up">
+<h2>Clean Up<a class="headerlink" href="#Clean-Up" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+</pre></div>
+</div>
+<div class="input_area highlight-bash notranslate"><div class="highlight"><pre>
+<span></span>%%bash
+<span class="c1"># remove the ~/tmp/xmen folder</span>
+rm -rf ~/tmp/xmen
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Next-Steps">
+<h2>Next Steps<a class="headerlink" href="#Next-Steps" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>For further help running any of the command line tools try <code class="docutils literal notranslate"><span class="pre">xmen</span> <span class="pre">--help</span></code>, <code class="docutils literal notranslate"><span class="pre">xmen</span> <span class="pre">hello_world</span> <span class="pre">--help</span></code></p></li>
+<li><p>More exampels of the experiments can be found in <code class="docutils literal notranslate"><span class="pre">xmen.examples</span></code></p></li>
+<li><p>Check out the API docs and the cheat sheet</p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="README.html" class="btn btn-neutral" title="Xmen" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Rob Weston.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.2.3',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="_static/jquery.fancybox.min.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+  <script type="text/javascript">
+    $(function(){
+      $('.image-reference').fancybox();
+    })
+  </script>
+
+</body>
+</html>
