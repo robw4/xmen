@@ -115,13 +115,13 @@ def visualise_params(dics, *filters, roots=None, short_root=False):
             if len(r[0]) + len(r[1]) > max_ch:
                 remainder = r[1].split(os.sep)
                 back = []
-                for rr in reversed(remainder[1:]):
+                for rr in reversed(remainder):
                     back += [rr]
                     if sum(len(x) for x in back) > max_ch - len(r[0]):
                         break
                 if len(back) > 1:
-                    back = back[1:]
-                r[1] = ' ... ' + os.sep.join(back)
+                    back = back[:-1]
+                r[1] = ' ... ' + os.sep.join(reversed(back))
             _ += [''.join([r[0], r[1]])]
         df['root'] = _
 
