@@ -217,6 +217,26 @@ def manage_backspace(x):
     return x
 
 
+def extract_results(response):
+    from xmen.utils import dic_from_yml
+    roots, data, updated, status = zip(*response['matches'])
+    results = [dic_from_yml(string=d) for d in data]
+    for d, s in zip(results, status):
+        d['_status'] = s
+    return results, roots
+
+
+def process_results_task(q_response, q_results):
+    while True:
+        response = q_response.get()
+        results, roots = extract_results(response)
+        try:
+            q_results.get(False)
+        except queue.Empty:
+            pass
+        q_results.put((results, roots))
+
+
 def interactive_display(stdscr, args):
     """interactively display results with various search queries"""
     import curses
@@ -403,14 +423,11 @@ def interactive_display(stdscr, args):
             args.pattern,
             args.status_filter,
             args.max_n)
+        try:
+            requests_q.get(False)
+        except queue.Empty:
+            pass
         requests_q.put(request, block=True)
-
-    def extract_results(response):
-        roots, data, updated, status = zip(*response['matches'])
-        results = [dic_from_yml(string=d) for d in data]
-        for d, s in zip(results, status):
-            d['_status'] = s
-        return results, roots
 
     # visualise_results(results, roots, args)
     rows, cols = stdscr.getmaxyx()
@@ -427,13 +444,17 @@ def interactive_display(stdscr, args):
         manager = mp.Manager()
         q_request = manager.Queue(maxsize=1)
         q_response = manager.Queue(maxsize=1)
+        q_processed = manager.Queue(maxsize=1)
         update_requests(args, q_request)
-        p = multiprocessing.Process(target=send_request_task, args=(q_request, q_response))
-        p.start()
+
+        p_request = multiprocessing.Process(target=send_request_task, args=(q_request, q_response))
+        p_request.start()
+        p_process = multiprocessing.Process(target=process_results_task, args=(q_response, q_processed))
+        p_process.start()
 
         # get inial results view
-        response = q_response.get()
-        results, roots = extract_results(response)
+        results, roots = q_processed.get()
+        # results, roots = extract_results(response)
 
         update_requests(args, q_request)
 
@@ -444,8 +465,7 @@ def interactive_display(stdscr, args):
                     # request experiment updates
                     try:
                         # raise queue.Empty
-                        response = q_response.get(False)
-                        results, roots = extract_results(response)
+                        results, roots = q_processed.get(False)
                         visualise_results(results, roots, args)
                         update_requests(args, q_request)
                     except queue.Empty:
@@ -569,7 +589,7 @@ def interactive_display(stdscr, args):
                     visualise_results(results, roots, args)
 
     except KeyboardInterrupt:
-        p.terminate()
+        p_request.terminate()
         raise KeyboardInterrupt
 
 
