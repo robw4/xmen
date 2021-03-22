@@ -70,8 +70,8 @@ class Config(object):
         self.server_port = 8000
         self.user = None
         self.password = None
-        self.local_host = socket.gethostname()
-        self.local_user = getpass.getuser()
+        # self.local_host = socket.gethostname()
+        # self.local_user = getpass.getuser()
         self.prompt = True
         self.save_conda = True  # Whether to save conda info to file
         self.redirect_stdout = True  # Whether to also log the stdout and stderr to a text file in each experiment dir
@@ -235,7 +235,8 @@ class Config(object):
             import ruamel.yaml
             params = ruamel.yaml.load(file, Loader=ruamel.yaml.SafeLoader)
             for k, v in params.items():
-                self.__dict__[k] = v
+                if k in self.__dict__:
+                    self.__dict__[k] = v
 
     def load_params(self, root):
         """Load parameters for an experiment"""
@@ -244,18 +245,21 @@ class Config(object):
 
     def link(self, roots):
         """Link an experiment instance with the global configuration"""
+        from xmen.utils import dic_from_yml
         if not isinstance(roots, (list, tuple)):
             roots = [roots]
         self.linked += [r for r in roots]
         requests = []
+        meta = get_meta()
         for root in roots:
             data = open(os.path.join(root, 'params.yml'), 'r').read()
+            params = dic_from_yml
             status = self.load_params(root)['_status']
             requests.append(
                 LinkExperiment(
                     user=self.user,
                     password=self.password,
-                    root=f'{self.local_user}@{self.local_host}:{root}',
+                    root=f'{meta["user"]}@{meta["host"]}:{root}',
                     data=data,
                     status=status))
         self.send_request(requests)
@@ -267,6 +271,7 @@ class Config(object):
         exist on the current host but are not currently linked then they will be optionally relinked.
         If they are found to not exist on the current host they will be deleted from the server.
         """
+        meta = get_meta()
         from xmen.utils import dic_from_yml
         if roots is None:
             roots = self.linked
@@ -274,7 +279,7 @@ class Config(object):
             GetExperiments(
                 user=self.user,
                 password=self.password,
-                roots=f'{self.local_user}@{self.local_host}:.*',
+                roots=f'{meta["user"]}@{meta["host"]}:.*',
                 max_n=100000,
                 status='.*')], workers=0)[0]
         requests = []
@@ -288,7 +293,8 @@ class Config(object):
             for r, d, u, s in zip(server_roots, data, updated, status):
                 if not d['_root'] in self.linked and s != xmen.experiment.DELETED:
                     if os.path.exists(os.path.join(d['_root'], 'params.yml')):
-                        relink += [d['_root']]
+                        if d['_host'] == meta['host'] and d['_user'] == meta['user']:
+                            relink += [d['_root']]
                     else:
                         delete.append(d['_root'])
                         requests.append(
@@ -321,7 +327,7 @@ class Config(object):
                 UpdateExperiment(
                     user=self.user,
                     password=self.password,
-                    root=f'{self.local_user}@{self.local_host}:{root}',
+                    root=f'{meta["user"]}@{meta["host"]}:{root}',
                     data=data,
                     status=status))
         self.send_request(requests, max_processes)
@@ -352,6 +358,7 @@ class Config(object):
         Note:
             This is performed by checking that the experiment.yml file exists.
         """
+        meta = get_meta()
         corrupted = []
         for p in self.linked:
             if not os.path.isfile(os.path.join(p, 'params.yml')):
@@ -369,7 +376,7 @@ class Config(object):
         for c in corrupted:
             self.linked.remove(c)
             requests.append(
-                DeleteExperiment(self.user, self.password, f'{self.local_user}@{self.local_host}:{c}'))
+                DeleteExperiment(self.user, self.password, f'{meta["user"]}@{meta["host"]}:{c}'))
         self.send_request(requests)
         self.to_yml()
         print('Experiments were successfully removed from the global configuration')

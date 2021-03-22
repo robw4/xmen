@@ -136,7 +136,7 @@ class Experiment(object, metaclass=TypedMeta):
         if copy_params:
             for k in [k for k in dir(self) if k in self._params]:
                 setattr(self, k, copy.deepcopy(getattr(self, k)))
-
+        meta = get_meta()
         if root is None:
             self._root: Optional[str] = None     # @p The root directory of the experiment
             self._status: str = DEFAULT  # @p One of ['default' | 'created' | 'running' | 'error' | 'finished']
@@ -144,8 +144,8 @@ class Experiment(object, metaclass=TypedMeta):
             self._notes: Optional[List[str]] = None  # @p Notes attached to the experiment
             self._purpose: Optional[str] = None  # @p A description of the experiment purpose
             # new attributes
-            self._user: Optional[str] = CONFIG.local_user  # @p The user of the experiment
-            self._host: Optional[str] = CONFIG.local_host  # @p The name of the default host
+            self._user: Optional[str] = meta['user']  # @p The user of the experiment
+            self._host: Optional[str] = meta['host']  # @p The name of the default host
             self._timestamps: Dict[str, Optional[str]] = get_timestamps()   # @p timestamps attached to the experiment
             # These can all be varied
             self._messages: Dict[Any, Any] = {}  # @p Messages left by the experiment
@@ -346,7 +346,7 @@ class Experiment(object, metaclass=TypedMeta):
         from xmen.config import Config
         config = Config()
         data = self.as_yaml()
-        root = f'{config.local_user}@{config.local_host}:{self.root}'
+        root = f'{self._user}@{self._host}:{self.root}'
         return UpdateExperiment(
             user=config.user, password=config.password,
             root=root, data=data, status=self.status)
