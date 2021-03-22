@@ -307,12 +307,11 @@ def add_gpu_info(request: UpdateExperiment):
         meta = get_meta(get_gpu=True)
         dic = dic_from_yml(string=request.data)
         if meta.get('gpu', None):
+            dic['_meta']['gpu'] = meta['gpu']
             data = dic_to_yaml(dic)
             request = UpdateExperiment(
                 request.user, request.password,
                 request.root, request.status, data)
-        else:
-            print('No gpu info available')
         return request
 
 
