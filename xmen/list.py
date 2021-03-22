@@ -585,13 +585,24 @@ def interactive_display(stdscr, args):
                     text_box = Textbox(win)
                     text = text_box.edit(validate=manage_backspace).strip()
                     toggle(args, 'pattern', text.strip())
-                    update_requests(args, q_request)
                     while True:
+                        # clear all queues
                         try:
-                            response = q_response.get(timeout=0.5)
+                            q_request.get(False)
                         except queue.Empty:
                             break
-                    results, roots = extract_results(response)
+                    while True:
+                        try:
+                            q_response.get(False)
+                        except queue.Empty:
+                            break
+                    while True:
+                        try:
+                            q_processed.get(False)
+                        except queue.Empty:
+                            break
+                    update_requests(args, q_request)
+                    results, roots = q_processed.get()
                     visualise_results(results, roots, args)
                 if c == ord("o"):
                     expand_helps = not expand_helps
