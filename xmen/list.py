@@ -140,11 +140,20 @@ def visualise_params(dics, *filters, roots=None, short_root=False):
     # else:
     #     prefix = ''
 
-    get_rid = {'sid', 'sMCS_label', 'sQOS', 'sTimeMin', 'sEligibleTime', 'sAccrueTime', 'sDeadline',
-               'sSecsPreSuspend', 'sJobName', 'sSuspendTime', 'sLastSchedEval', 'sReqNodeList', 'sExcNodeList',
-               'sNice'}
+    # get_rid = {
+    #     'sid',
+    #     'sMCS_label',
+    #     'sNice'
+    #     'sQOS', 'sTimeMin', 'sEligibleTime', 'sAccrueTime', 'sDeadline',
+    #            'sSecsPreSuspend', 'sJobName', 'sSuspendTime', 'sLastSchedEval', 'sReqNodeList', 'sExcNodeList',
+    #            'sNice', }
+    # filter slurm keys
+    skeys = [k.replace('_meta_slurm_', 's') for k in keys if k.startswith('_meta_slurm_')]
+    keep = {'JobId', 'UserId', 'GroupId', 'Priority', 'Account', 'TimeLimit',
+            'StartTime', 'EndTime', 'NodeList', 'NumNodes',
+            'NumCPUSs', 'MailUser', 'MailType'}
+    get_rid = [k for k in skeys if k[1:] not in keep]
     df = df.filter(items=[k for k in df.columns if k not in get_rid])
-
     return df, prefix
 
 
