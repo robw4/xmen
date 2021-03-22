@@ -520,14 +520,8 @@ class Experiment(object, metaclass=TypedMeta):
     def __enter__(self):
         def _sigusr1_handler(signum, handler):
             raise TimeoutException
-
-        def _sigint_handler(signum, handler):
-            raise KeyboardInterrupt
-
         # set up the signal usr1 signal handler
         signal.signal(signal.SIGUSR1, _sigusr1_handler)
-        signal.signal(signal.SIGTERM, _sigint_handler)
-        signal.signal(signal.SIGINT, _sigint_handler)
         # get all the meta information for the current system
         meta = get_meta(get_platform=True, get_cpu=True, get_memory=True, get_disk=True,
                         get_slurm=True, get_conda=CONFIG.save_conda, get_network=True, get_gpu=True,
@@ -575,7 +569,7 @@ class Experiment(object, metaclass=TypedMeta):
             print('########################')
             self._update_status(TIMEOUT)
             slurm_job = os.environ.get('SLURM_JOBID', None)
-            if slurm_job is not None and CONFIG.requeue:
+            if slurm_job is not None and CONFIG.reque:
                 import subprocess
                 self._update_status(REQUEUE)
                 subprocess.call(['scontrol', 'requeue', f'{slurm_job}'])
