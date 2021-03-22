@@ -169,11 +169,12 @@ class EarlyStopper(Hook):
 
 
 class Checkpointer(Hook):
-    def __init__(self, spec, to_keep=None, expand=True):
+    def __init__(self, spec, to_keep=None, expand=True, save_dir=None):
         super(Checkpointer, self).__init__(spec)
         self.to_keep = to_keep
         self._checkpoint_buffer = {}
         self.expand = expand
+        self.save_dir = save_dir
 
     def __call__(self, var_dict, monitor):
         import torch
@@ -193,10 +194,14 @@ class Checkpointer(Hook):
                     var_dict.pop(p)
                     var_dict.update(updates)
 
+            save_dir = self.save_dir
             for k, v in var_dict.items():
                 if hasattr(v, 'state_dict'):
                     # Save directory
-                    save_dir = os.path.join(monitor.directory, 'checkpoints', k)
+                    if self.save_dir is None:
+                        save_dir = os.path.join(monitor.directory, 'checkpoints', k)
+                    else:
+                        save_dir = os.path.join(self.save_dir, k)
 
                     # Create directory if it doesn't exist
                     if not os.path.exists(save_dir):
@@ -223,7 +228,8 @@ class Checkpointer(Hook):
                     saved.append(k)
                 else:
                     warnings.warn(f'Value for key = {k} does not have a state_dict')
-            monitor.log(f'saved {saved} at {monitor.directory}')
+
+            monitor.log(f'saved {saved} at {os.path.split(save_dir)[0]}')
 
 
 class XmenMessenger(Hook):

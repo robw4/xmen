@@ -84,6 +84,7 @@ DEFAULT = 'default'
 REGISTERED = 'registered'
 RUNNING = 'running'
 ERROR = 'error'
+DEBUG = 'debug'
 STOPPED = 'stopped'
 TIMEOUT = 'timeout'
 FINISHED = 'finished'
@@ -156,6 +157,7 @@ class Experiment(object, metaclass=TypedMeta):
             self._helps: Optional[Dict] = None
 
             # queues
+            self._is_debug = False
             self._queues = []
             self._processes = []
             self._manager = None
@@ -167,6 +169,11 @@ class Experiment(object, metaclass=TypedMeta):
         self.update(kwargs)
         if root is not None:
             self.register(root, purpose=purpose)
+
+    @property
+    def is_debug(self):
+        """Whether the experiment is in debug mode"""
+        return self._is_debug
 
     @property
     def root(self):
@@ -359,7 +366,7 @@ class Experiment(object, metaclass=TypedMeta):
         with open(path, 'w') as file:
             file.write(string)
 
-        if self.status not in [DEFAULT, REGISTERED]:
+        if self.status not in [DEFAULT, REGISTERED] and not self._is_debug:
             request = self.to_update_request()
             for q in self._queues:
                 # get one item and put one item
@@ -369,12 +376,13 @@ class Experiment(object, metaclass=TypedMeta):
                     pass
                 q.put(request, block=False)
 
-        elif self.status == REGISTERED:
+        elif self.status == REGISTERED and not self._is_debug:
             # the global configuration will link with the server...
             Config().link(self.root)
 
     def debug(self):
-        """Inherited classes may overload debug. Used to define a set of open_socket for minimum example"""
+        """Inherited classes may overload debug. Method is called before experiment is registered.
+        It is useful for setting parameter defaults for debugging for example."""
         return self
 
     def from_yml(self, path, copy=False):
@@ -535,11 +543,12 @@ class Experiment(object, metaclass=TypedMeta):
 
         # setup queues for interfacing with remote server
         from multiprocessing import Process, Manager
-        self._manager = Manager()
-        self._queues += [self._manager.Queue(maxsize=2)]
-        p = Process(target=send_request_task, args=(self._queues[0], ))
-        p.start()
-        self._processes += [p]
+        if not self._is_debug:
+            self._manager = Manager()
+            self._queues += [self._manager.Queue(maxsize=2)]
+            p = Process(target=send_request_task, args=(self._queues[0], ))
+            p.start()
+            self._processes += [p]
 
         # finally save the experiment (and send UpdateExperiment request to server)
         self._save()
@@ -659,6 +668,7 @@ class Experiment(object, metaclass=TypedMeta):
         if args.debug is not None:
             # Update debug parameters
             print('Running as debug')
+            self._is_debug = True
             self.debug()
         # update the parameter values from either
         # a parameter string or from a defaults.yml file.
