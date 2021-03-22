@@ -301,7 +301,22 @@ def send_request(request):
     return decode_response(response)
 
 
-def send_request_task(q_request, q_response=None):
+def add_gpu_info(request: UpdateExperiment):
+    from xmen.utils import dic_from_yml, dic_to_yaml, get_meta
+    if isinstance(request, UpdateExperiment):
+        meta = get_meta(get_gpu=True)
+        dic = dic_from_yml(string=request.data)
+        if meta.get('gpu', None):
+            data = dic_to_yaml(dic)
+            request = UpdateExperiment(
+                request.user, request.password,
+                request.root, request.status, data)
+        else:
+            print('No gpu info available')
+        return request
+
+
+def send_request_task(q_request, q_response=None, hook=None):
     from xmen.config import Config
     import time
     config = Config()
@@ -320,6 +335,8 @@ def send_request_task(q_request, q_response=None):
                             request = q_request.get()
                             if not request:
                                 return
+                            if hook:
+                                request = hook(request)
                             send(request, s)
                             response = receive(s)
                             if q_response is not None:

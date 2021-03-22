@@ -552,7 +552,7 @@ class Experiment(object, metaclass=TypedMeta):
         if not self._is_debug:
             self._manager = Manager()
             self._queues += [self._manager.Queue(maxsize=2)]
-            p = Process(target=send_request_task, args=(self._queues[0], ))
+            p = Process(target=send_request_task, args=(self._queues[0], None, add_gpu_info))
             p.start()
             self._processes += [p]
 
