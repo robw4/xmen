@@ -483,9 +483,13 @@ def interactive_display(stdscr, args):
 
         # get initial results view
         if not results:
-            stdscr.addstr(0, 1, 'No cache found. Downloading user content from server...', curses.A_BOLD)
+            stdscr.addstr(0, 1, 'Downloading user content from server. This could take a minute but only needs to happen once...', curses.A_BOLD)
             stdscr.refresh()
-            updates, last_request_time = q_processed.get(timeout=20.)
+            try:
+                updates, last_request_time = q_processed.get(timeout=180.)
+            except queue.Empty:
+                stdscr.addstr(0, 1, 'Timeout occurred after 180s. Is the server connected?', curses.A_BOLD)
+                return
             results.update(updates)
             config.cache(save=(results, last_request_time))
             update_requests(q_request, last_request_time, config)
