@@ -235,6 +235,8 @@ init_parser.add_argument('-s', '--script', metavar='PATH', default='',
 init_parser.add_argument('-r', '--root', metavar='DIR', default='',
                          help='Path to the root experiment folder. If None then the current work directory will be '
                               'used')
+init_parser.add_argument('-u', '--updates', metavar='DIR', default='',
+                         help='A yaml string giving new defaults for parameters')
 init_parser.add_argument('-n', '--name', metavar='NAME', default=None,
                          help='A name of a experiments experiment registered with the global configuration.')
 init_parser.add_argument('--purpose', metavar='PURPOSE', default='',
@@ -244,7 +246,8 @@ init_parser.add_argument('--purpose', metavar='PURPOSE', default='',
 
 def _init(args):
     experiment_manager = ExperimentManager(args.root)
-    experiment_manager.initialise(defaults=args.defaults, script=args.script, purpose=args.purpose, name=args.name)
+    experiment_manager.initialise(defaults=args.defaults, script=args.script, purpose=args.purpose, name=args.name,
+                                  updates=args.updates)
 
 
 init_parser.set_defaults(func=_init)

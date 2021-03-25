@@ -324,7 +324,7 @@ class ExperimentManager(object):
             if 'type' in params:
                 self.type = params['type']
 
-    def initialise(self, *, defaults="", script="", purpose="", name=None):
+    def initialise(self, *, defaults="", script="", purpose="", name=None, updates=None):
         """Link an experiment manager with a ``defaults.yml`` file and ``sript.sh``.
 
         Args:
@@ -371,8 +371,9 @@ class ExperimentManager(object):
             #         sys.path.insert(0, p)
 
             import subprocess
-            subprocess.call([self._config.python_experiments[name], '--to_root', self.root])
-
+            updates = ['-u', updates] if updates is not None else []
+            subprocess.call([self._config.python_experiments[name], '--to_root', self.root] + updates)
+            subprocess.call([self._config.python_experiments[name], '--help'])
             self.script = os.path.join(self.root, 'script.sh')
             self.defaults = os.path.join(self.root, 'defaults.yml')
             self.type = name

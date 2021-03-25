@@ -658,7 +658,7 @@ class Experiment(object, metaclass=TypedMeta):
         """Configure the experiment instance from the command line arguments.
         """
         from xmen.utils import IncompatibleYmlException
-        experiment_parser.prog = f'xmen {self.__class__.__name__}'
+        experiment_parser.prog = f'xmen python {self.__class__.__name__}'
 
         # Configure help information from the class
         n = 7
@@ -666,6 +666,9 @@ class Experiment(object, metaclass=TypedMeta):
             [' ' * 0 + experiment_parser.prog + ' ' + '-u YML -r PATH',
              ' ' * n + experiment_parser.prog + ' ' + '-u YML -x DIR ',
              ' ' * n + experiment_parser.prog + ' ' + '-x PARAMS'])
+
+        experiment_parser.epilog = self.__doc__
+
         # experiment_parser.description = self.__doc__
         args = experiment_parser.parse_args()
 
@@ -733,7 +736,7 @@ class Experiment(object, metaclass=TypedMeta):
         if args is None:
             args = self.parse_args()
 
-        if all(a is None for a in (args.debug, args.execute, args.to_root, args.txt, args.update)):
+        if all(a is None for a in (args.debug, args.execute, args.to_root, args.update)):
             print(self.__doc__)
             print('\nFor more help use --help.')
 
