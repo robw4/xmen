@@ -58,6 +58,7 @@ class GetExperiments(NamedTuple, Request):
     roots: str
     status: str
     max_n: int = None
+    updated_since: str = None
     request: str = GET_EXPERIMENTS
 
     def __repr__(self): return f'{self.__class__.__name__}<user={self.user}, root={self.roots}, status={self.status}>'
@@ -223,6 +224,7 @@ class GotExperiments(NamedTuple):
     matches: List
     roots: str
     status: str
+    time: str = None
     response: str = GOT_EXPERIMENTS
 
     @property

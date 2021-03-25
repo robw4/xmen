@@ -547,17 +547,18 @@ list_parser.add_argument('--csv', action='store_true', help='Display the table a
 
 def _curses_list(args):
     from xmen.list import NotEnoughRows
-    if args.interval is not None:
-        import curses
-        try:
-            args.param_match = "^$"
-            curses.wrapper(_list, args)
-        except NotEnoughRows:
-            print('WARNING: Not enough rows to display the table in interactive mode. Find a bigger terminal')
-        except KeyboardInterrupt:
-            pass
-    else:
-        _list(None, args)
+    _list(None, args)
+    # if args.interval is not None:
+    #     import curses
+    #     try:
+    #         args.param_match = "^$"
+    #         curses.wrapper(_list, args)
+    #     except NotEnoughRows:
+    #         print('WARNING: Not enough rows to display the table in interactive mode. Find a bigger terminal')
+    #     except KeyboardInterrupt:
+    #         pass
+    # else:
+    #     _list(None, args)
 
 
 def _list(stdscr, args):
@@ -611,8 +612,9 @@ def _list(stdscr, args):
                 pattern += '.*'
                 args.pattern = f'{config.local_user}@{config.local_host}:{pattern}'
             from xmen.utils import load_params
-            from xmen.list import interactive_display
-            interactive_display(stdscr, args)
+            from xmen.list import interactive_display, test
+            test(args)
+            # interactive_display(stdscr, args)
 
 list_parser.set_defaults(func=_curses_list)
 

@@ -300,7 +300,8 @@ class ServerTask(object):
             out.append(dic_to_yaml(e))
         return out
 
-    def get_experiments(self, user, password, roots, status, max_n):
+    def get_experiments(self, user, password, roots, status, updated, max_n):
+        import time
         response = self.validate_password(user, password)
         if isinstance(response, Failed):
             return response
@@ -308,15 +309,16 @@ class ServerTask(object):
         cursor = database.cursor()
         response = None
         try:
+            request_time = time.strftime('%Y-%m-%d %H:%M:%S')
             cursor.execute(
                 f"SELECT root, data, updated, status FROM experiments WHERE root REGEXP '{roots}' "
-                f"AND status REGEXP '{status}' AND user = '{user}' "
+                f"AND status REGEXP '{status}' AND user = '{user}' AND updated > '{updated}' "
                 f"ORDER BY updated")
             matches = cursor.fetchall()
             if max_n is None:
                 max_n = -len(matches) - 1
             matches = matches[-max_n:]
-            response = GotExperiments(user, matches, roots, status)
+            response = GotExperiments(user, matches, roots, status, request_time)
         except Exception as m:
             cursor.close()
             database.close()

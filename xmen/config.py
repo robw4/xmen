@@ -26,7 +26,7 @@ from xmen.server import *
 import getpass
 
 from functools import wraps
-
+from typing import Tuple
 
 def connected(method):
     @wraps(method)
@@ -345,6 +345,32 @@ class Config(object):
         os.chmod(path, st.st_mode | stat.S_IEXEC)
         self.python_experiments.update({name: path})
         self.to_yml()
+
+    def cache(self, *, save: Tuple[str, str] = None, load: bool = None, maximum=5):
+        """Cache results recieved from the server"""
+        cache_dir = os.path.join(self._dir, 'cache')
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
+        cached = sorted(os.listdir(cache_dir))
+        if save:
+            string, timestamp = save
+
+            # delete old cache from the buffer
+
+            if len(cached) > maximum - 1:
+                for c in cached[:maximum-1]:
+                    file_path = os.path.join(cache_dir, c)
+                    os.unlink(file_path)
+            # save new cache
+            with open(os.path.join(cache_dir, timestamp), 'w') as f:
+                f.write(string)
+        else:
+            string, timestamp = None, '1960-01-01 00:00:00'
+            if cached:
+                timestamp = cached[-1]
+                with open(os.path.join(cache_dir, timestamp), 'r') as f:
+                    string = f.read()
+            return string, timestamp
 
     def clean(self):
         """Iteratively search through experiment and remove any that no longer exist.
