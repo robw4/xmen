@@ -222,23 +222,31 @@ def interactive_display(stdscr, args):
     import curses
     import multiprocessing as mp
     import queue
+    from xmen.utils import dic_from_yml
+    from collections import OrderedDict
 
     global root
+    global results
     global default_pattern
     global expand_helps
     global short_root
+    global last_request_time
     default_pattern = None
     expand_helps = False
     short_root = True
     stdscr.refresh()
-
     rows, cols = stdscr.getmaxyx()
 
     if rows < 9:
         raise NotEnoughRows
 
     pos_x, pos_y = 0, 0
-    last_time = None
+
+    # load cached results
+    from xmen.config import Config
+    config = Config()
+    string, last_request_time = config.cache(load=True)
+    results = dic_from_yml(string=string) if string else OrderedDict()
     meta, message = [], []
 
     # initialise colours
@@ -392,8 +400,8 @@ def interactive_display(stdscr, args):
 
         curses.doupdate()
 
-    def visualise_results(results, roots, args):
-        data_frame, root = generate_table(results, roots, args)
+    def visualise_results(results, args):
+        data_frame, root = generate_table(results.values(), results.keys(), args)
         display_table(data_frame, root)
 
     def update_requests(args, requests_q):
@@ -402,21 +410,22 @@ def interactive_display(stdscr, args):
             config.password,
             args.pattern,
             args.status_filter,
-            args.max_n)
+            args.max_n,
+            last_request_time
+            )
         requests_q.put(request, block=True)
 
     def extract_results(response):
+        global last_request_time
+        last_request_time = response.time
         roots, data, updated, status = zip(*response['matches'])
-        results = [dic_from_yml(string=d) for d in data]
-        for d, s in zip(results, status):
+        results.update({r: dic_from_yml(string=d) for r, d in zip(roots, data)})
+        for d, s in zip(results.values(), status):
             d['_status'] = s
-        return results, roots
+        return results
 
     # visualise_results(results, roots, args)
     rows, cols = stdscr.getmaxyx()
-
-    from xmen.config import Config
-    config = Config()
 
     try:
         from xmen.server import send_request_task
@@ -433,9 +442,8 @@ def interactive_display(stdscr, args):
 
         # get inial results view
         response = q_response.get()
-        results, roots = extract_results(response)
-
-        update_requests(args, q_request)
+        results = extract_results(response)
+        config.cache(save=(dic_to_yaml(results), last_request_time))
 
         last_time = time.time()
         while True:
@@ -445,8 +453,8 @@ def interactive_display(stdscr, args):
                     try:
                         # raise queue.Empty
                         response = q_response.get(False)
-                        results, roots = extract_results(response)
-                        visualise_results(results, roots, args)
+                        results = extract_results(response)
+                        visualise_results(results, args)
                         update_requests(args, q_request)
                     except queue.Empty:
                         pass
@@ -463,46 +471,46 @@ def interactive_display(stdscr, args):
                 if c == ord('d'):
                     toggle(args, 'display_date')
                     # args.display_date = not args.display_date
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('v'):
                     toggle(args, 'display_version')
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('s'):
                     toggle(args, 'display_status')
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('p'):
                     toggle(args, 'display_purpose')
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('M'):
                     toggle(args, 'display_meta', '_meta_(slurm_job|root$|name$|mac$|host$|user$|home$)')
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('V'):
                     toggle(args, 'display_meta', '_meta_virtual.*')
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('w'):
                     toggle(args, 'display_meta', '_meta_swap.*')
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('O'):
                     toggle(args, 'display_meta', '_meta_system.*')
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('D'):
                     toggle(args, 'display_meta', '_meta_disks.*')
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('c'):
                     toggle(args, 'display_meta', '_meta_cpu.*')
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('G'):
                     toggle(args, 'display_meta', '_meta_gpu.*')
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('n'):
                     toggle(args, 'display_meta', '_meta_network.*')
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('S'):
                     args = toggle(args, 'display_meta', '_meta_slurm.*')
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('t'):
                     args = toggle(args, 'display_messages', '_messages_(last|e$|s$|wall$|end$|next$|m_step$|m_load$)')
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('f'):
                     from curses.textpad import Textbox, rectangle
                     rows, cols = stdscr.getmaxyx()
@@ -529,10 +537,10 @@ def interactive_display(stdscr, args):
                     if text and not text.startswith('_'):
                         text = '(?!_)' + text
                     args = toggle(args, 'filters', text)
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('R'):
                     short_root = not short_root
-                    visualise_results(results, roots, args)
+                    visualise_results(results, args)
                 if c == ord('r'):
                     from curses.textpad import Textbox, rectangle
                     rows, cols = stdscr.getmaxyx()
@@ -649,6 +657,60 @@ def send_request_task(q_requests, q_response):
 #             with open('/data/engs-robot-learning/kebl4674/usup/tmp/xmen-error-log.txt', 'w') as f:
 #                 f.write(m)
 #             break
+
+
+def test(args):
+    """interactively display results with various search queries"""
+    import multiprocessing as mp
+    from xmen.utils import dic_from_yml
+    from collections import OrderedDict
+
+    global root
+    global results
+    global default_pattern
+    global expand_helps
+    global short_root
+    global last_request_time
+    default_pattern = None
+    expand_helps = False
+    short_root = True
+
+    # load cached results
+    from xmen.config import Config
+    config = Config()
+    string, last_request_time = config.cache(load=True)
+    results = dic_from_yml(string=string) if string else OrderedDict()
+
+    def update_requests(args, requests_q):
+        request = GetExperiments(
+            config.user,
+            config.password,
+            args.pattern,
+            args.status_filter,
+            args.max_n,
+            last_request_time
+            )
+        requests_q.put(request, block=True)
+
+    try:
+        from xmen.server import send_request_task
+        from xmen.utils import dic_from_yml
+        import time
+        import multiprocessing
+
+        manager = mp.Manager()
+        q_request = manager.Queue(maxsize=1)
+        q_response = manager.Queue(maxsize=1)
+        update_requests(args, q_request)
+        p = multiprocessing.Process(target=send_request_task, args=(q_request, q_response))
+        p.start()
+
+        q_response.get()
+
+    except KeyboardInterrupt:
+        p.terminate()
+        raise KeyboardInterrupt
+
 
 if __name__ == '__main__':
     from xmen.config import Config
