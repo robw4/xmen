@@ -62,7 +62,6 @@ def visualise_params(dics, *filters, roots=None, short_root=False):
     import numpy as np
     from xmen.utils import dics_to_pandas
     import os
-
     # convert parameters to pandas data-frame
     df = dics_to_pandas(dics, '|'.join(f[0] for f in filters))
     keys = df.columns
@@ -228,22 +227,39 @@ def manage_backspace(x):
 
 def extract_results(response):
     from xmen.utils import dic_from_yml
-    roots, data, updated, status, timestamp = zip(*response['matches'])
-    updates = [dic_from_yml(string=d) for d in data]
-    for d, s in zip(updates, status):
-        d['_status'] = s
-    return updates, roots, timestamp
+    from collections import OrderedDict
+    updates = OrderedDict()
+    if response['matches']:
+        uid, root, status, user, added, updated, data = zip(*response['matches'])
+        data = [dic_from_yml(string=d) for d in data]
+        for d, s in zip(data, status):
+            d['_status'] = s
+        updates = OrderedDict([
+            (i, [r, s, u, str(a), str(up), d]) for i, r, s, u, a, up, d
+            in zip(uid, root, status, user, added, updated, data)])
+    return updates, response['time']
 
 
 def process_results_task(q_response, q_results):
     while True:
         response = q_response.get()
-        updates, roots, time = extract_results(response)
-        try:
-            q_results.get(False)
-        except queue.Empty:
-            pass
-        q_results.put((updates, roots, time))
+        updates, time = extract_results(response)
+        q_results.put((updates, time))
+
+
+def update_requests(requests_q, last_request_time, config):
+    import datetime
+    request_from = datetime.datetime.strptime(last_request_time, '%Y-%m-%d %H:%M:%S')
+    # allow grace of 10 seconds
+    request_from -= datetime.timedelta(seconds=10.)
+    request = GetExperiments(
+        config.user,
+        config.password,
+        '.*',
+        '.*',
+        request_from.strftime('%Y-%m-%d %H:%M:%S'),
+        None)
+    requests_q.put(request, block=True)
 
 
 def interactive_display(stdscr, args):
@@ -274,8 +290,7 @@ def interactive_display(stdscr, args):
     # load cached results
     from xmen.config import Config
     config = Config()
-    string, last_request_time = config.cache(load=True)
-    results = dic_from_yml(string=string) if string else OrderedDict()
+    results, last_request_time = config.cache(load=True)
     meta, message = [], []
 
     # initialise colours
@@ -297,8 +312,9 @@ def interactive_display(stdscr, args):
     global window
     window = curses.newwin(rows, cols, 0, 0)
 
-    def generate_table(results, roots, args):
-        data_frame, root = visualise_params(results, *args_to_filters(args), roots=roots, short_root=short_root)
+    def generate_table(results, args):
+        dics, roots = results.values(), results.keys()
+        data_frame, root = visualise_params(dics, *args_to_filters(args), roots=roots, short_root=short_root)
         return data_frame, root
 
     def toggle(args, name, update=None):
@@ -328,6 +344,11 @@ def interactive_display(stdscr, args):
                 setattr(args, name, [args.filter_params[0]])
             else:
                 setattr(args, name, getattr(args, name) + [update])
+        elif name == 'status_filter':
+            if update == '':
+                setattr(args, name, '[^(deleted)]')
+            else:
+                setattr(args, name, update)
         elif name == 'pattern':
             if default_pattern is None:
                 default_patten = args.pattern
@@ -363,6 +384,7 @@ def interactive_display(stdscr, args):
                 for j, c in enumerate(componenents):
                     if j == status[0]:
                         col = {
+                            'deleted': curses.A_DIM,
                             'registered': WHITE, 'timeout': CYAN,
                             'stopped': MAGNETA,
                             'running': YELLOW, 'error': RED,
@@ -378,86 +400,68 @@ def interactive_display(stdscr, args):
             else:
                 pad.addstr(i, 1, ''.join(componenents))
 
-    def display_table(table, root):
+    def display_table(table):
         import curses
         global pad, window, expand_helps
         rows, cols = stdscr.getmaxyx()
         window.erase()
 
-        from tabulate import tabulate
-        x = tabulate(table, headers='keys', tablefmt='github').split('\n')
-        x.pop(1)
-        # window.addstr(0, 0, f'Experiments matching {args.pattern}')
-        # window.addstr(1, 0, f'Roots relative to {root}')
         if last_time is not None:
-            window.addstr(1, 0, f'Last message recieved @ {time.time() - last_time:.3f} seconds ago', curses.A_DIM)
+            window.addstr(0, 0, f'Last update recieved @ {last_request_time}', curses.A_DIM)
         else:
-            window.addstr(1, 0, f'No running experiments', curses.A_DIM)
+            window.addstr(0, 0, f'No running experiments', curses.A_DIM)
 
-        import curses
         legend_pad = curses.newpad(5, 500)
-
         if expand_helps:
             legend_pad.addstr(0, 0, 'Help: (press o to minimise)', curses.A_BOLD)
             legend_pad.addstr(1, 0, 'R=expand-roots d=date s=status v=version p=purpose t=monitor-message M=meta ')
             legend_pad.addstr(2, 0, 'G=gpu S=slurm c=cpu n=network V=virtual w=swap O=os D=disks')
-            legend_pad.addstr(3, 0, 'r=filter by root (press r for more info))')
-            legend_pad.addstr(4, 0, 'f=filter parammeters (press f for more info)')
+            legend_pad.addstr(3, 0, 'r=filter-roots   z = filter-status   f=filter-parameters')
+            legend_pad.addstr(4, 0, '(press r, z, f for more info)')
         else:
             legend_pad.addstr(0, 0, 'Toggles:', curses.A_BOLD)
             legend_pad.addstr(1, 0,
                               f'date = {args.display_date} meta = {args.display_meta}, messages={args.display_messages}, version={args.display_version}')
-            legend_pad.addstr(2, 0, f'pattern = {args.pattern}')
+            legend_pad.addstr(2, 0, f'pattern = {args.pattern}, status = {args.status_filter}')
             legend_pad.addstr(3, 0, f'filters={args.filters}')
             legend_pad.addstr(4, 0, f'(for more help press o)')
 
-        if len(x) > rows - 6:
-            filler = '|'.join([' ...'.ljust(len(xx), ' ') if xx else ''
-                                 for ii, xx in enumerate(x[1].split('|'))])
-            filler = filler.replace('...', '   ', 1)
-            x = [x[0], filler] + x[-(rows - 9):]
+        if table is not None:
+            from tabulate import tabulate
+            x = tabulate(table, headers='keys', tablefmt='github').split('\n')
+            x.pop(1)
 
-        pad = curses.newpad(len(x), len(x[0]))
-        for i, xx in enumerate(x):
-            display_row(i, pad, x=x)
-        # for y in range(0, n * rows - 1):
-        #     for x in range(0, n * cols - 1):
-        #         pad.addch(y, x, ord('a') + (x * x + y * y) % 26)
+            if len(x) > rows - 6:
+                filler = '|'.join([' ...'.ljust(len(xx), ' ') if xx else ''
+                                     for ii, xx in enumerate(x[1].split('|'))])
+                filler = filler.replace('...', '   ', 1)
+                x = [x[0], filler] + x[-(rows - 9):]
+
+            pad = curses.newpad(len(x), len(x[0]))
+            for i, xx in enumerate(x):
+                display_row(i, pad, x=x)
+        else:
+            pad = curses.newpad(3, 1000)
+            pad.addstr(0, 0, '')
+            pad.addstr(1, 4, f'No experiments found!', RED | curses.A_BOLD)
+            pad.addstr(2, 4, f'Try resetting the filters...')
+
         window.noutrefresh()
-        pad.noutrefresh(pos_x, 0, 2, 0, rows - 5, cols - 1)
+        pad.noutrefresh(pos_x, 0, 1, 0, rows - 5, cols - 1)
         legend_pad.noutrefresh(0, 0, rows - 5, 0, rows - 1, cols - 1)
-
         curses.doupdate()
 
     def visualise_results(results, args):
-        data_frame, root = generate_table(results.values(), results.keys(), args)
-        display_table(data_frame, root)
+        dics = OrderedDict([
+            (r, d) for k, (r, s, u, a, up, d) in results.items()
+            if re.match(args.pattern, r)
+            and re.match(args.status_filter, s)])
 
-    def update_requests(args, requests_q):
-        request = GetExperiments(
-            config.user,
-            config.password,
-            args.pattern,
-            args.status_filter,
-            last_request_time,
-            args.max_n)
-        try:
-            requests_q.get(False)
-        except queue.Empty:
-            pass
-        requests_q.put(request, block=True)
+        data_frame = None
+        if dics:
+            data_frame, root = generate_table(dics, args)
+        display_table(data_frame)
 
-    def extract_results(response):
-        global last_request_time
-        last_request_time = response.time
-        roots, data, updated, status = zip(*response['matches'])
-        results.update({r: dic_from_yml(string=d) for r, d in zip(roots, data)})
-        for d, s in zip(results.values(), status):
-            d['_status'] = s
-        return results
-
-    # visualise_results(results, roots, args)
-    rows, cols = stdscr.getmaxyx()
 
     try:
         from xmen.server import send_request_task
@@ -469,39 +473,38 @@ def interactive_display(stdscr, args):
         q_request = manager.Queue(maxsize=1)
         q_response = manager.Queue(maxsize=1)
         q_processed = manager.Queue(maxsize=1)
-        update_requests(args, q_request)
+
+        update_requests(q_request, last_request_time, config)
 
         p_request = multiprocessing.Process(target=send_request_task, args=(q_request, q_response))
         p_request.start()
         p_process = multiprocessing.Process(target=process_results_task, args=(q_response, q_processed))
         p_process.start()
 
-        # get inial results view
-        updates, roots, last_request_time = q_processed.get()
-        # results, roots = extract_results(response)
-        results.update({r: u for r, u in zip(roots, updates)})
-        config.cache(save=(dic_to_yaml(results), last_request_time))
-        update_requests(args, q_request)
+        # get initial results view
+        if not results:
+            stdscr.addstr(0, 1, 'No cache found. Downloading user content from server...', curses.A_BOLD)
+            stdscr.refresh()
+            updates, last_request_time = q_processed.get(timeout=20.)
+            results.update(updates)
+            config.cache(save=(results, last_request_time))
+            update_requests(q_request, last_request_time, config)
 
         last_time = time.time()
+        visualise_results(results, args)
         while True:
-            try:
-                if time.time() - last_time > args.interval:
-                    # request experiment updates
-                    try:
-                        # raise queue.Empty
-                        updates, roots, last_request_time = q_processed.get(False)
-                        results.update({r: u for r, u in zip(roots, updates)})
-                        visualise_results(results, args)
-                        update_requests(args, q_request)
-                    except queue.Empty:
-                        pass
+            if time.time() - last_time > args.interval:
+                # request experiment updates
+                try:
+                    updates, last_request_time = q_processed.get(False)
+                except queue.Empty:
+                    pass
+                else:
+                    results.update(updates)
+                    config.cache(save=(results, last_request_time))
+                    visualise_results(results, args)
+                    update_requests(q_request, last_request_time, config)
                     last_time = time.time()
-            except queue.Empty:
-                pass
-
-            import sys
-            import time
 
             if stdscr is not None:
                 stdscr.timeout(1000)
@@ -563,11 +566,9 @@ def interactive_display(stdscr, args):
                     window.move(rows - 1, 0)
                     window.clrtoeol()
                     window.addstr(rows - 3, 0,
-                                  'Search:',
+                                  'Search: (enter "" to reset)',
                                   curses.A_BOLD)
                     window.addstr(rows-2, 0, 'eg. none to reset, ".*", "_messages_.*", "_meta_.*", _version_git_branch=="xmen", a==10, loss<2.0')
-                    # window.addstr(rows - 2, 0,'')
-                    # window.addstr(rows - 1, 0, ' ' * (cols - 1))
                     window.refresh()
                     win = curses.newwin(1, cols, rows - 1, 0)
                     text_box = Textbox(win)
@@ -593,7 +594,7 @@ def interactive_display(stdscr, args):
                     window.move(rows - 1, 0)
                     window.clrtoeol()
                     window.addstr(rows - 3, 0,
-                                  'Root:',
+                                  'Root: (enter "" to reset)',
                                   curses.A_BOLD)
                     window.addstr(rows - 2, 0,
                                   'eg. ".*", "{user}@{host}:{pattern}" where user, host and pattern are regex')
@@ -602,25 +603,30 @@ def interactive_display(stdscr, args):
                     text_box = Textbox(win)
                     text = text_box.edit(validate=manage_backspace).strip()
                     toggle(args, 'pattern', text.strip())
-                    while True:
-                        # clear all queues
-                        try:
-                            q_request.get(False)
-                        except queue.Empty:
-                            break
-                    while True:
-                        try:
-                            q_response.get(False)
-                        except queue.Empty:
-                            break
-                    while True:
-                        try:
-                            q_processed.get(False)
-                        except queue.Empty:
-                            break
-                    update_requests(args, q_request)
-                    results, roots, last_request_time = q_processed.get()
-                    results.update({r: u for r, u in zip(roots, updates)})
+                    visualise_results(results, args)
+                if c == ord('z'):
+                    from curses.textpad import Textbox, rectangle
+                    rows, cols = stdscr.getmaxyx()
+                    window.move(rows - 5, 0)
+                    window.clrtoeol()
+                    window.move(rows - 4, 0)
+                    window.clrtoeol()
+                    window.move(rows - 3, 0)
+                    window.clrtoeol()
+                    window.move(rows - 2, 0)
+                    window.clrtoeol()
+                    window.move(rows - 1, 0)
+                    window.clrtoeol()
+                    window.addstr(rows - 3, 0,
+                                  'Status: (enter "" to reset)',
+                                  curses.A_BOLD)
+                    window.addstr(rows - 2, 0,
+                                  'eg. "running", ".*", "deleted')
+                    window.refresh()
+                    win = curses.newwin(1, cols, rows - 1, 0)
+                    text_box = Textbox(win)
+                    text = text_box.edit(validate=manage_backspace).strip()
+                    toggle(args, 'status_filter', text.strip())
                     visualise_results(results, args)
                 if c == ord("o"):
                     expand_helps = not expand_helps
@@ -659,126 +665,3 @@ def send_request_task(q_requests, q_response):
                         pass
     except (socket.error, IOError):
         pass
-
-
-# def updates_client(q, args):
-#     from xmen.utils import commented_to_py
-#     import os
-#     import socket
-#     import time
-#     # get the hostname
-#     import struct
-#     import ruamel.yaml
-#
-#
-#     # from xmen.experiment import IncompatibleYmlException, HOST, PORT
-#
-#     server_socket = socket.socket()  # get instance
-#     # look closely. The bind() function takes tuple as argument
-#     server_socket.bind((HOST, PORT))  # bind host address and port together
-#
-#     # configure how many client the server can listen simultaneously
-#     server_socket.listen(100)
-#
-#     while True:
-#         try:
-#             updates = {}
-#             last = time.time()
-#             while time.time() - last < args.interval:
-#                 conn, address = server_socket.accept()
-#                 # print("Connection from: " + str(address))
-#                 length = conn.recv(struct.calcsize('Q'))
-#                 if length:
-#                     length, = struct.unpack('Q', length)
-#                     # print('length = ', length)
-#                     params = conn.recv(length, socket.MSG_WAITALL).decode()
-#                     yaml = ruamel.yaml.YAML()
-#                     try:
-#                         params = yaml.load(params)
-#                     except:
-#                         raise IncompatibleYmlException
-#                     params = {k: commented_to_py(v) for k, v in params.items()}
-#                     # print(params)
-#                     updates[os.path.join(params['_root'], params['_name'])] = params
-#                 conn.close()  # close the connection
-#             if updates:
-#                 q.put((updates, last))
-#         except Exception as m:
-#             q.put((None, m))
-#             with open('/data/engs-robot-learning/kebl4674/usup/tmp/xmen-error-log.txt', 'w') as f:
-#                 f.write(m)
-#             break
-
-
-def test(args):
-    """interactively display results with various search queries"""
-    import multiprocessing as mp
-    from xmen.utils import dic_from_yml
-    from collections import OrderedDict
-
-    global root
-    global results
-    global default_pattern
-    global expand_helps
-    global short_root
-    global last_request_time
-    default_pattern = None
-    expand_helps = False
-    short_root = True
-
-    # load cached results
-    from xmen.config import Config
-    config = Config()
-    string, last_request_time = config.cache(load=True)
-    results = dic_from_yml(string=string) if string else OrderedDict()
-
-    def update_requests(args, requests_q):
-        request = GetExperiments(
-            config.user,
-            config.password,
-            args.pattern,
-            args.status_filter,
-            args.max_n,
-            last_request_time
-            )
-        requests_q.put(request, block=True)
-
-    try:
-        from xmen.server import send_request_task
-        from xmen.utils import dic_from_yml
-        import time
-        import multiprocessing
-
-        manager = mp.Manager()
-        q_request = manager.Queue(maxsize=1)
-        q_response = manager.Queue(maxsize=1)
-        update_requests(args, q_request)
-        p = multiprocessing.Process(target=send_request_task, args=(q_request, q_response))
-        p.start()
-
-        q_response.get()
-
-    except KeyboardInterrupt:
-        p.terminate()
-        raise KeyboardInterrupt
-
-
-if __name__ == '__main__':
-    from xmen.config import Config
-
-    config = Config()
-
-    def update_requests(requests_q):
-        request = GetExperiments(
-            config.user,
-            config.password,
-            f"{'robw'}@{'mini-server'}:{'/home/robw/tmp/list.*'}",
-            '.*')
-        requests_q.put(request)
-
-    import multiprocessing as mp
-    q_request = mp.Queue(maxsize=1)
-    q_response = mp.Queue(maxsize=1)
-    update_requests(q_request)
-
-    send_request_task(q_request, q_response)

@@ -57,11 +57,12 @@ class GetExperiments(NamedTuple, Request):
     password: str
     roots: str
     status: str
-    max_n: int = None
     updated_since: str = None
+    max_n: int = None
     request: str = GET_EXPERIMENTS
 
-    def __repr__(self): return f'{self.__class__.__name__}<user={self.user}, root={self.roots}, status={self.status}>'
+    def __repr__(self): return f'{self.__class__.__name__}<user={self.user}, root={self.roots}, status={self.status}, ' \
+                               f'updated_since={self.updated_since}>'
 
 
 class ValidatePassword(NamedTuple, Request):
@@ -327,7 +328,6 @@ def send_request_task(q_request, q_response=None, hook=None):
             while True:
                 try:
                     s.connect((config.server_host, config.server_port))
-                    print('Connected to ', (config.server_host, config.server_port))
                 except (socket.error, OSError):
                     time.sleep(1.)
                 else:

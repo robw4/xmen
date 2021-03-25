@@ -235,7 +235,7 @@ init_parser.add_argument('-s', '--script', metavar='PATH', default='',
 init_parser.add_argument('-r', '--root', metavar='DIR', default='',
                          help='Path to the root experiment folder. If None then the current work directory will be '
                               'used')
-init_parser.add_argument('-u', '--updates', metavar='DIR', default='',
+init_parser.add_argument('-u', '--updates', metavar='DIR', default=None,
                          help='A yaml string giving new defaults for parameters')
 init_parser.add_argument('-n', '--name', metavar='NAME', default=None,
                          help='A name of a experiments experiment registered with the global configuration.')
@@ -329,6 +329,8 @@ note_parser.set_defaults(func=_note)
 #######################################################################################################################
 #  reset
 #######################################################################################################################
+from xmen.experiment import ALL
+
 status_parser = subparsers.add_parser('reset', help='Reset an experiment to registered status')
 status_parser.add_argument('experiments', metavar='NAME', help='A unix glob giving the experiments whos status '
                                                                'should be updated (relative to experiment manager root)')
@@ -336,8 +338,7 @@ status_parser.add_argument('-r', '--root', metavar='DIR', default='',
                            help='Path to the root experiment folder. If None then the current work directory will be '
                                 'used')
 status_parser.add_argument('-s', '--status', metavar='DIR', default='registered',
-                           help='Path to the root experiment folder. If None then the current work directory will be '
-                                'used')
+                           help=f'The status to update the experiment to. Should be in {ALL}')
 
 def _reset(args):
     experiment_manager = ExperimentManager(args.root)
@@ -547,18 +548,18 @@ list_parser.add_argument('--csv', action='store_true', help='Display the table a
 
 def _curses_list(args):
     from xmen.list import NotEnoughRows
-    _list(None, args)
-    # if args.interval is not None:
-    #     import curses
-    #     try:
-    #         args.param_match = "^$"
-    #         curses.wrapper(_list, args)
-    #     except NotEnoughRows:
-    #         print('WARNING: Not enough rows to display the table in interactive mode. Find a bigger terminal')
-    #     except KeyboardInterrupt:
-    #         pass
-    # else:
-    #     _list(None, args)
+    # _list(None, args)
+    if args.interval is not None:
+        import curses
+        try:
+            args.param_match = "^$"
+            curses.wrapper(_list, args)
+        except NotEnoughRows:
+            print('WARNING: Not enough rows to display the table in interactive mode. Find a bigger terminal')
+        except KeyboardInterrupt:
+            pass
+    else:
+        _list(None, args)
 
 
 def _list(stdscr, args):
@@ -600,8 +601,7 @@ def _list(stdscr, args):
             notebook_display(params, *args_to_filters(args))
         elif args.interval is None:
             if args.pattern is None:
-                pattern += '.*'
-                args.pattern = pattern
+                args.pattern = '.*'
             from xmen.utils import load_params
             from xmen.list import args_to_filters, visualise_params
             data_frame, root = visualise_params(params, *args_to_filters(args))
@@ -609,12 +609,10 @@ def _list(stdscr, args):
             print(data_frame)
         else:
             if args.pattern is None:
-                pattern += '.*'
-                args.pattern = f'{config.local_user}@{config.local_host}:{pattern}'
+                args.pattern = f'.*'
             from xmen.utils import load_params
-            from xmen.list import interactive_display, test
-            test(args)
-            # interactive_display(stdscr, args)
+            from xmen.list import interactive_display
+            interactive_display(stdscr, args)
 
 list_parser.set_defaults(func=_curses_list)
 

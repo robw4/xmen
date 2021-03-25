@@ -348,29 +348,37 @@ class Config(object):
 
     def cache(self, *, save: Tuple[str, str] = None, load: bool = None, maximum=5):
         """Cache results recieved from the server"""
+        from xmen.utils import dic_from_yml
+        import json
+        import pickle
         cache_dir = os.path.join(self._dir, 'cache')
         if not os.path.exists(cache_dir):
             os.makedirs(cache_dir)
         cached = sorted(os.listdir(cache_dir))
         if save:
-            string, timestamp = save
-
+            dic, timestamp = save
             # delete old cache from the buffer
-
-            if len(cached) > maximum - 1:
-                for c in cached[:maximum-1]:
-                    file_path = os.path.join(cache_dir, c)
-                    os.unlink(file_path)
+            while len(cached) > maximum - 1:
+                c = cached.pop(0)
+                file_path = os.path.join(cache_dir, c)
+                os.unlink(file_path)
             # save new cache
             with open(os.path.join(cache_dir, timestamp), 'w') as f:
-                f.write(string)
-        else:
-            string, timestamp = None, '1960-01-01 00:00:00'
+                json.dump([(k, v) for k, v in dic.items()], f)
+        elif load:
+            from collections import OrderedDict
+            dic, timestamp = OrderedDict(), '1960-01-01 00:00:00'
             if cached:
-                timestamp = cached[-1]
-                with open(os.path.join(cache_dir, timestamp), 'r') as f:
-                    string = f.read()
-            return string, timestamp
+                while True:
+                    timestamp = cached.pop(-1)
+                    try:
+                        with open(os.path.join(cache_dir, timestamp), 'r') as f:
+                            dic = OrderedDict(json.load(f))
+                    except json.JSONDecodeError:
+                        pass
+                    else:
+                        break
+            return dic, timestamp
 
     def clean(self):
         """Iteratively search through experiment and remove any that no longer exist.

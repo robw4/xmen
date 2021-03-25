@@ -92,6 +92,7 @@ DETACHED = 'detached'
 REQUEUE = 'requeue'
 DELETED = 'deleted'
 
+ALL = [DEFAULT, REGISTERED, RUNNING, ERROR, DEBUG, STOPPED, TIMEOUT, FINISHED, DETACHED, REQUEUE]
 
 def get_timestamps(created=None, start=None, stopped=None, last=None, registered=None):
     return {

@@ -365,11 +365,6 @@ class ExperimentManager(object):
                 print(f'Python Experiment {name} has not been registered with the global configuration. Aborting!')
                 return
 
-            # for p in self._config.python_paths:
-            #     if self._config.python_experiments[name].startswith(p):
-            #         # Inserted right at the start (will be the first one searched in)
-            #         sys.path.insert(0, p)
-
             import subprocess
             updates = ['-u', updates] if updates is not None else []
             subprocess.call([self._config.python_experiments[name], '--to_root', self.root] + updates)
