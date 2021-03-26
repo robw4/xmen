@@ -279,13 +279,13 @@ class Config(object):
                 status='.*')], workers=0)[0]
         requests = []
         if response.matches:
-            server_roots, data, updated, status = zip(*response.matches)
+            uid, root, status, user, added, updated, data = zip(*response.matches)
             data = [dic_from_yml(string=d) for d in data]
             # request that folders that are not currently linked with the global config are
             # deleted from the server
             relink = []
             delete = []
-            for r, d, u, s in zip(server_roots, data, updated, status):
+            for r, d, u, s in zip(root, data, updated, status):
                 if not d['_root'] in self.linked and s != xmen.experiment.DELETED:
                     if os.path.exists(os.path.join(d['_root'], 'params.yml')):
                         relink += [d['_root']]

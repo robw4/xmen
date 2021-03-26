@@ -57,7 +57,7 @@ class GetExperiments(NamedTuple, Request):
     password: str
     roots: str
     status: str
-    updated_since: str = None
+    updated_since: str = '1960-01-01 00:00:00'
     max_n: int = None
     request: str = GET_EXPERIMENTS
 
