@@ -18,7 +18,8 @@ parser.add_argument('--n_clients', '-N', default=100, help='The maximum number o
 
 
 def server(args):
-    from threading import Thread
+    from multiprocessing import Process as Thread
+    print('Server using multiprocessing')
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     context.load_cert_chain(
         certfile=args.certfile,
@@ -39,6 +40,7 @@ def server(args):
             processes += [p]
     finally:
         for p in processes:
+            p.kill()
             p.join()
         s.shutdown(socket.SHUT_RDWR)
         s.close()  # close the connection
