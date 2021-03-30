@@ -1,4 +1,5 @@
 """A module containing the Experiment class definition."""
+"""A module containing the Experiment class definition."""
 #  Copyright (C) 2019  Robert J Weston, Oxford Robotics Institute
 #
 #  xmen

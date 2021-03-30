@@ -239,6 +239,7 @@ class GotExperiments(NamedTuple):
 def send(dic, conn, typ='safe'):
     """Send dictionary to connected socket"""
     from xmen.utils import commented_to_py
+    import gzip
     if hasattr(dic, '_asdict'):
         dic = dic._asdict()
     # data is always sent without comments
@@ -246,6 +247,8 @@ def send(dic, conn, typ='safe'):
     string = dic_to_yaml(dic, typ, True)
 
     buffer = string.encode()
+    # compress
+    buffer = gzip.compress(buffer)
     conn.sendall(struct.pack('Q', len(buffer)) + buffer)
 
 
@@ -265,11 +268,14 @@ def receive(conn, typ='safe', default_flow_style=False):
     import ruamel.yaml
     from xmen.utils import IncompatibleYmlException
     from xmen.utils import commented_to_py
+    import gzip
+
     length = receive_message(conn, struct.calcsize('Q'))
     dic = None
     if length:
         length, = struct.unpack('Q', length)
         buffer = receive_message(conn, length)
+        buffer = gzip.decompress(buffer)
         yaml = ruamel.yaml.YAML(typ=typ)
         yaml.default_flow_style = default_flow_style
         try:
