@@ -589,7 +589,10 @@ class TypedMeta(type):
                 if c == sup.__name__ and not n.startswith('_'):
                     lines += [' ' + h]
             if len(lines) - l > 0:
-                lines.insert(l, '    ' + sup.__name__)
+                lines.insert(l, '  ' + '-' * len(sup.__name__))
+                lines.insert(l, '  ' + sup.__name__)
+                lines.insert(l, '  ')
+
 
         if len(lines) > 0:
             cls.__doc__ += '\n\nParameters:\n'
