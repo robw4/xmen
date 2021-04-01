@@ -28,6 +28,7 @@ import getpass
 from functools import wraps
 from typing import Tuple
 
+
 def connected(method):
     @wraps(method)
     def _fn(self, *args, **kwargs):
@@ -79,9 +80,9 @@ class Config(object):
         self.header = ''
         self.python_experiments = {}
         self.linked = []
+
         # private attributes (also saved)
-        self._dir = os.path.join(os.getenv('HOME'), '.xmen')
-        self._path = os.path.join(self._dir, 'xmen.yml')
+        self._dir = os.getenv('XMEN', os.path.join(os.getenv('HOME'), '.xmen'))
 
         if not os.path.exists(self._path):
             # make the directory if it doesnt exist
@@ -91,6 +92,9 @@ class Config(object):
             self.to_yml()
         else:
             self.from_yml()
+
+    @property
+    def _path(self): return os.path.join(self._dir, 'xmen.yml')
 
     def _migrate(self):
         """Generate a xmen.yml file from the now depreciated config.yml file."""

@@ -88,7 +88,8 @@ def _python(args):
             with config as c:
                 c.add_python(*args.add)
             print(f'Added experiment {args.add[-1]} from module {args.add[-2]}')
-        except:
+        except Exception as m:
+            print(m)
             print(f'ERROR: failed to add experiment {args.add[-1]} from module {args.add[-2]}')
     if args.remove is not None:
         with config as c:
