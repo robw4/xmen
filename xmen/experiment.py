@@ -583,7 +583,7 @@ class Experiment(object, metaclass=TypedMeta):
                 subprocess.call(['scontrol', 'requeue', f'{slurm_job}'])
         else:
             print('########################')
-            print('An error occurred encountered')
+            print('An error was encountered')
             print('########################')
             if self.status not in [TIMEOUT, STOPPED]:
                 self._update_status(ERROR)
